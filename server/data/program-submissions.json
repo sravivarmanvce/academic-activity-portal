@@ -1,0 +1,25 @@
+[
+  {
+    "0": {
+      "email": "hod.cse@college.edu",
+      "academicYear": "2024–2025",
+      "category": "A. Academic and Skill Development Activities",
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "budget": 5000,
+      "count": 4,
+      "total": 20000,
+      "remarks": ""
+    },
+    "1": {
+      "email": "hod.cse@college.edu",
+      "academicYear": "2024–2025",
+      "category": "A. Academic and Skill Development Activities",
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "budget": 7500,
+      "count": 4,
+      "total": 30000,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-12T12:45:19.762Z"
+  }
+]
