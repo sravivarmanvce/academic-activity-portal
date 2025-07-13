@@ -21,5 +21,2303 @@
       "remarks": ""
     },
     "timestamp": "2025-07-12T12:45:19.762Z"
+  },
+  {
+    "0": {
+      "Program Type": "Workshops (2 Sessions - Full Day)",
+      "Sub-Program Type": null,
+      "Activity Category": "A. Academic and Skill Development Activities",
+      "Departments": "ALL",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 5000,
+      "Count": "0"
+    },
+    "timestamp": "2025-07-12T16:21:09.423Z"
+  },
+  {
+    "0": {
+      "Program Type": "Workshops (2 Sessions - Full Day)",
+      "Sub-Program Type": null,
+      "Activity Category": "A. Academic and Skill Development Activities",
+      "Departments": "ALL",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 5000,
+      "Count": "1"
+    },
+    "1": {
+      "Program Type": "Workshops (3 Sessions - One and Half Day)",
+      "Sub-Program Type": null,
+      "Activity Category": "A. Academic and Skill Development Activities",
+      "Departments": "ALL",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 7500,
+      "Count": "1"
+    },
+    "2": {
+      "Program Type": "Workshops (4 Sessions - Two Days)",
+      "Sub-Program Type": null,
+      "Activity Category": "A. Academic and Skill Development Activities",
+      "Departments": "ALL",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 10000,
+      "Count": "1"
+    },
+    "3": {
+      "Program Type": "Seminars",
+      "Sub-Program Type": null,
+      "Activity Category": "A. Academic and Skill Development Activities",
+      "Departments": "ALL",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 3000,
+      "Count": "1"
+    },
+    "4": {
+      "Program Type": "Guest Lectures",
+      "Sub-Program Type": null,
+      "Activity Category": "A. Academic and Skill Development Activities",
+      "Departments": "ALL",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 5000,
+      "Count": "1"
+    },
+    "5": {
+      "Program Type": "Hackathons",
+      "Sub-Program Type": null,
+      "Activity Category": "A. Academic and Skill Development Activities",
+      "Departments": "CSE, INF, CSM, CSD",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 20000,
+      "Count": "1"
+    },
+    "6": {
+      "Program Type": "Soft Skills Workshops",
+      "Sub-Program Type": null,
+      "Activity Category": "C. Professional Development Activities",
+      "Departments": "ALL",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 5000,
+      "Count": "0"
+    },
+    "7": {
+      "Program Type": "Tech Fests and Exhibitions",
+      "Sub-Program Type": null,
+      "Activity Category": "D. Community and Social Activities",
+      "Departments": "ALL",
+      "Budget Mode": "Fixed",
+      "Budget Per Event ₹": 20000,
+      "Count": "2"
+    },
+    "timestamp": "2025-07-12T16:22:15.366Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 4,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 6000,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 60000,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 6,
+      "totalBudget": 120000,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 4,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 60000,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 45000,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 20000,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 11,
+      "totalBudget": 55000,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 5,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-12T17:14:16.868Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 4,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 6000,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 60000,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 6,
+      "totalBudget": 120000,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 60000,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 45000,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 20000,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 11,
+      "totalBudget": 55000,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 5,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-12T17:15:10.505Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 4,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 6000,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 60000,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 6,
+      "totalBudget": 120000,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 60000,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 45000,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 20000,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 11,
+      "totalBudget": 55000,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 5,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-12T17:15:11.202Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 4,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 6000,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 60000,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 6,
+      "totalBudget": 120000,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 30000,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 60000,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 45000,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 20000,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 11,
+      "totalBudget": 55000,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 5,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-12T17:26:13.404Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-12T17:26:18.397Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-13T01:18:51.305Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-13T01:24:38.498Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 22500,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 1,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-13T01:24:49.294Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 15000,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 3,
+      "totalBudget": 22500,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 1,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 2,
+      "totalBudget": 10000,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 1,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-13T01:24:58.544Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-13T01:25:58.502Z"
+  },
+  {
+    "0": {
+      "programType": "Workshops (2 Sessions - Full Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "1": {
+      "programType": "Workshops (3 Sessions - One and Half Day)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "2": {
+      "programType": "Workshops (4 Sessions - Two Days)",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "3": {
+      "programType": "Seminars",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "4": {
+      "programType": "Guest Lectures",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "5": {
+      "programType": "Hackathons",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "6": {
+      "programType": "Coding Competitions /Technical Competitions",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "7": {
+      "programType": "Project Showcases",
+      "subProgramType": null,
+      "activityCategory": "A. Academic and Skill Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "8": {
+      "programType": "Technical Clubs",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "9": {
+      "programType": "Student Chapters of Professional Societies",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "10": {
+      "programType": "Competitions and Challenges",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "11": {
+      "programType": "Internships and Industry Projects",
+      "subProgramType": null,
+      "activityCategory": "B. Extracurricular and Co-curricular Activities",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "12": {
+      "programType": "Soft Skills Workshops",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "13": {
+      "programType": "Resume Building and Interview Preparation",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "14": {
+      "programType": "Career Counselling and Mentorship Programs",
+      "subProgramType": null,
+      "activityCategory": "C. Professional Development Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "15": {
+      "programType": "Tech Fests and Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "16": {
+      "programType": "Community Outreach Programs",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "17": {
+      "programType": "Collaborative Projects/Exhibitions",
+      "subProgramType": null,
+      "activityCategory": "D. Community and Social Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "18": {
+      "programType": "Field Trips and Industry Visits",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "19": {
+      "programType": "Sports and Cultural Events",
+      "subProgramType": null,
+      "activityCategory": "E. Recreational and Team-Building Activities",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "20": {
+      "programType": "MOOCs and Online Courses",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Variable",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "21": {
+      "programType": "Reading Clubs",
+      "subProgramType": null,
+      "activityCategory": "F. Continuous Learning Initiatives",
+      "budgetMode": "Fixed",
+      "count": 0,
+      "totalBudget": 0,
+      "remarks": ""
+    },
+    "timestamp": "2025-07-13T01:26:03.381Z"
   }
 ]

@@ -1,160 +1,323 @@
 import React, { useEffect, useState } from 'react';
-import programsData from '../data/programs.json';
-import deptMap from '../data/departmentMapping.json';
+import './StudentProgramPlanner.css';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
-const StudentProgramPlanner = () => {
-  const [email, setEmail] = useState('hod.cse@college.edu'); // You can later make this dynamic
-  const [academicYear, setAcademicYear] = useState('2024–2025');
+function StudentProgramPlanner() {
+  const [programs, setPrograms] = useState([]);
   const [formData, setFormData] = useState({});
-  const [visiblePrograms, setVisiblePrograms] = useState([]);
+  const [submissionStatus, setSubmissionStatus] = useState(null);
+  const [showDownloads, setShowDownloads] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log("✅ StudentProgramPlanner loaded");
-    const dept = getDeptFromEmail(email);
-    const allowed = deptMap[dept] || [];
+    fetch('/api/programs')
+      .then((res) => res.json())
+      .then((data) => {
+        const normalized = data.map((item) => ({
+          activityCategory: item['Activity Category'],
+          programType: item['Program Type'],
+          subProgramType: item['Sub-Program Type'],
+          departments: item['Departments'],
+          budgetMode: item['Budget Mode'],
+          budgetPerEvent: item['Budget Per Event ₹'] || 0,
+        }));
+        setPrograms(normalized);
 
-    const filtered = programsData.filter(p => allowed.includes(p.programType));
-    setVisiblePrograms(filtered);
-  }, [email]);
+        // Prefill all entries with count = 0
+        const initialData = {};
+        normalized.forEach(item => {
+          const key = item.programType + (item.subProgramType || '');
+          initialData[key] = { count: 0, totalBudget: 0, remarks: '' };
+        });
+        setFormData(initialData);
+      });
+  }, []);
 
-  const getDeptFromEmail = (email) => {
-    const parts = email.split('@')[0].split('.');
-    return parts.length > 1 ? parts[1].toUpperCase() : 'CSE';
-  };
-
-  const handleChange = (programType, field, value) => {
+  const handleChange = (key, field, value) => {
     setFormData(prev => ({
       ...prev,
-      [programType]: {
-        ...prev[programType],
-        [field]: field === 'count' ? Math.max(0, parseInt(value || 0)) : value.slice(0, 100)
+      [key]: {
+        ...prev[key],
+        [field]: field === 'remarks' ? value : Number(value)
       }
     }));
   };
 
-  const calculateTotals = () => {
-    const categoryTotals = {};
-    let grandTotal = 0;
-
-    visiblePrograms.forEach(p => {
-      const count = formData[p.programType]?.count || 0;
-      const subtotal = count * p.budget;
-      if (!categoryTotals[p.category]) categoryTotals[p.category] = 0;
-      categoryTotals[p.category] += subtotal;
-      grandTotal += subtotal;
-    });
-
-    return { categoryTotals, grandTotal };
-  };
-
-  const { categoryTotals, grandTotal } = calculateTotals();
-
-  const handleSubmit = async () => {
-    const submission = visiblePrograms.map(p => ({
-      email,
-      academicYear,
-      category: p.category,
-      programType: p.programType,
-      budget: p.budget,
-      count: formData[p.programType]?.count || 0,
-      total: (formData[p.programType]?.count || 0) * p.budget,
-      remarks: formData[p.programType]?.remarks || ''
-    }));
-
-    try {
-      const res = await fetch('http://localhost:5000/api/program-counts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submission)
-      });
-
-      if (res.ok) {
-        alert('Submitted successfully!');
-      } else {
-        alert('Submission failed.');
-      }
-    } catch (error) {
-      alert('Error: Could not submit data.');
+  const calculateTotal = (key, item) => {
+    const entry = formData[key] || {};
+    if (item.budgetMode === 'Fixed') {
+      return (entry.count || 0) * (item.budgetPerEvent || 0);
+    } else {
+      return entry.totalBudget || 0;
     }
   };
 
-  const grouped = visiblePrograms.reduce((acc, p) => {
-    if (!acc[p.category]) acc[p.category] = [];
-    acc[p.category].push(p);
+  const handleSubmit = async () => {
+    setLoading(true);
+    const submissionArray = programs.map((item) => {
+      const key = item.programType + (item.subProgramType || '');
+      const entry = formData[key] || {};
+      return {
+        programType: item.programType,
+        subProgramType: item.subProgramType,
+        activityCategory: item.activityCategory,
+        budgetMode: item.budgetMode,
+        count: entry.count || 0,
+        totalBudget: calculateTotal(key, item),
+        remarks: entry.remarks || '',
+      };
+    });
+
+    try {
+      const res = await fetch('/api/program-counts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionArray),
+      });
+
+      if (res.ok) {
+        setSubmissionStatus('success');
+        setShowDownloads(true);
+      } else {
+        throw new Error();
+      }
+    } catch {
+      setSubmissionStatus('error');
+    }
+    setLoading(false);
+  };
+
+  const grouped = programs.reduce((acc, item) => {
+    if (!acc[item.activityCategory]) acc[item.activityCategory] = [];
+    acc[item.activityCategory].push(item);
     return acc;
   }, {});
 
+  const renderTableRows = () => {
+    const rows = [];
+    Object.entries(grouped).forEach(([category, items]) => {
+      let firstRow = true;
+      let categoryTotal = 0;
+      let categoryCount = 0;
+
+      items.forEach(item => {
+        const key = item.programType + (item.subProgramType || '');
+        const entry = formData[key] || {};
+        const count = entry.count || 0;
+        const total = calculateTotal(key, item);
+
+        categoryTotal += total;
+        categoryCount += count;
+
+        const isSub = item.subProgramType !== null;
+
+        rows.push(
+          <tr key={key}>
+            {firstRow && (
+              <td rowSpan={items.length} className="category-cell">
+                {category}
+              </td>
+            )}
+            <td className={isSub ? 'sub-program' : ''}>
+              {isSub ? item.subProgramType : item.programType}
+            </td>
+            <td className="center">
+              <input
+                type="number"
+                min="0"
+                value={entry.count ?? 0}
+                onChange={(e) => handleChange(key, 'count', e.target.value)}
+              />
+            </td>
+            <td className="right">
+              {item.budgetMode === 'Variable' ? (
+                <input
+                  type="number"
+                  min="0"
+                  value={entry.totalBudget ?? 0}
+                  onChange={(e) => handleChange(key, 'totalBudget', e.target.value)}
+                />
+              ) : (
+                item.budgetPerEvent.toLocaleString()
+              )}
+            </td>
+            <td className="right">{total.toLocaleString()}</td>
+            <td>
+              <input
+                type="text"
+                value={entry.remarks || ''}
+                onChange={(e) => handleChange(key, 'remarks', e.target.value)}
+              />
+            </td>
+          </tr>
+        );
+        firstRow = false;
+      });
+
+      rows.push(
+        <tr key={category + '-total'} className="bold highlight">
+          <td colSpan={2} align="right">Total for {category}</td>
+          <td className="center">{categoryCount}</td>
+          <td></td>
+          <td className="right">{categoryTotal.toLocaleString()}</td>
+          <td></td>
+        </tr>
+      );
+    });
+
+    const grandCount = Object.keys(formData).reduce((sum, key) => sum + (formData[key]?.count || 0), 0);
+    const grandTotal = Object.keys(formData).reduce((sum, key) => {
+      const item = programs.find(p => p.programType + (p.subProgramType || '') === key);
+      return sum + (item ? calculateTotal(key, item) : 0);
+    }, 0);
+
+    rows.push(
+      <tr key="grand-total" className="bold highlight">
+        <td colSpan={2} align="right">Grand Total</td>
+        <td className="center">{grandCount}</td>
+        <td></td>
+        <td className="right">{grandTotal.toLocaleString()}</td>
+        <td></td>
+      </tr>
+    );
+
+    return rows;
+  };
+
+  const downloadExcel = () => {
+    const headers = ["Activity Category", "Program Type", "Count", "Budget Per Event", "Total Budget", "Remarks"];
+    const data = [];
+
+    Object.entries(grouped).forEach(([category, items]) => {
+      let categoryCount = 0;
+      let categoryTotal = 0;
+      items.forEach(item => {
+        const key = item.programType + (item.subProgramType || '');
+        const entry = formData[key] || {};
+        const count = entry.count || 0;
+        const total = calculateTotal(key, item);
+        categoryCount += count;
+        categoryTotal += total;
+
+        data.push([
+          category,
+          item.subProgramType || item.programType,
+          count,
+          item.budgetMode === 'Variable' ? '' : item.budgetPerEvent,
+          total,
+          entry.remarks || ''
+        ]);
+      });
+      data.push([`Total for ${category}`, "", categoryCount, "", categoryTotal, ""]);
+    });
+
+    const grandCount = Object.values(formData).reduce((sum, entry) => sum + (entry.count || 0), 0);
+    const grandTotal = Object.keys(formData).reduce((sum, key) => {
+      const item = programs.find(p => p.programType + (p.subProgramType || '') === key);
+      return sum + (item ? calculateTotal(key, item) : 0);
+    }, 0);
+
+    data.push(["Grand Total", "", grandCount, "", grandTotal, ""]);
+
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, worksheet, 'Student Programs');
+    XLSX.writeFile(wb, 'Student_Program_Planner.xlsx');
+  };
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    const tableData = [];
+
+    Object.entries(grouped).forEach(([category, items]) => {
+      let categoryCount = 0;
+      let categoryTotal = 0;
+
+      items.forEach(item => {
+        const key = item.programType + (item.subProgramType || '');
+        const entry = formData[key] || {};
+        const count = entry.count || 0;
+        const total = calculateTotal(key, item);
+        categoryCount += count;
+        categoryTotal += total;
+
+        tableData.push([
+          category,
+          item.subProgramType || item.programType,
+          count,
+          item.budgetMode === 'Variable' ? '' : item.budgetPerEvent,
+          total,
+          entry.remarks || ''
+        ]);
+      });
+
+      tableData.push([`Total for ${category}`, "", categoryCount, "", categoryTotal, ""]);
+    });
+
+    const grandCount = Object.values(formData).reduce((sum, entry) => sum + (entry.count || 0), 0);
+    const grandTotal = Object.keys(formData).reduce((sum, key) => {
+      const item = programs.find(p => p.programType + (p.subProgramType || '') === key);
+      return sum + (item ? calculateTotal(key, item) : 0);
+    }, 0);
+    tableData.push(["Grand Total", "", grandCount, "", grandTotal, ""]);
+
+    doc.text('Student Program Planner', 14, 15);
+    doc.autoTable({
+      head: [["Category", "Program Type", "Count", "Budget Per Event", "Total Budget", "Remarks"]],
+      body: tableData,
+      startY: 20
+    });
+
+    doc.save('Student_Program_Planner.pdf');
+  };
+
   return (
-    <div style={{ padding: 20 }}>
-      <div>
-        <label><strong>Email:</strong></label>
-        <input value={email} disabled style={{ marginLeft: 10, width: '300px' }} />
-      </div>
-      <div style={{ marginTop: 10 }}>
-        <label><strong>Academic Year:</strong></label>
-        <input value={academicYear} disabled style={{ marginLeft: 10, width: '150px' }} />
-      </div>
+    <div className="planner">
+      <h2>🎓 Student Program Planner</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Activity Category</th>
+            <th>Program Type</th>
+            <th className="center">Count</th>
+            <th>Budget Per Event ₹</th>
+            <th>Total Budget ₹</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>{renderTableRows()}</tbody>
+      </table>
 
-      {Object.keys(grouped).map(category => (
-        <div key={category} style={{ marginTop: 30 }}>
-          <h3>{category}</h3>
-          <table border="1" cellPadding="8" cellSpacing="0" width="100%">
-            <thead>
-              <tr>
-                <th>Program Type</th>
-                <th>Budget/Event (₹)</th>
-                <th>Count</th>
-                <th>Total Amount (₹)</th>
-                <th>Remarks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {grouped[category].map(p => {
-                const count = formData[p.programType]?.count || 0;
-                const remarks = formData[p.programType]?.remarks || '';
-                return (
-                  <tr key={p.programType}>
-                    <td>{p.programType}</td>
-                    <td>{p.budget}</td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        value={count}
-                        onChange={e => handleChange(p.programType, 'count', e.target.value)}
-                        style={{ width: 60 }}
-                      />
-                    </td>
-                    <td>{count * p.budget}</td>
-                    <td>
-                      <input
-                        type="text"
-                        value={remarks}
-                        maxLength="100"
-                        onChange={e => handleChange(p.programType, 'remarks', e.target.value)}
-                        style={{ width: '100%' }}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-              <tr>
-                <td colSpan="3"><strong>Subtotal</strong></td>
-                <td colSpan="2"><strong>₹{categoryTotals[category]}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      ))}
-
-      <div style={{ marginTop: 20, textAlign: 'right' }}>
-        <h3>Grand Total: ₹{grandTotal}</h3>
-        <button onClick={handleSubmit} style={{ padding: '10px 20px', fontSize: '16px' }}>
-          Submit
+      <div className="submit-button-container">
+        <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
+          {loading ? 'Submitting...' : 'Submit'}
         </button>
       </div>
+
+      {submissionStatus === 'success' && (
+        <div className="modal success-modal">
+          ✅ Submission Successful!
+          <button className="close-btn" onClick={() => setSubmissionStatus(null)}>Close</button>
+        </div>
+      )}
+
+      {submissionStatus === 'error' && (
+        <div className="modal error-modal">
+          ❌ Submission Failed. Try Again.
+          <button className="close-btn" onClick={() => setSubmissionStatus(null)}>Close</button>
+        </div>
+      )}
+
+      {showDownloads && (
+        <div className="download-buttons">
+          <button onClick={downloadExcel}>⬇️ Download Excel</button>
+          <button onClick={downloadPDF}>⬇️ Download PDF</button>
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default StudentProgramPlanner;

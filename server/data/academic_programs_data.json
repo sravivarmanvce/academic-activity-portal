@@ -1,0 +1,178 @@
+[
+  {
+    "Program Type":"Workshops (2 Sessions - Full Day)",
+    "Sub-Program Type":null,
+    "Activity Category":"A. Academic and Skill Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"Workshops (3 Sessions - One and Half Day)",
+    "Sub-Program Type":null,
+    "Activity Category":"A. Academic and Skill Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":7500.0
+  },
+  {
+    "Program Type":"Workshops (4 Sessions - Two Days)",
+    "Sub-Program Type":null,
+    "Activity Category":"A. Academic and Skill Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":10000.0
+  },
+  {
+    "Program Type":"Seminars",
+    "Sub-Program Type":null,
+    "Activity Category":"A. Academic and Skill Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":3000.0
+  },
+  {
+    "Program Type":"Guest Lectures",
+    "Sub-Program Type":null,
+    "Activity Category":"A. Academic and Skill Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"Hackathons",
+    "Sub-Program Type":null,
+    "Activity Category":"A. Academic and Skill Development Activities",
+    "Departments":"CSE, INF, CSM, CSD",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":20000.0
+  },
+  {
+    "Program Type":"Coding Competitions \/Technical Competitions",
+    "Sub-Program Type":null,
+    "Activity Category":"A. Academic and Skill Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":10000.0
+  },
+  {
+    "Program Type":"Project Showcases",
+    "Sub-Program Type":null,
+    "Activity Category":"A. Academic and Skill Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":20000.0
+  },
+  {
+    "Program Type":"Technical Clubs",
+    "Sub-Program Type":null,
+    "Activity Category":"B. Extracurricular and Co-curricular Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":10000.0
+  },
+  {
+    "Program Type":"Student Chapters of Professional Societies",
+    "Sub-Program Type":null,
+    "Activity Category":"B. Extracurricular and Co-curricular Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"Competitions and Challenges",
+    "Sub-Program Type":null,
+    "Activity Category":"B. Extracurricular and Co-curricular Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"Internships and Industry Projects",
+    "Sub-Program Type":null,
+    "Activity Category":"B. Extracurricular and Co-curricular Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Variable",
+    "Budget Per Event \u20b9":null
+  },
+  {
+    "Program Type":"Soft Skills Workshops",
+    "Sub-Program Type":null,
+    "Activity Category":"C. Professional Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"Resume Building and Interview Preparation",
+    "Sub-Program Type":null,
+    "Activity Category":"C. Professional Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"Career Counselling and Mentorship Programs",
+    "Sub-Program Type":null,
+    "Activity Category":"C. Professional Development Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"Tech Fests and Exhibitions",
+    "Sub-Program Type":null,
+    "Activity Category":"D. Community and Social Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":20000.0
+  },
+  {
+    "Program Type":"Community Outreach Programs",
+    "Sub-Program Type":null,
+    "Activity Category":"D. Community and Social Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":15000.0
+  },
+  {
+    "Program Type":"Collaborative Projects\/Exhibitions",
+    "Sub-Program Type":null,
+    "Activity Category":"D. Community and Social Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":10000.0
+  },
+  {
+    "Program Type":"Field Trips and Industry Visits",
+    "Sub-Program Type":null,
+    "Activity Category":"E. Recreational and Team-Building Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"Sports and Cultural Events",
+    "Sub-Program Type":null,
+    "Activity Category":"E. Recreational and Team-Building Activities",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  },
+  {
+    "Program Type":"MOOCs and Online Courses",
+    "Sub-Program Type":null,
+    "Activity Category":"F. Continuous Learning Initiatives",
+    "Departments":"ALL",
+    "Budget Mode":"Variable",
+    "Budget Per Event \u20b9":null
+  },
+  {
+    "Program Type":"Reading Clubs",
+    "Sub-Program Type":null,
+    "Activity Category":"F. Continuous Learning Initiatives",
+    "Departments":"ALL",
+    "Budget Mode":"Fixed",
+    "Budget Per Event \u20b9":5000.0
+  }
+]
