@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import * as XLSX from 'xlsx';
 import './StudentProgramPlanner.css';
 
 function StudentProgramPlanner() {
@@ -52,6 +53,12 @@ function StudentProgramPlanner() {
       return entry.totalBudget || 0;
     }
   };
+
+  const grouped = programs.reduce((acc, item) => {
+    if (!acc[item.activityCategory]) acc[item.activityCategory] = [];
+    acc[item.activityCategory].push(item);
+    return acc;
+  }, {});
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -110,11 +117,42 @@ function StudentProgramPlanner() {
     }
   };
 
-  const grouped = programs.reduce((acc, item) => {
-    if (!acc[item.activityCategory]) acc[item.activityCategory] = [];
-    acc[item.activityCategory].push(item);
-    return acc;
-  }, {});
+  const downloadExcel = () => {
+    const wb = XLSX.utils.book_new();
+    const wsData = [['Activity Category', 'Program Type', 'Count', 'Budget Per Event ₹', 'Total Budget ₹']];
+    let grandTotal = 0;
+    let grandCount = 0;
+
+    Object.entries(grouped).forEach(([category, items]) => {
+      let catCount = 0;
+      let catTotal = 0;
+      items.forEach((item) => {
+        const key = item.programType + (item.subProgramType || '');
+        const entry = formData[key] || { count: 0 };
+        const total = calculateTotal(key, item);
+        wsData.push([
+          category,
+          item.subProgramType ? `${item.programType} → ${item.subProgramType}` : item.programType,
+          entry.count || 0,
+          item.budgetMode === 'Fixed' ? item.budgetPerEvent : '',
+          total
+        ]);
+        catCount += entry.count || 0;
+        catTotal += total;
+        grandCount += entry.count || 0;
+        grandTotal += total;
+      });
+
+      wsData.push([`Total for ${category}`, '', catCount, '', catTotal]);
+    });
+
+    wsData.push(['Grand Total', '', grandCount, '', grandTotal]);
+    wsData.push(['Remarks:', remarks]);
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, 'Student Program Plan');
+    XLSX.writeFile(wb, 'StudentProgramPlannerExport.xlsx');
+  };
 
   const renderTableRows = () => {
     const rows = [];
@@ -141,9 +179,7 @@ function StudentProgramPlanner() {
         rows.push(
           <tr key={key}>
             {firstRow ? (
-              <td rowSpan={items.length} className="category-cell">
-                {category}
-              </td>
+              <td rowSpan={items.length} className="category-cell">{category}</td>
             ) : null}
             <td className={isSub ? 'sub-program' : ''}>
               {isSub ? item.subProgramType : item.programType}
@@ -162,13 +198,9 @@ function StudentProgramPlanner() {
                   type="number"
                   min="0"
                   value={entry.totalBudget || ''}
-                  onChange={(e) =>
-                    handleChange(key, 'totalBudget', e.target.value)
-                  }
+                  onChange={(e) => handleChange(key, 'totalBudget', e.target.value)}
                 />
-              ) : (
-                item.budgetPerEvent.toLocaleString()
-              )}
+              ) : item.budgetPerEvent.toLocaleString()}
             </td>
             <td className="right">{total.toLocaleString()}</td>
           </tr>
@@ -215,15 +247,18 @@ function StudentProgramPlanner() {
         <tbody>{renderTableRows()}</tbody>
       </table>
 
-      <div className="remarks-container">
-        <label htmlFor="remarks">Remarks:</label>
-        <textarea
-          id="remarks"
-          value={remarks}
-          onChange={(e) => setRemarks(e.target.value)}
-          rows={3}
-        />
-      </div>
+		<div className="remarks-container">
+		  <label htmlFor="remarks">Remarks:</label>
+		  <textarea
+			id="remarks"
+			value={remarks}
+			onChange={(e) => setRemarks(e.target.value)}
+			rows={3}
+			className="editable-remarks"
+		  />
+		  <div className="print-remarks">{remarks}</div>
+		</div>
+
 
       <div className="submit-button-container">
         <button
@@ -252,6 +287,9 @@ function StudentProgramPlanner() {
         <div className="submit-button-container">
           <button className="submit-btn" onClick={() => window.print()}>
             🖨️ Print / Save as PDF
+          </button>
+          <button className="submit-btn" onClick={downloadExcel}>
+            📥 Download Excel
           </button>
         </div>
       )}

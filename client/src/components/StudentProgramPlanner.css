@@ -161,3 +161,24 @@ button:disabled {
     width: 100%;
   }
 }
+
+/* Hide printable remarks in normal view */
+.print-remarks {
+  display: none;
+  white-space: pre-wrap;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* Print styles override */
+@media print {
+  .submit-button-container,
+  .modal-overlay,
+  .editable-remarks {
+    display: none !important;
+  }
+
+  .print-remarks {
+    display: block !important;
+  }
+}
