@@ -7,6 +7,15 @@
 
 h2 {
   text-align: center;
+  margin-bottom: 10px;
+}
+
+.filters {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 15px;
+  font-size: 16px;
 }
 
 table {
@@ -59,17 +68,16 @@ td.center input[type="number"] {
 }
 
 input[type="number"],
-input[type="text"],
 textarea {
   width: 100%;
   padding: 4px;
   box-sizing: border-box;
   font-family: inherit;
+  font-size: 14px;
 }
 
 textarea {
   resize: vertical;
-  font-size: 14px;
 }
 
 .remarks-container {
@@ -91,6 +99,7 @@ button.submit-btn {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
+  margin: 5px;
 }
 
 button:disabled {
@@ -138,7 +147,8 @@ button:disabled {
 @media print {
   .submit-button-container,
   .modal-overlay,
-  .remarks-container textarea {
+  .remarks-container textarea,
+  select {
     display: none !important;
   }
 
@@ -159,26 +169,5 @@ button:disabled {
     left: 0;
     top: 0;
     width: 100%;
-  }
-}
-
-/* Hide printable remarks in normal view */
-.print-remarks {
-  display: none;
-  white-space: pre-wrap;
-  font-size: 14px;
-  margin-top: 8px;
-}
-
-/* Print styles override */
-@media print {
-  .submit-button-container,
-  .modal-overlay,
-  .editable-remarks {
-    display: none !important;
-  }
-
-  .print-remarks {
-    display: block !important;
   }
 }
