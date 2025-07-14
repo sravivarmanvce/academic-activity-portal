@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey
-from sqlalchemy.orm import relationship
-from .database import Base
+# app/models.py
+
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, Float
+from app.database import Base
 
 class Department(Base):
     __tablename__ = "departments"
@@ -18,14 +19,23 @@ class ProgramCount(Base):
     __tablename__ = "program_counts"
 
     id = Column(Integer, primary_key=True, index=True)
-
-
-    academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
     department_id = Column(Integer, ForeignKey("departments.id"))
-    activity_category = Column(String)
+    academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
     program_type = Column(String)
     sub_program_type = Column(String, nullable=True)
+    activity_category = Column(String)
     budget_mode = Column(String)
     count = Column(Integer, default=0)
     total_budget = Column(Integer, default=0)
     remarks = Column(String, nullable=True)
+
+class ProgramType(Base):
+    __tablename__ = "program_types"
+
+    id = Column(Integer, primary_key=True, index=True)
+    program_type = Column(String, nullable=False)
+    sub_program_type = Column(String, nullable=True)
+    activity_category = Column(String, nullable=False)
+    departments = Column(String, nullable=False)  # e.g., "ALL" or "CSE,EEE"
+    budget_mode = Column(String, nullable=False)  # "Fixed" or "Variable"
+    budget_per_event = Column(Float, nullable=True)  # Can be null if variable

@@ -1,12 +1,13 @@
+# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import departments, academic_years, program_counts
+from app.api.endpoints import departments, academic_years, program_counts, program_types
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # set your frontend origin in prod
+    allow_origins=["*"],  # Update with frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -15,3 +16,4 @@ app.add_middleware(
 app.include_router(departments.router)
 app.include_router(academic_years.router)
 app.include_router(program_counts.router)
+app.include_router(program_types.router)  # ✅ Add this line
