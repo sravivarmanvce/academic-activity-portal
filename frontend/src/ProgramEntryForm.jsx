@@ -16,32 +16,35 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
 
     const fetchData = async () => {
       try {
-        // Fetch department name from ID
         const deptRes = await axios.get("http://127.0.0.1:8000/departments");
         const dept = deptRes.data.find((d) => d.id === departmentId);
         const deptName = dept?.name || "";
         setDepartmentName(deptName);
 
-        // Fetch program types and counts
-        const [typesRes, countsRes] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/program-types"),
-          axios.get(
-            `http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`
-          ),
-        ]);
-
-        // Filter program types based on department
-        const filteredProgramTypes = typesRes.data.filter((p) => {
+        const typesRes = await axios.get("http://127.0.0.1:8000/program-types");
+        const programTypes = typesRes.data.filter((p) => {
           const allowed = p.departments
             .split(",")
             .map((d) => d.trim().toLowerCase());
           return allowed.includes("all") || allowed.includes(deptName.toLowerCase());
         });
 
-        const programCounts = countsRes.data;
+        let programCounts = [];
+        try {
+          const countsRes = await axios.get(
+            `http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`
+          );
+          programCounts = countsRes.data;
+        } catch (err) {
+          if (err.response?.status === 404) {
+            // No data submitted yet — fallback to empty
+            programCounts = [];
+          } else {
+            throw err;
+          }
+        }
 
-        // Merge with saved data
-        const merged = filteredProgramTypes.map((type) => {
+        const merged = programTypes.map((type) => {
           const match = programCounts.find(
             (c) =>
               c.program_type === type.program_type &&
@@ -56,11 +59,10 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
           };
         });
 
-        setProgramTypes(filteredProgramTypes);
+        setProgramTypes(programTypes);
         setProgramCounts(programCounts);
         setMergedData(merged);
 
-        // Group by category
         const grouped = {};
         merged.forEach((item) => {
           if (!grouped[item.activity_category]) {
