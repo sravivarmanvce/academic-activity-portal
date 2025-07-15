@@ -1,6 +1,7 @@
 # app/crud.py
 from sqlalchemy.orm import Session
 from app.models import ProgramType
+from app.models import AcademicYear
 from app.schemas import ProgramTypeCreate
 from typing import Optional
 
@@ -35,3 +36,6 @@ def delete_program_type(db: Session, id: int):
         db.delete(entry)
         db.commit()
     return entry
+
+def get_academic_years(db: Session):
+    return db.query(AcademicYear).order_by(AcademicYear.year.desc()).all()

@@ -1,9 +1,10 @@
 // src/App.js
 import React, { useState, useEffect } from "react";
+import ProgramEntryForm from "./ProgramEntryForm";
 
 function App() {
-  const userRole = "principal"; // or "hod"
-  const userDepartmentId = 2;
+  const userRole = "hod"; // Change to "principal" or "hod"
+  const userDepartmentId = 2; // EEE
 
   const [departments, setDepartments] = useState([]);
   const [departmentId, setDepartmentId] = useState(userRole === "hod" ? userDepartmentId : null);
@@ -32,6 +33,13 @@ function App() {
 
   return (
     <div className="container mt-4">
+      {userRole === "hod" && (
+        <>
+          <ProgramEntryForm />
+          <hr />
+        </>
+      )}
+
       <h3>Submitted Program Counts</h3>
 
       {userRole === "principal" && (
@@ -63,24 +71,26 @@ function App() {
           </tr>
         </thead>
         <tbody>
-              {entries.length > 0 ? (
-                entries.map((entry) => (
-                  <tr key={entry.id}>
-                    <td>{entry.program_type}</td>
-                    <td>{entry.sub_program_type}</td>
-                    <td>{entry.activity_category}</td>
-                    <td>{entry.budget_mode}</td>
-                    <td>{entry.count}</td>
-                    <td>{entry.total_budget}</td>
-                    <td>{entry.remarks}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="text-center">No program counts available for this department.</td>
-                </tr>
-              )}
-            </tbody>
+          {entries.length > 0 ? (
+            entries.map((entry) => (
+              <tr key={entry.id}>
+                <td>{entry.program_type}</td>
+                <td>{entry.sub_program_type}</td>
+                <td>{entry.activity_category}</td>
+                <td>{entry.budget_mode}</td>
+                <td>{entry.count}</td>
+                <td>{entry.total_budget}</td>
+                <td>{entry.remarks}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7" className="text-center">
+                No program counts available for this department.
+              </td>
+            </tr>
+          )}
+        </tbody>
       </table>
     </div>
   );
