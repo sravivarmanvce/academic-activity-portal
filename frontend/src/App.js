@@ -1,97 +1,120 @@
 // src/App.js
 import React, { useState, useEffect } from "react";
+import Login from "./Login";
 import ProgramEntryForm from "./ProgramEntryForm";
 
 function App() {
-  const userRole = "hod"; // Change to "principal" or "hod"
-  const userDepartmentId = 2; // EEE
-
+  const [user, setUser] = useState(null);
   const [departments, setDepartments] = useState([]);
-  const [departmentId, setDepartmentId] = useState(userRole === "hod" ? userDepartmentId : null);
   const [academicYearId, setAcademicYearId] = useState(2);
   const [entries, setEntries] = useState([]);
 
-  // Fetch departments (for principal)
   useEffect(() => {
-    if (userRole === "principal") {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+  };
+
+  const fetchProgramCounts = (departmentId) => {
+    fetch(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
+      .then((res) => res.json())
+      .then((data) => setEntries(data))
+      .catch((err) => console.error("Error fetching program counts", err));
+  };
+
+  useEffect(() => {
+    if (user?.role === "principal") {
       fetch("http://127.0.0.1:8000/departments")
         .then((res) => res.json())
         .then((data) => setDepartments(data))
         .catch((err) => console.error("Failed to load departments", err));
+    } else if (user?.role === "hod" && user?.departmentId) {
+      fetchProgramCounts(user.departmentId);
     }
-  }, [userRole]);
+  }, [user, academicYearId]);
 
-  // Fetch program counts
-  useEffect(() => {
-    if (academicYearId && departmentId !== null) {
-      fetch(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-        .then((res) => res.json())
-        .then((data) => setEntries(data))
-        .catch((err) => console.error("Error fetching program counts", err));
-    }
-  }, [departmentId, academicYearId]);
+  if (!user) return <Login onLogin={setUser} />;
 
   return (
     <div className="container mt-4">
-      {userRole === "hod" && (
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h3>Welcome, {user.role.toUpperCase()}</h3>
+        <button className="btn btn-secondary" onClick={handleLogout}>Logout</button>
+      </div>
+
+      {user.role === "hod" && (
         <>
-          <ProgramEntryForm />
+          <ProgramEntryForm
+            departmentId={user.departmentId}
+            academicYearId={academicYearId}
+          />
           <hr />
         </>
       )}
 
-      <h3>Submitted Program Counts</h3>
+      {user.role === "principal" && (
+        <>
+          <div className="mb-3">
+            <label>Select Department:</label>
+            <select
+              className="form-select"
+              value={user.departmentId || ""}
+              onChange={(e) => {
+                const deptId = Number(e.target.value);
+                setUser({ ...user, departmentId: deptId });
+                fetchProgramCounts(deptId);
+              }}
+            >
+              <option value="">-- Select Department --</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>{dept.name}</option>
+              ))}
+            </select>
+          </div>
 
-      {userRole === "principal" && (
-        <div className="mb-3">
-          <label>Select Department:</label>
-          <select
-            className="form-select"
-            value={departmentId || ""}
-            onChange={(e) => setDepartmentId(Number(e.target.value))}
-          >
-            <option value="">-- Select Department --</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>{dept.name}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      <table className="table table-bordered mt-3">
-        <thead className="table-dark">
-          <tr>
-            <th>Program Type</th>
-            <th>Sub Type</th>
-            <th>Category</th>
-            <th>Budget Mode</th>
-            <th>Count</th>
-            <th>Total Budget</th>
-            <th>Remarks</th>
-          </tr>
-        </thead>
-        <tbody>
-          {entries.length > 0 ? (
-            entries.map((entry) => (
-              <tr key={entry.id}>
-                <td>{entry.program_type}</td>
-                <td>{entry.sub_program_type}</td>
-                <td>{entry.activity_category}</td>
-                <td>{entry.budget_mode}</td>
-                <td>{entry.count}</td>
-                <td>{entry.total_budget}</td>
-                <td>{entry.remarks}</td>
+          <h4>Submitted Program Counts</h4>
+          <table className="table table-bordered mt-3">
+            <thead className="table-dark">
+              <tr>
+                <th>Program Type</th>
+                <th>Sub Type</th>
+                <th>Category</th>
+                <th>Budget Mode</th>
+                <th>Count</th>
+                <th>Total Budget</th>
+                <th>Remarks</th>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" className="text-center">
-                No program counts available for this department.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {entries.length > 0 ? (
+                entries.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>{entry.program_type}</td>
+                    <td>{entry.sub_program_type}</td>
+                    <td>{entry.activity_category}</td>
+                    <td>{entry.budget_mode}</td>
+                    <td>{entry.count}</td>
+                    <td>{entry.total_budget}</td>
+                    <td>{entry.remarks}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="text-center">
+                    No program counts available for this department.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </>
+      )}
     </div>
   );
 }

@@ -39,3 +39,4 @@ class ProgramType(Base):
     departments = Column(String, nullable=False)  # e.g., "ALL" or "CSE,EEE"
     budget_mode = Column(String, nullable=False)  # "Fixed" or "Variable"
     budget_per_event = Column(Float, nullable=True)  # Can be null if variable
+

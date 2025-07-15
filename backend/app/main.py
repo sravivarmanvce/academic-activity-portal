@@ -16,4 +16,4 @@ app.add_middleware(
 app.include_router(departments.router)
 app.include_router(academic_years.router)
 app.include_router(program_counts.router)
-app.include_router(program_types.router)  # ✅ Add this line
+app.include_router(program_types.router)

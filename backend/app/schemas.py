@@ -57,3 +57,4 @@ class ProgramTypeOut(ProgramTypeBase):
 
     class Config:
         from_attributes = True
+
