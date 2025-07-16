@@ -1,7 +1,9 @@
 # app/crud.py
 from sqlalchemy.orm import Session
 from app.models import ProgramType
+from app.models import ProgramCount
 from app.models import AcademicYear
+from app.schemas import ProgramCountCreate
 from app.schemas import ProgramTypeCreate
 from typing import Optional
 

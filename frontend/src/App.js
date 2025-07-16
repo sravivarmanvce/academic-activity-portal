@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState, useEffect } from "react";
 import Login from "./Login";
 import ProgramEntryForm from "./ProgramEntryForm";
@@ -23,9 +22,16 @@ function App() {
 
   const fetchProgramCounts = (departmentId) => {
     fetch(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-      .then((res) => res.json())
-      .then((data) => setEntries(data))
-      .catch((err) => console.error("Error fetching program counts", err));
+      .then((res) =>
+        res.status === 404 ? [] : res.json()
+      )
+      .then((data) => {
+        setEntries(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error("Error fetching program counts", err);
+        setEntries([]);
+      });
   };
 
   useEffect(() => {
@@ -82,9 +88,9 @@ function App() {
           <table className="table table-bordered mt-3">
             <thead className="table-dark">
               <tr>
+                <th>Activity Category</th>
                 <th>Program Type</th>
                 <th>Sub Type</th>
-                <th>Category</th>
                 <th>Budget Mode</th>
                 <th>Count</th>
                 <th>Total Budget</th>
@@ -93,17 +99,29 @@ function App() {
             </thead>
             <tbody>
               {entries.length > 0 ? (
-                entries.map((entry) => (
-                  <tr key={entry.id}>
-                    <td>{entry.program_type}</td>
-                    <td>{entry.sub_program_type}</td>
-                    <td>{entry.activity_category}</td>
-                    <td>{entry.budget_mode}</td>
-                    <td>{entry.count}</td>
-                    <td>{entry.total_budget}</td>
-                    <td>{entry.remarks}</td>
-                  </tr>
-                ))
+                Object.entries(
+                  Array.isArray(entries)
+                    ? entries.reduce((acc, curr) => {
+                        if (!acc[curr.activity_category]) acc[curr.activity_category] = [];
+                        acc[curr.activity_category].push(curr);
+                        return acc;
+                      }, {})
+                    : {}
+                ).map(([category, items]) =>
+                  items.map((item, index) => (
+                    <tr key={item.id || index}>
+                      {index === 0 && (
+                        <td rowSpan={items.length}>{category}</td>
+                      )}
+                      <td>{item.program_type}</td>
+                      <td>{item.sub_program_type || "-"}</td>
+                      <td>{item.budget_mode}</td>
+                      <td>{item.count}</td>
+                      <td>{item.total_budget}</td>
+                      <td>{item.remarks}</td>
+                    </tr>
+                  ))
+                )
               ) : (
                 <tr>
                   <td colSpan="7" className="text-center">
