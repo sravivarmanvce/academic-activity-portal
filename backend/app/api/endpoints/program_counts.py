@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+
 from app.database import get_db
 from app.models import ProgramCount
 from app.schemas import ProgramCountOut, ProgramCountBatch
@@ -19,22 +20,20 @@ def get_program_counts(
 
     if department_id is not None:
         query = query.filter(ProgramCount.department_id == department_id)
-
     if academic_year_id is not None:
         query = query.filter(ProgramCount.academic_year_id == academic_year_id)
 
     results = query.all()
-
     if not results:
         raise HTTPException(status_code=404, detail="No matching program counts found")
 
     return results
 
 @router.post("/program-counts", response_model=List[ProgramCountOut])
-def create_program_counts(batch: ProgramCountBatch, db: Session = Depends(get_db)):
+def create_or_update_program_counts(payload: ProgramCountBatch, db: Session = Depends(get_db)):
     created = []
 
-    for entry in batch.entries:
+    for entry in payload.entries:
         existing = db.query(ProgramCount).filter_by(
             department_id=entry.department_id,
             academic_year_id=entry.academic_year_id,

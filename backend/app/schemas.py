@@ -1,24 +1,60 @@
 # app/schemas.py
 
-from typing import List, Optional
+from typing import Optional, List
 from pydantic import BaseModel
-from datetime import date
 
-class DepartmentOut(BaseModel):
-    id: int
+# -------------------------------
+# Department Schemas
+# -------------------------------
+
+class DepartmentBase(BaseModel):
     name: str
-    class Config:
-        from_attributes = True
 
-class AcademicYearOut(BaseModel):
+class DepartmentOut(DepartmentBase):
     id: int
-    year: str
-    is_enabled: bool
-    deadline: Optional[date] = None
-    class Config:
-        from_attributes = True
 
-class ProgramCountCreate(BaseModel):
+    class Config:
+        orm_mode = True
+
+# -------------------------------
+# Academic Year Schemas
+# -------------------------------
+
+class AcademicYearBase(BaseModel):
+    year: str
+
+class AcademicYearOut(AcademicYearBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+# -------------------------------
+# Program Type Schemas
+# -------------------------------
+
+class ProgramTypeBase(BaseModel):
+    program_type: str
+    sub_program_type: Optional[str] = None
+    activity_category: str
+    departments: str  # comma-separated or "ALL"
+    budget_mode: str  # "Fixed" or "Variable"
+    budget_per_event: Optional[float] = None
+
+class ProgramTypeCreate(ProgramTypeBase):
+    pass
+
+class ProgramTypeOut(ProgramTypeBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+# -------------------------------
+# Program Count Schemas
+# -------------------------------
+
+class ProgramCountBase(BaseModel):
     department_id: int
     academic_year_id: int
     program_type: str
@@ -29,23 +65,32 @@ class ProgramCountCreate(BaseModel):
     total_budget: float
     remarks: Optional[str] = ""
 
-class ProgramCountOut(ProgramCountCreate):
-    id: int
-    class Config:
-        from_attributes = True
+class ProgramCountCreate(ProgramCountBase):
+    pass
 
 class ProgramCountBatch(BaseModel):
     entries: List[ProgramCountCreate]
 
-class ProgramTypeCreate(BaseModel):
-    program_type: str
-    sub_program_type: Optional[str] = None
-    activity_category: str
-    departments: str
-    budget_mode: str
-    budget_per_event: Optional[float] = None
-
-class ProgramTypeOut(ProgramTypeCreate):
+class ProgramCountOut(ProgramCountBase):
     id: int
+
     class Config:
-        from_attributes = True
+        orm_mode = True
+
+# -------------------------------
+# Principal Remarks Schemas
+# -------------------------------
+
+class PrincipalRemarkBase(BaseModel):
+    department_id: int
+    academic_year_id: int
+
+class PrincipalRemarkCreate(PrincipalRemarkBase):
+    remarks: str
+
+class PrincipalRemarkOut(PrincipalRemarkBase):
+    id: int
+    remarks: str
+
+    class Config:
+        orm_mode = True

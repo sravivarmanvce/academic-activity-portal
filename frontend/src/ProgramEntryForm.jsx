@@ -4,8 +4,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./ProgramEntryForm.css";
 
-function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
-  const [programTypes, setProgramTypes] = useState([]);
+function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [mergedData, setMergedData] = useState([]);
   const [grouped, setGrouped] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -19,9 +18,14 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
         const [typesRes, countsRes, deptRes] = await Promise.all([
           axios.get("http://127.0.0.1:8000/program-types"),
           axios
-            .get(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-            .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
-          axios.get("http://127.0.0.1:8000/departments")
+            .get(
+              `http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`
+            )
+            .catch((err) => {
+              if (err.response?.status === 404) return { data: [] };
+              throw err;
+            }),
+          axios.get("http://127.0.0.1:8000/departments"),
         ]);
 
         const department = deptRes.data.find((d) => d.id === departmentId)?.name;
@@ -43,11 +47,10 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
             count: match?.count ?? 0,
             total_budget: match?.total_budget ?? 0,
             remarks: match?.remarks ?? "",
-            id: match?.id || null
+            id: match?.id || null,
           };
         });
 
-        setProgramTypes(filteredTypes);
         setMergedData(merged);
 
         const groupedObj = {};
@@ -71,7 +74,7 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
       const updated = [...prev];
       updated[index] = {
         ...updated[index],
-        [field]: field === "count" || field === "total_budget" ? Number(value) : value
+        [field]: field === "count" || field === "total_budget" ? Number(value) : value,
       };
       return updated;
     });
@@ -80,7 +83,6 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
   const handleSubmit = async () => {
     setSubmitting(true);
     setStatus(null);
-
     try {
       const payload = mergedData.map((entry) => ({
         department_id: departmentId,
@@ -94,9 +96,10 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
           entry.budget_mode === "Fixed"
             ? (entry.count || 0) * (entry.budget_per_event || 0)
             : entry.total_budget || 0,
-        remarks: entry.remarks || ""
+        remarks: entry.remarks || "",
       }));
 
+      // ✅ FIX: Send batch inside 'entries'
       await axios.post("http://127.0.0.1:8000/program-counts", { entries: payload });
 
       setStatus("success");
@@ -108,9 +111,29 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
     }
   };
 
+  const renderInput = (index, field, value, editable, type = "number") => {
+    return editable ? (
+      <input
+        type={type}
+        min="0"
+        className="form-control"
+        value={value}
+        onChange={(e) => handleChange(index, field, e.target.value)}
+      />
+    ) : (
+      value
+    );
+  };
+
+  const grandTotal = {
+    count: 0,
+    budget: 0,
+  };
+
   return (
     <div className="container mt-4">
-      <h3>Program Entry Form (HoD)</h3>
+      <h3>Program Entry Form ({userRole.toUpperCase()})</h3>
+
       <table className="table table-bordered table-striped">
         <thead className="table-dark">
           <tr>
@@ -126,70 +149,117 @@ function ProgramEntryForm({ departmentId = 1, academicYearId = 2 }) {
         <tbody>
           {Object.entries(grouped).length === 0 ? (
             <tr>
-              <td colSpan="7" className="text-center">No program types found for your department.</td>
+              <td colSpan="7" className="text-center">
+                No program types found for your department.
+              </td>
             </tr>
           ) : (
-            Object.entries(grouped).map(([category, items]) =>
-              items.map((item, idx) => {
-                const globalIndex = mergedData.findIndex(
-                  (d) => d.program_type === item.program_type && d.sub_program_type === item.sub_program_type
-                );
-                return (
-                  <tr key={item.program_type + (item.sub_program_type || "")}>
-                    {idx === 0 && <td rowSpan={items.length}>{category}</td>}
-                    <td>{item.program_type}</td>
-                    <td>{item.sub_program_type || "-"}</td>
-                    <td>{item.budget_mode}</td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        className="form-control"
-                        value={mergedData[globalIndex].count}
-                        onChange={(e) => handleChange(globalIndex, "count", e.target.value)}
-                      />
-                    </td>
-                    <td>
-                      {item.budget_mode === "Fixed" ? (
-                        (mergedData[globalIndex].count || 0) * (item.budget_per_event || 0)
-                      ) : (
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          value={mergedData[globalIndex].total_budget}
-                          onChange={(e) => handleChange(globalIndex, "total_budget", e.target.value)}
-                        />
-                      )}
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={mergedData[globalIndex].remarks}
-                        onChange={(e) => handleChange(globalIndex, "remarks", e.target.value)}
-                      />
-                    </td>
+            Object.entries(grouped).map(([category, items]) => {
+              const subtotal = { count: 0, budget: 0 };
+              return (
+                <React.Fragment key={category}>
+                  {items.map((item, idx) => {
+                    const globalIndex = mergedData.findIndex(
+                      (d) =>
+                        d.program_type === item.program_type &&
+                        d.sub_program_type === item.sub_program_type
+                    );
+
+                    const count = mergedData[globalIndex].count || 0;
+                    const budget = item.budget_mode === "Fixed"
+                      ? count * (item.budget_per_event || 0)
+                      : mergedData[globalIndex].total_budget || 0;
+
+                    subtotal.count += count;
+                    subtotal.budget += budget;
+                    grandTotal.count += count;
+                    grandTotal.budget += budget;
+
+                    return (
+                      <tr key={item.program_type + (item.sub_program_type || "")}>
+                        {idx === 0 && (
+                          <td rowSpan={items.length}>{category}</td>
+                        )}
+                        <td>{item.program_type}</td>
+                        <td>{item.sub_program_type || "-"}</td>
+                        <td>{item.budget_mode}</td>
+                        <td>
+                          {renderInput(
+                            globalIndex,
+                            "count",
+                            mergedData[globalIndex].count,
+                            userRole === "hod"
+                          )}
+                        </td>
+                        <td>
+                          {item.budget_mode === "Fixed" ? (
+                            budget
+                          ) : (
+                            renderInput(
+                              globalIndex,
+                              "total_budget",
+                              mergedData[globalIndex].total_budget,
+                              userRole === "hod"
+                            )
+                          )}
+                        </td>
+                        <td>
+                          {renderInput(
+                            globalIndex,
+                            "remarks",
+                            mergedData[globalIndex].remarks,
+                            userRole === "hod",
+                            "text"
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  <tr className="table-info fw-bold">
+                    <td colSpan="4" className="text-end">Subtotal for {category}</td>
+                    <td>{subtotal.count}</td>
+                    <td>{subtotal.budget}</td>
+                    <td></td>
                   </tr>
-                );
-              })
-            )
+                </React.Fragment>
+              );
+            })
           )}
         </tbody>
+        {Object.entries(grouped).length > 0 && (
+          <tfoot>
+            <tr className="table-warning fw-bold">
+              <td colSpan="4" className="text-end">Grand Total</td>
+              <td>{grandTotal.count}</td>
+              <td>{grandTotal.budget}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        )}
       </table>
 
-      <div className="text-center">
-        <button
-          className="btn btn-primary"
-          onClick={handleSubmit}
-          disabled={submitting}
-        >
-          {submitting ? "Submitting..." : "Submit Program Counts"}
-        </button>
-      </div>
+      {userRole === "hod" && (
+        <div className="text-center">
+          <button
+            className="btn btn-primary"
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? "Submitting..." : "Submit Program Counts"}
+          </button>
+        </div>
+      )}
 
-      {status === "success" && <div className="alert alert-success mt-3 text-center">✅ Submission successful!</div>}
-      {status === "error" && <div className="alert alert-danger mt-3 text-center">❌ Submission failed.</div>}
+      {status === "success" && (
+        <div className="alert alert-success mt-3 text-center">
+          ✅ Submission successful!
+        </div>
+      )}
+      {status === "error" && (
+        <div className="alert alert-danger mt-3 text-center">
+          ❌ Submission failed.
+        </div>
+      )}
     </div>
   );
 }
