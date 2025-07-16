@@ -14,6 +14,17 @@ function App() {
   const [remarksStatus, setRemarksStatus] = useState(null);
 
   useEffect(() => {
+  if (remarksStatus) {
+    const timer = setTimeout(() => {
+      setRemarksStatus(null);
+    }, 3000); // disappears after 3 seconds
+
+    return () => clearTimeout(timer);
+  }
+}, [remarksStatus]);
+
+
+  useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) setUser(JSON.parse(stored));
   }, []);
@@ -170,16 +181,16 @@ function App() {
             rows={3}
           />
         </div>
+          {remarksStatus === "success" && (
+          <div className="alert alert-success mt-2">✅ Remarks saved.</div>
+          )}
+          {remarksStatus === "error" && (
+          <div className="alert alert-danger mt-2">❌ Failed to save remarks.</div>
+          )}
         <button className="btn btn-success" onClick={handleRemarksSave}>
           Save Remarks
         </button>
-
-        {remarksStatus === "success" && (
-          <div className="alert alert-success mt-2">✅ Remarks saved.</div>
-        )}
-        {remarksStatus === "error" && (
-          <div className="alert alert-danger mt-2">❌ Failed to save remarks.</div>
-        )}
+<div style={{ marginBottom: "80px" }}></div> {/* Extra space */}
       </>
     );
   };
