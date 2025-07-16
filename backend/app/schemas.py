@@ -73,6 +73,7 @@ class ProgramCountBatch(BaseModel):
 
 class ProgramCountOut(ProgramCountBase):
     id: int
+    principal_remarks: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -94,3 +95,8 @@ class PrincipalRemarkOut(PrincipalRemarkBase):
 
     class Config:
         orm_mode = True
+
+class PrincipalRemarksInput(BaseModel):
+    department_id: int
+    academic_year_id: int
+    principal_remarks: str

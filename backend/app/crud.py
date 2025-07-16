@@ -57,8 +57,8 @@ def save_or_update_remark(db: Session, data: PrincipalRemarkCreate):
         existing.remarks = data.remarks
         db.add(existing)
     else:
-        new_entry = PrincipalRemark(**data.dict())
-        db.add(new_entry)
+        existing = PrincipalRemark(**data.dict())
+        db.add(existing)
     db.commit()
-    return get_remark(db, data.department_id, data.academic_year_id)
-
+    db.refresh(existing)
+    return existing
