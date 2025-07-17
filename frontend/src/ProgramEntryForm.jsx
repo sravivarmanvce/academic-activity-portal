@@ -10,6 +10,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
   const [principalRemarks, setPrincipalRemarks] = useState("");
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationErrors, setValidationErrors] = useState([]);
+
 
   useEffect(() => {
     if (!departmentId || !academicYearId) return;
@@ -88,8 +91,27 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   };
 
   const handleSubmit = async () => {
+    // Validation check for Variable budget mode
+    const errors = mergedData
+      .filter((entry) => entry.budget_mode === "Variable")
+      .filter((entry) =>
+        (entry.count === 0 && entry.total_budget > 0) ||
+        (entry.count > 0 && entry.total_budget === 0)
+      )
+      .map((entry) => ({
+        program_type: entry.program_type,
+        sub_program_type: entry.sub_program_type,
+      }));
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setShowValidationModal(true);
+      return;
+    }
+
     setSubmitting(true);
     setStatus(null);
+
     try {
       const payload = mergedData.map((entry) => ({
         department_id: departmentId,
@@ -116,6 +138,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       setSubmitting(false);
     }
   };
+
 
   const renderInput = (index, field, value, editable, type = "number") => {
     return editable ? (
@@ -276,6 +299,36 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           <div className="form-control bg-light">{principalRemarks}</div>
           </div>
         )}
+
+    {/* Validation Modal */}
+{showValidationModal && (
+  <div className="custom-modal-backdrop">
+    <div className="custom-modal-container bg-white rounded shadow p-3">
+      <div className="modal-header bg-warning">
+        <h5 className="modal-title text-dark mb-0">Validation Error</h5>
+        <button type="button" className="btn-close" onClick={() => setShowValidationModal(false)} />
+      </div>
+      <div className="modal-body">
+        <p>The following entries have mismatch between count and total budget:</p>
+        <ul>
+          {validationErrors.map((err, idx) => (
+            <li key={idx}>
+              <strong>{err.program_type}</strong>{err.sub_program_type ? ` - ${err.sub_program_type}` : ""}
+            </li>
+          ))}
+        </ul>
+        <p>Please correct them before submitting.</p>
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-secondary" onClick={() => setShowValidationModal(false)}>
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 }
