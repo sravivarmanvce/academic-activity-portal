@@ -9,13 +9,14 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [grouped, setGrouped] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
+  const [principalRemarks, setPrincipalRemarks] = useState("");
 
   useEffect(() => {
     if (!departmentId || !academicYearId) return;
 
     const fetchData = async () => {
       try {
-        const [typesRes, countsRes, deptRes] = await Promise.all([
+        const [typesRes, countsRes, deptRes, remarksRes] = await Promise.all([
           axios.get("http://127.0.0.1:8000/program-types"),
           axios
             .get(
@@ -26,6 +27,11 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
               throw err;
             }),
           axios.get("http://127.0.0.1:8000/departments"),
+          axios
+            .get(
+              `http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`
+            )
+            .catch(() => ({ data: { remarks: "" } })),
         ]);
 
         const department = deptRes.data.find((d) => d.id === departmentId)?.name;
@@ -51,8 +57,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           };
         });
 
-        setMergedData(merged);
-
         const groupedObj = {};
         merged.forEach((item) => {
           if (!groupedObj[item.activity_category]) {
@@ -60,7 +64,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           }
           groupedObj[item.activity_category].push(item);
         });
+
+        setMergedData(merged);
         setGrouped(groupedObj);
+        setPrincipalRemarks(remarksRes.data.remarks || "");
       } catch (error) {
         console.error("Error loading program data", error);
       }
@@ -99,7 +106,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         remarks: entry.remarks || "",
       }));
 
-      // ✅ FIX: Send batch inside 'entries'
       await axios.post("http://127.0.0.1:8000/program-counts", { entries: payload });
 
       setStatus("success");
@@ -121,18 +127,15 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         onChange={(e) => handleChange(index, field, e.target.value)}
       />
     ) : (
-      value
+      <span>{value}</span>
     );
   };
 
-  const grandTotal = {
-    count: 0,
-    budget: 0,
-  };
+  const grandTotal = { count: 0, budget: 0 };
 
   return (
     <div className="container mt-4">
-      <h3>Program Entry Form ({userRole.toUpperCase()})</h3>
+      <h4>Program Entry Form ({userRole.toUpperCase()})</h4>
 
       <table className="table table-bordered table-striped">
         <thead className="table-dark">
@@ -140,7 +143,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             <th>Activity Category</th>
             <th>Program Type</th>
             <th>Sub Type</th>
-            <th>Budget Mode</th>
+            <th>Budget / Event</th>
             <th>Count</th>
             <th>Total Budget</th>
             <th>Remarks</th>
@@ -156,6 +159,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           ) : (
             Object.entries(grouped).map(([category, items]) => {
               const subtotal = { count: 0, budget: 0 };
+
               return (
                 <React.Fragment key={category}>
                   {items.map((item, idx) => {
@@ -166,9 +170,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                     );
 
                     const count = mergedData[globalIndex].count || 0;
-                    const budget = item.budget_mode === "Fixed"
-                      ? count * (item.budget_per_event || 0)
-                      : mergedData[globalIndex].total_budget || 0;
+                    const budget =
+                      item.budget_mode === "Fixed"
+                        ? count * (item.budget_per_event || 0)
+                        : mergedData[globalIndex].total_budget || 0;
 
                     subtotal.count += count;
                     subtotal.budget += budget;
@@ -182,7 +187,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                         )}
                         <td>{item.program_type}</td>
                         <td>{item.sub_program_type || "-"}</td>
-                        <td>{item.budget_mode}</td>
+                        <td>{item.budget_per_event || "-"}</td>
                         <td>
                           {renderInput(
                             globalIndex,
@@ -216,7 +221,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                     );
                   })}
                   <tr className="table-info fw-bold">
-                    <td colSpan="4" className="text-end">Subtotal for {category}</td>
+                    <td colSpan="4" className="text-end">
+                      Subtotal for {category}
+                    </td>
                     <td>{subtotal.count}</td>
                     <td>{subtotal.budget}</td>
                     <td></td>
@@ -238,13 +245,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         )}
       </table>
 
+      {/* Submit for HoD */}
       {userRole === "hod" && (
         <div className="text-center">
-          <button
-            className="btn btn-primary"
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
             {submitting ? "Submitting..." : "Submit Program Counts"}
           </button>
         </div>
@@ -260,6 +264,18 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           ❌ Submission failed.
         </div>
       )}
+
+        {userRole === "hod" && (
+        <div style={{ marginBottom: "80px" }}></div>
+        )}
+
+        {/* Principal Remarks (readonly for HoD) */}
+        {userRole === "hod" && principalRemarks && (
+          <div className="mt-4">
+          <label><strong>Principal Final Remarks:</strong></label>
+          <div className="form-control bg-light">{principalRemarks}</div>
+          </div>
+        )}
     </div>
   );
 }

@@ -14,20 +14,18 @@ function App() {
   const [remarksStatus, setRemarksStatus] = useState(null);
 
   useEffect(() => {
-  if (remarksStatus) {
-    const timer = setTimeout(() => {
-      setRemarksStatus(null);
-    }, 3000); // disappears after 3 seconds
-
-    return () => clearTimeout(timer);
-  }
-}, [remarksStatus]);
-
-
-  useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) setUser(JSON.parse(stored));
   }, []);
+
+  useEffect(() => {
+    if (remarksStatus) {
+      const timer = setTimeout(() => {
+        setRemarksStatus(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [remarksStatus]);
 
   useEffect(() => {
     if (user?.role === "principal") {
@@ -81,120 +79,6 @@ function App() {
     }
   };
 
-  const grouped = {};
-  entries.forEach((item) => {
-    if (!grouped[item.activity_category]) grouped[item.activity_category] = [];
-    grouped[item.activity_category].push(item);
-  });
-
-  const renderTable = () => {
-    let grandCount = 0,
-      grandBudget = 0;
-
-    return (
-      <>
-        <table className="table table-bordered table-striped mt-3">
-          <thead className="table-dark">
-            <tr>
-              <th>Activity Category</th>
-              <th>Program Type</th>
-              <th>Sub Type</th>
-              <th>Budget Mode</th>
-              <th>Count</th>
-              <th>Total Budget</th>
-              <th>Remarks</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(grouped).length === 0 ? (
-              <tr>
-                <td colSpan="7" className="text-center">
-                  No entries found.
-                </td>
-              </tr>
-            ) : (
-              Object.entries(grouped).map(([category, items]) => {
-                let subtotalCount = 0,
-                  subtotalBudget = 0;
-
-                return (
-                  <React.Fragment key={category}>
-                    {items.map((item, idx) => {
-                      const budget =
-                        item.budget_mode === "Fixed"
-                          ? item.count * (item.total_budget / item.count || 0)
-                          : item.total_budget;
-
-                      subtotalCount += item.count;
-                      subtotalBudget += budget;
-                      grandCount += item.count;
-                      grandBudget += budget;
-
-                      return (
-                        <tr key={item.id || item.program_type + item.sub_program_type}>
-                          {idx === 0 && (
-                            <td rowSpan={items.length}>{category}</td>
-                          )}
-                          <td>{item.program_type}</td>
-                          <td>{item.sub_program_type || "-"}</td>
-                          <td>{item.budget_mode}</td>
-                          <td>{item.count}</td>
-                          <td>{budget}</td>
-                          <td>{item.remarks}</td>
-                        </tr>
-                      );
-                    })}
-                    <tr className="table-info fw-bold">
-                      <td colSpan="3" className="text-end">
-                        Subtotal for {category}
-                      </td>
-                      <td>{subtotalCount}</td>
-                      <td>{subtotalBudget}</td>
-                      <td></td>
-                    </tr>
-                  </React.Fragment>
-                );
-              })
-            )}
-          </tbody>
-          {Object.entries(grouped).length > 0 && (
-            <tfoot>
-              <tr className="table-warning fw-bold">
-                <td colSpan="3" className="text-end">
-                  Grand Total
-                </td>
-                <td>{grandCount}</td>
-                <td>{grandBudget}</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
-
-        {/* Principal Remarks Box */}
-        <div className="mb-3">
-          <label><strong>Principal Remarks:</strong></label>
-          <textarea
-            className="form-control"
-            value={principalRemarks}
-            onChange={(e) => setPrincipalRemarks(e.target.value)}
-            rows={3}
-          />
-        </div>
-          {remarksStatus === "success" && (
-          <div className="alert alert-success mt-2">✅ Remarks saved.</div>
-          )}
-          {remarksStatus === "error" && (
-          <div className="alert alert-danger mt-2">❌ Failed to save remarks.</div>
-          )}
-        <button className="btn btn-success" onClick={handleRemarksSave}>
-          Save Remarks
-        </button>
-<div style={{ marginBottom: "80px" }}></div> {/* Extra space */}
-      </>
-    );
-  };
-
   if (!user) return <Login onLogin={setUser} />;
 
   return (
@@ -219,7 +103,7 @@ function App() {
       {user.role === "principal" && (
         <>
           <div className="mb-3">
-            <label>Select Department:</label>
+            <label><strong>Select Department:</strong></label>
             <select
               className="form-select"
               value={user.departmentId || ""}
@@ -238,7 +122,36 @@ function App() {
             </select>
           </div>
 
-          {user.departmentId && renderTable()}
+          {user.departmentId && (
+            <>
+              <ProgramEntryForm
+                departmentId={user.departmentId}
+                academicYearId={academicYearId}
+                userRole={user.role}
+              />
+
+              {/* Final remarks entry by Principal */}
+              <div className="mb-4 mt-4">
+                <label><strong>Principal Final Remarks:</strong></label>
+                <textarea
+                  className="form-control"
+                  value={principalRemarks}
+                  onChange={(e) => setPrincipalRemarks(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              {remarksStatus === "success" && (
+                <div className="alert alert-success mt-2">✅ Remarks saved.</div>
+              )}
+              {remarksStatus === "error" && (
+                <div className="alert alert-danger mt-2">❌ Failed to save remarks.</div>
+              )}
+              <button className="btn btn-success" onClick={handleRemarksSave}>
+                Save Remarks
+              </button>
+              <div style={{ marginBottom: "80px" }}></div> {/* Space at bottom */}
+            </>
+          )}
         </>
       )}
     </div>
