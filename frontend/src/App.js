@@ -6,8 +6,8 @@ import axios from "axios";
 function App() {
   const [user, setUser] = useState(null);
   const [departments, setDepartments] = useState([]);
-  const [academicYearId, setAcademicYearId] = useState(2);
-  const [entries, setEntries] = useState([]);
+  const [academicYearId] = useState(2);
+  const [setEntries] = useState([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
