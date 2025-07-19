@@ -1,5 +1,3 @@
-// src/App.js
-
 import React, { useState, useEffect } from "react";
 import Login from "./Login";
 import ProgramEntryForm from "./ProgramEntryForm";
@@ -10,22 +8,11 @@ function App() {
   const [departments, setDepartments] = useState([]);
   const [academicYearId, setAcademicYearId] = useState(2);
   const [entries, setEntries] = useState([]);
-  const [principalRemarks, setPrincipalRemarks] = useState("");
-  const [remarksStatus, setRemarksStatus] = useState(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) setUser(JSON.parse(stored));
   }, []);
-
-  useEffect(() => {
-    if (remarksStatus) {
-      const timer = setTimeout(() => {
-        setRemarksStatus(null);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [remarksStatus]);
 
   useEffect(() => {
     if (user?.role === "principal") {
@@ -46,13 +33,6 @@ function App() {
         if (err.response?.status === 404) setEntries([]);
         else console.error("Error fetching program counts", err);
       });
-
-    axios
-      .get(
-        `http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`
-      )
-      .then((res) => setPrincipalRemarks(res.data.remarks))
-      .catch(() => setPrincipalRemarks(""));
   };
 
   useEffect(() => {
@@ -64,19 +44,6 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
-  };
-
-  const handleRemarksSave = async () => {
-    try {
-      await axios.post("http://127.0.0.1:8000/principal-remarks", {
-        department_id: user.departmentId,
-        academic_year_id: academicYearId,
-        remarks: principalRemarks,
-      });
-      setRemarksStatus("success");
-    } catch (err) {
-      setRemarksStatus("error");
-    }
   };
 
   if (!user) return <Login onLogin={setUser} />;
@@ -91,13 +58,11 @@ function App() {
       </div>
 
       {user.role === "hod" && (
-        <>
-          <ProgramEntryForm
-            departmentId={user.departmentId}
-            academicYearId={academicYearId}
-            userRole={user.role}
-          />
-        </>
+        <ProgramEntryForm
+          departmentId={user.departmentId}
+          academicYearId={academicYearId}
+          userRole={user.role}
+        />
       )}
 
       {user.role === "principal" && (
@@ -129,7 +94,7 @@ function App() {
                 academicYearId={academicYearId}
                 userRole={user.role}
               />
-              <div style={{ marginBottom: "80px" }}></div> {/* Space at bottom */}
+              <div style={{ marginBottom: "80px" }}></div>
             </>
           )}
         </>
