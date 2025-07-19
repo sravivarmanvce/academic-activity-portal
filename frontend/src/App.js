@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+// src/App.js
+
+import React, { useState, useEffect, useCallback } from "react";
 import Login from "./Login";
 import ProgramEntryForm from "./ProgramEntryForm";
 import axios from "axios";
@@ -6,8 +8,7 @@ import axios from "axios";
 function App() {
   const [user, setUser] = useState(null);
   const [departments, setDepartments] = useState([]);
-  const [academicYearId] = useState(2);
-  const [setEntries] = useState([]);
+  const [academicYearId] = useState(2); // Static year as before
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -23,23 +24,29 @@ function App() {
     }
   }, [user]);
 
-  const fetchProgramCounts = (departmentId) => {
+  // ✅ useCallback to avoid ESLint warnings and unnecessary re-renders
+  const fetchProgramCounts = useCallback((departmentId) => {
     axios
       .get(
         `http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`
       )
-      .then((res) => setEntries(res.data))
       .catch((err) => {
-        if (err.response?.status === 404) setEntries([]);
-        else console.error("Error fetching program counts", err);
+        if (err.response?.status !== 404)
+          console.error("Error fetching program counts", err);
       });
-  };
+
+    axios
+      .get(
+        `http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`
+      )
+      .catch(() => {}); // No need to setPrincipalRemarks since it's handled in ProgramEntryForm now
+  }, [academicYearId]);
 
   useEffect(() => {
     if (user?.role === "hod" && user?.departmentId) {
       fetchProgramCounts(user.departmentId);
     }
-  }, [user, academicYearId]);
+  }, [user, academicYearId, fetchProgramCounts]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -88,14 +95,11 @@ function App() {
           </div>
 
           {user.departmentId && (
-            <>
-              <ProgramEntryForm
-                departmentId={user.departmentId}
-                academicYearId={academicYearId}
-                userRole={user.role}
-              />
-              <div style={{ marginBottom: "80px" }}></div>
-            </>
+            <ProgramEntryForm
+              departmentId={user.departmentId}
+              academicYearId={academicYearId}
+              userRole={user.role}
+            />
           )}
         </>
       )}
