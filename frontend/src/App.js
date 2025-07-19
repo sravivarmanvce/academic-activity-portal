@@ -129,26 +129,6 @@ function App() {
                 academicYearId={academicYearId}
                 userRole={user.role}
               />
-
-              {/* Final remarks entry by Principal */}
-              <div className="mb-4 mt-4">
-                <label><strong>Principal Final Remarks:</strong></label>
-                <textarea
-                  className="form-control"
-                  value={principalRemarks}
-                  onChange={(e) => setPrincipalRemarks(e.target.value)}
-                  rows={3}
-                />
-              </div>
-              {remarksStatus === "success" && (
-                <div className="alert alert-success mt-2">✅ Remarks saved.</div>
-              )}
-              {remarksStatus === "error" && (
-                <div className="alert alert-danger mt-2">❌ Failed to save remarks.</div>
-              )}
-              <button className="btn btn-success" onClick={handleRemarksSave}>
-                Save Remarks
-              </button>
               <div style={{ marginBottom: "80px" }}></div> {/* Space at bottom */}
             </>
           )}

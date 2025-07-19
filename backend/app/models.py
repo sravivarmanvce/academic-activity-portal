@@ -3,20 +3,7 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
 
-from app.database import Base
-
-# Add this new model
-class PrincipalRemark(Base):
-    __tablename__ = "principal_remarks"
-
-    id = Column(Integer, primary_key=True, index=True)
-    department_id = Column(Integer, nullable=False)
-    academic_year_id = Column(Integer, nullable=False)
-    remarks = Column(String, nullable=True)
-
-
-
-Base = declarative_base()
+Base = declarative_base()  # ✅ DEFINE FIRST — at the top, once only
 
 # -----------------------------
 # Department
@@ -77,3 +64,14 @@ class PrincipalRemark(Base):
     department_id = Column(Integer, ForeignKey("departments.id"))
     academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
     remarks = Column(Text, nullable=False)
+
+# -----------------------------
+# HoD Remarks
+# -----------------------------
+class HodRemarks(Base):
+    __tablename__ = "hod_remarks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    department_id = Column(Integer, ForeignKey("departments.id"))
+    academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
+    remarks = Column(Text)

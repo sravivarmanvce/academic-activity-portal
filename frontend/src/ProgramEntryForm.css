@@ -191,3 +191,37 @@ button:disabled {
   max-width: 500px;
   width: 90%;
 }
+
+@media print {
+  .d-print-none {
+    display: none !important;
+  }
+}
+
+@media print {
+  tr, td, th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  table {
+    page-break-inside: auto !important;
+    border-collapse: collapse !important;
+  }
+
+  .table-info, .table-warning {
+    background-color: #fdfd96 !important;
+  }
+
+  #program-form-print {
+    font-size: 13px;
+  }
+}

@@ -100,3 +100,20 @@ class PrincipalRemarksInput(BaseModel):
     department_id: int
     academic_year_id: int
     principal_remarks: str
+
+# -------------------------------
+# Hod Remarks Schemas  
+# -------------------------------
+class HodRemarksBase(BaseModel):
+    department_id: int
+    academic_year_id: int
+    remarks: str
+
+class HodRemarksCreate(HodRemarksBase):
+    pass
+
+class HodRemarksOut(HodRemarksBase):
+    id: int
+
+    class Config:
+        orm_mode = True

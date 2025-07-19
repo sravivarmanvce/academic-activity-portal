@@ -7,6 +7,8 @@ from app.schemas import ProgramCountCreate
 from app.schemas import ProgramTypeCreate
 from app.models import PrincipalRemark
 from app.schemas import PrincipalRemarkCreate
+from app.models import HodRemarks
+from app.schemas import HodRemarksCreate
 from typing import Optional
 
 def get_program_types(db: Session, department: Optional[str] = None):
@@ -58,6 +60,23 @@ def save_or_update_remark(db: Session, data: PrincipalRemarkCreate):
         db.add(existing)
     else:
         existing = PrincipalRemark(**data.dict())
+        db.add(existing)
+    db.commit()
+    db.refresh(existing)
+    return existing
+
+def get_hod_remark(db: Session, department_id: int, academic_year_id: int):
+    return db.query(HodRemarks).filter_by(
+        department_id=department_id,
+        academic_year_id=academic_year_id
+    ).first()
+
+def save_or_update_hod_remark(db: Session, data: HodRemarksCreate):
+    existing = get_hod_remark(db, data.department_id, data.academic_year_id)
+    if existing:
+        existing.remarks = data.remarks
+    else:
+        existing = HodRemarks(**data.dict())
         db.add(existing)
     db.commit()
     db.refresh(existing)

@@ -1,7 +1,9 @@
-// src/ProgramEntryForm.jsx
-
-import React, { useEffect, useState } from "react";
+// SAME IMPORTS
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import html2pdf from "html2pdf.js";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "./ProgramEntryForm.css";
 
 function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
@@ -10,34 +12,40 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
   const [principalRemarks, setPrincipalRemarks] = useState("");
+  const [departmentName, setDepartmentName] = useState("");
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
 
+  const [hodRemarks, setHodRemarks] = useState("");
+  const [hodRemarksSaved, setHodRemarksSaved] = useState(false);
+
+  const [isEditable, setIsEditable] = useState(userRole === "hod");
+
+  const printRef = useRef();
 
   useEffect(() => {
     if (!departmentId || !academicYearId) return;
 
     const fetchData = async () => {
       try {
-        const [typesRes, countsRes, deptRes, remarksRes] = await Promise.all([
+        const [typesRes, countsRes, deptRes, principalRes, hodRes] = await Promise.all([
           axios.get("http://127.0.0.1:8000/program-types"),
-          axios
-            .get(
-              `http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`
-            )
+          axios.get(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
             .catch((err) => {
               if (err.response?.status === 404) return { data: [] };
               throw err;
             }),
           axios.get("http://127.0.0.1:8000/departments"),
-          axios
-            .get(
-              `http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`
-            )
+          axios.get(`http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
+            .catch(() => ({ data: { remarks: "" } })),
+          axios.get(`http://127.0.0.1:8000/hod-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
             .catch(() => ({ data: { remarks: "" } })),
         ]);
 
         const department = deptRes.data.find((d) => d.id === departmentId)?.name;
+        setDepartmentName(department || "");
+        setPrincipalRemarks(principalRes.data.remarks || "");
+        setHodRemarks(hodRes.data.remarks || "");
 
         const filteredTypes = typesRes.data.filter(
           (p) =>
@@ -70,7 +78,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
         setMergedData(merged);
         setGrouped(groupedObj);
-        setPrincipalRemarks(remarksRes.data.remarks || "");
       } catch (error) {
         console.error("Error loading program data", error);
       }
@@ -91,26 +98,25 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   };
 
   const handleSubmit = async () => {
-    // Validation check for Variable budget mode
-    const errors = mergedData
-      .filter((entry) => entry.budget_mode === "Variable")
-      .filter((entry) =>
-        (entry.count === 0 && entry.total_budget > 0) ||
-        (entry.count > 0 && entry.total_budget === 0)
-      )
-      .map((entry) => ({
-        program_type: entry.program_type,
-        sub_program_type: entry.sub_program_type,
-      }));
-
-    if (errors.length > 0) {
-      setValidationErrors(errors);
-      setShowValidationModal(true);
-      return;
-    }
-
     setSubmitting(true);
     setStatus(null);
+
+    const invalidRows = mergedData.filter(
+      (entry) =>
+        entry.budget_mode === "Variable" &&
+        ((entry.count > 0 && entry.total_budget <= 0) ||
+          (entry.count <= 0 && entry.total_budget > 0))
+    );
+
+    if (invalidRows.length > 0) {
+      const errors = invalidRows.map((entry) => {
+        return `${entry.program_type}${entry.sub_program_type ? ' - ' + entry.sub_program_type : ''}`;
+      });
+      setValidationErrors(errors);
+      setShowValidationModal(true);
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const payload = mergedData.map((entry) => ({
@@ -130,6 +136,25 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
       await axios.post("http://127.0.0.1:8000/program-counts", { entries: payload });
 
+      if (userRole === "hod") {
+        await axios.post("http://127.0.0.1:8000/hod-remarks", {
+          department_id: departmentId,
+          academic_year_id: academicYearId,
+          remarks: hodRemarks,
+        });
+        setHodRemarksSaved(true);
+        setTimeout(() => setHodRemarksSaved(false), 2500);
+      }
+
+      if (userRole === "principal") {
+        await axios.post("http://127.0.0.1:8000/principal-remarks", {
+          department_id: departmentId,
+          academic_year_id: academicYearId,
+          remarks: principalRemarks,
+        });
+      }
+
+      setIsEditable(false);
       setStatus("success");
     } catch (error) {
       console.error("Submission failed", error);
@@ -139,6 +164,24 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     }
   };
 
+  const handleDownloadPDF = () => {
+    if (!printRef.current) return;
+    const options = {
+      margin: 0.5,
+      filename: "program_entry.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    };
+    html2pdf().set(options).from(printRef.current).save();
+  };
+
+  const handleDownloadExcel = () => {
+    const table = printRef.current.querySelector("table");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Program Data" });
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([wbout], { type: "application/octet-stream" }), "program_entry.xlsx");
+  };
 
   const renderInput = (index, field, value, editable, type = "number") => {
     return editable ? (
@@ -158,125 +201,171 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
   return (
     <div className="container mt-4">
-      <h4>Program Entry Form ({userRole.toUpperCase()})</h4>
-
-      <table className="table table-bordered table-striped">
-        <thead className="table-dark">
-          <tr>
-            <th>Activity Category</th>
-            <th>Program Type</th>
-            <th>Sub Type</th>
-            <th>Budget / Event</th>
-            <th>Count</th>
-            <th>Total Budget</th>
-            <th>Remarks</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(grouped).length === 0 ? (
-            <tr>
-              <td colSpan="7" className="text-center">
-                No program types found for your department.
-              </td>
-            </tr>
-          ) : (
-            Object.entries(grouped).map(([category, items]) => {
-              const subtotal = { count: 0, budget: 0 };
-
-              return (
-                <React.Fragment key={category}>
-                  {items.map((item, idx) => {
-                    const globalIndex = mergedData.findIndex(
-                      (d) =>
-                        d.program_type === item.program_type &&
-                        d.sub_program_type === item.sub_program_type
-                    );
-
-                    const count = mergedData[globalIndex].count || 0;
-                    const budget =
-                      item.budget_mode === "Fixed"
-                        ? count * (item.budget_per_event || 0)
-                        : mergedData[globalIndex].total_budget || 0;
-
-                    subtotal.count += count;
-                    subtotal.budget += budget;
-                    grandTotal.count += count;
-                    grandTotal.budget += budget;
-
-                    return (
-                      <tr key={item.program_type + (item.sub_program_type || "")}>
-                        {idx === 0 && (
-                          <td rowSpan={items.length}>{category}</td>
-                        )}
-                        <td>{item.program_type}</td>
-                        <td>{item.sub_program_type || "-"}</td>
-                        <td>{item.budget_per_event || "-"}</td>
-                        <td>
-                          {renderInput(
-                            globalIndex,
-                            "count",
-                            mergedData[globalIndex].count,
-                            userRole === "hod"
-                          )}
-                        </td>
-                        <td>
-                          {item.budget_mode === "Fixed" ? (
-                            budget
-                          ) : (
-                            renderInput(
-                              globalIndex,
-                              "total_budget",
-                              mergedData[globalIndex].total_budget,
-                              userRole === "hod"
-                            )
-                          )}
-                        </td>
-                        <td>
-                          {renderInput(
-                            globalIndex,
-                            "remarks",
-                            mergedData[globalIndex].remarks,
-                            userRole === "hod",
-                            "text"
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  <tr className="table-info fw-bold">
-                    <td colSpan="4" className="text-end">
-                      Subtotal for {category}
-                    </td>
-                    <td>{subtotal.count}</td>
-                    <td>{subtotal.budget}</td>
-                    <td></td>
-                  </tr>
-                </React.Fragment>
-              );
-            })
-          )}
-        </tbody>
-        {Object.entries(grouped).length > 0 && (
-          <tfoot>
-            <tr className="table-warning fw-bold">
-              <td colSpan="4" className="text-end">Grand Total</td>
-              <td>{grandTotal.count}</td>
-              <td>{grandTotal.budget}</td>
-              <td></td>
-            </tr>
-          </tfoot>
-        )}
-      </table>
-
-      {/* Submit for HoD */}
-      {userRole === "hod" && (
-        <div className="text-center">
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? "Submitting..." : "Submit Program Counts"}
+      <div className="d-flex justify-content-between align-items-center">
+        <h4>Program Entry Form ({departmentName})</h4>
+        <div>
+          <button className="btn btn-outline-danger me-2" onClick={handleDownloadPDF}>
+            Download PDF
+          </button>
+          <button className="btn btn-outline-success" onClick={handleDownloadExcel}>
+            Download Excel
           </button>
         </div>
-      )}
+      </div>
 
+      <div ref={printRef}>
+        <h5 className="text-center mt-3">Department: {departmentName}</h5>
+
+        <table className="table table-bordered table-striped mt-3">
+          <thead className="table-dark">
+            <tr>
+              <th>Activity Category</th>
+              <th>Program Type</th>
+              <th>Sub Type</th>
+              <th>Budget / Event</th>
+              <th>Count</th>
+              <th>Total Budget</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(grouped).length === 0 ? (
+              <tr>
+                <td colSpan="6" className="text-center">
+                  No program types found for your department.
+                </td>
+              </tr>
+            ) : (
+              Object.entries(grouped).map(([category, items]) => {
+                const subtotal = { count: 0, budget: 0 };
+
+                return (
+                  <React.Fragment key={category}>
+                    {items.map((item, idx) => {
+                      const globalIndex = mergedData.findIndex(
+                        (d) =>
+                          d.program_type === item.program_type &&
+                          d.sub_program_type === item.sub_program_type
+                      );
+
+                      const count = mergedData[globalIndex].count || 0;
+                      const budget =
+                        item.budget_mode === "Fixed"
+                          ? count * (item.budget_per_event || 0)
+                          : mergedData[globalIndex].total_budget || 0;
+
+                      subtotal.count += count;
+                      subtotal.budget += budget;
+                      grandTotal.count += count;
+                      grandTotal.budget += budget;
+
+                      const isVariableAndPrincipal = userRole === "principal" && item.budget_mode === "Variable";
+
+                      return (
+                        <tr key={item.program_type + (item.sub_program_type || "")}>
+                          {idx === 0 && <td rowSpan={items.length}>{category}</td>}
+                          <td>{item.program_type}</td>
+                          <td>{item.sub_program_type || "-"}</td>
+                          <td>{item.budget_per_event || "-"}</td>
+                          <td>
+                            {renderInput(
+                              globalIndex,
+                              "count",
+                              mergedData[globalIndex].count,
+                              userRole === "hod" && isEditable
+                            )}
+                          </td>
+                          <td>
+                            {item.budget_mode === "Fixed" ? (
+                              budget
+                            ) : (
+                              renderInput(
+                                globalIndex,
+                                "total_budget",
+                                mergedData[globalIndex].total_budget,
+                                isEditable && (userRole === "hod" || isVariableAndPrincipal)
+                              )
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    <tr className="table-info fw-bold">
+                      <td colSpan="4" className="text-end">
+                        Subtotal for {category}
+                      </td>
+                      <td>{subtotal.count}</td>
+                      <td>{subtotal.budget}</td>
+                    </tr>
+                  </React.Fragment>
+                );
+              })
+            )}
+          </tbody>
+          {Object.entries(grouped).length > 0 && (
+            <tfoot>
+              <tr className="table-warning fw-bold">
+                <td colSpan="4" className="text-end">Grand Total</td>
+                <td>{grandTotal.count}</td>
+                <td>{grandTotal.budget}</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+
+        {/* HoD Final Remarks */}
+        <div className="mt-4">
+          <label><strong>HoD Final Remarks:</strong></label>
+          {userRole === "hod" ? (
+            <textarea
+              rows={4}
+              className="form-control"
+              value={hodRemarks}
+              onChange={(e) => setHodRemarks(e.target.value)}
+              readOnly={!isEditable}
+            />
+          ) : (
+            <div className="form-control bg-light">{hodRemarks}</div>
+          )}
+        </div>
+
+        {/* Principal Final Remarks */}
+        <div className="mt-4">
+          <label><strong>Principal Final Remarks:</strong></label>
+          {userRole === "principal" ? (
+            <textarea
+              rows={4}
+              className="form-control"
+              value={principalRemarks}
+              onChange={(e) => setPrincipalRemarks(e.target.value)}
+              readOnly={!isEditable}
+            />
+          ) : (
+            <div className="form-control bg-light">{principalRemarks}</div>
+          )}
+        </div>
+
+        {/* Edit / Save Button */}
+        <div className="text-center mt-4">
+          <button
+            className={`btn ${isEditable ? "btn-primary" : "btn-warning"}`}
+            onClick={isEditable ? handleSubmit : () => setIsEditable(true)}
+          >
+            {isEditable ? "Save" : "Edit"}
+          </button>
+        </div>
+
+        {/* Signature Area */}
+        <div className="row mt-5 text-center">
+          <div className="col">
+            <p><strong>HoD, {departmentName}</strong></p>
+          </div>
+          <div className="col">
+            <p><strong>Principal</strong></p>
+          </div>
+        </div>
+      </div>
+
+      {/* Submission Status */}
       {status === "success" && (
         <div className="alert alert-success mt-3 text-center">
           ✅ Submission successful!
@@ -288,47 +377,47 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         </div>
       )}
 
-        {userRole === "hod" && (
-        <div style={{ marginBottom: "80px" }}></div>
-        )}
-
-        {/* Principal Remarks (readonly for HoD) */}
-        {userRole === "hod" && principalRemarks && (
-          <div className="mt-4">
-          <label><strong>Principal Final Remarks:</strong></label>
-          <div className="form-control bg-light">{principalRemarks}</div>
+      {/* Validation Modal */}
+      {showValidationModal && (
+        <>
+          <div className="custom-modal-backdrop"></div>
+          <div className="custom-modal-container bg-white border rounded shadow">
+            <div className="modal-header border-bottom">
+              <h5 className="modal-title text-danger">Validation Error</h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowValidationModal(false)}
+              ></button>
+            </div>
+            <div className="modal-body text-center">
+              <p className="mb-3">
+                The following entries have inconsistent <br />
+                <strong>Count / Budget</strong>:
+              </p>
+              <ul className="text-start">
+                {validationErrors.map((err, idx) => (
+                  <li key={idx}>
+                    <strong>{err}</strong>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-muted mt-3">
+                Both <span className="text-primary">Count</span> and{" "}
+                <span className="text-danger">Total Budget</span> must be either non-zero or both zero.
+              </p>
+            </div>
+            <div className="modal-footer border-top text-end">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowValidationModal(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
-        )}
-
-    {/* Validation Modal */}
-{showValidationModal && (
-  <div className="custom-modal-backdrop">
-    <div className="custom-modal-container bg-white rounded shadow p-3">
-      <div className="modal-header bg-warning">
-        <h5 className="modal-title text-dark mb-0">Validation Error</h5>
-        <button type="button" className="btn-close" onClick={() => setShowValidationModal(false)} />
-      </div>
-      <div className="modal-body">
-        <p>The following entries have mismatch between count and total budget:</p>
-        <ul>
-          {validationErrors.map((err, idx) => (
-            <li key={idx}>
-              <strong>{err.program_type}</strong>{err.sub_program_type ? ` - ${err.sub_program_type}` : ""}
-            </li>
-          ))}
-        </ul>
-        <p>Please correct them before submitting.</p>
-      </div>
-      <div className="modal-footer">
-        <button className="btn btn-secondary" onClick={() => setShowValidationModal(false)}>
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
+        </>
+      )}
     </div>
   );
 }
