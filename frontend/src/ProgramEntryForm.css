@@ -27,7 +27,7 @@ table {
 
 th, td {
   border: 1px solid #ccc;
-  padding: 8px;
+  padding: 10px;
 }
 
 th {
@@ -184,6 +184,7 @@ button:disabled {
 
 .custom-modal-container {
   position: fixed;
+  padding: 20px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -223,5 +224,18 @@ button:disabled {
 
   #program-form-print {
     font-size: 13px;
+  }
+}
+
+
+.print-only {
+  display: none;
+}
+@media print {
+  .print-only {
+    display: block !important;
+  }
+  .no-print {
+    display: none !important;
   }
 }
