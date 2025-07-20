@@ -1,5 +1,6 @@
 # app/crud.py
 from sqlalchemy.orm import Session
+from . import models
 from app.models import ProgramType
 from app.models import ProgramCount
 from app.models import AcademicYear
@@ -10,6 +11,11 @@ from app.schemas import PrincipalRemarkCreate
 from app.models import HodRemarks
 from app.schemas import HodRemarksCreate
 from typing import Optional
+import datetime
+
+
+def get_enabled_academic_years(db: Session):
+    return db.query(models.AcademicYear).filter_by(is_enabled=True).all()
 
 def get_program_types(db: Session, department: Optional[str] = None):
     query = db.query(ProgramType)

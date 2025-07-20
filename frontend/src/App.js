@@ -8,13 +8,16 @@ import axios from "axios";
 function App() {
   const [user, setUser] = useState(null);
   const [departments, setDepartments] = useState([]);
-  const [academicYearId] = useState(2); // Static year as before
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedAcademicYearId, setSelectedAcademicYearId] = useState("");
 
+  // Load user from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) setUser(JSON.parse(stored));
   }, []);
 
+  // Load departments (only for Principal)
   useEffect(() => {
     if (user?.role === "principal") {
       axios
@@ -24,29 +27,45 @@ function App() {
     }
   }, [user]);
 
-  // ✅ useCallback to avoid ESLint warnings and unnecessary re-renders
-  const fetchProgramCounts = useCallback((departmentId) => {
+  // Load all academic years (not just enabled)
+  useEffect(() => {
     axios
-      .get(
-        `http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`
-      )
-      .catch((err) => {
-        if (err.response?.status !== 404)
-          console.error("Error fetching program counts", err);
-      });
+      .get("http://127.0.0.1:8000/academic-years")
+      .then((res) => {
+        setAcademicYears(res.data);
+        if (res.data.length > 0) {
+          setSelectedAcademicYearId(res.data[0].id); // Default to first
+        }
+      })
+      .catch((err) => console.error("Failed to load academic years", err));
+  }, []);
 
-    axios
-      .get(
-        `http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`
-      )
-      .catch(() => {}); // No need to setPrincipalRemarks since it's handled in ProgramEntryForm now
-  }, [academicYearId]);
+  const fetchProgramCounts = useCallback(
+    (departmentId) => {
+      if (!selectedAcademicYearId) return;
+      axios
+        .get(
+          `http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`
+        )
+        .catch((err) => {
+          if (err.response?.status !== 404)
+            console.error("Error fetching program counts", err);
+        });
+
+      axios
+        .get(
+          `http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`
+        )
+        .catch(() => {});
+    },
+    [selectedAcademicYearId]
+  );
 
   useEffect(() => {
-    if (user?.role === "hod" && user?.departmentId) {
+    if (user?.role === "hod" && user?.departmentId && selectedAcademicYearId) {
       fetchProgramCounts(user.departmentId);
     }
-  }, [user, academicYearId, fetchProgramCounts]);
+  }, [user, selectedAcademicYearId, fetchProgramCounts]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -64,14 +83,38 @@ function App() {
         </button>
       </div>
 
-      {user.role === "hod" && (
+      {/* Academic Year Dropdown */}
+      <div className="mb-3">
+        <label><strong>Select Academic Year:</strong></label>
+        <select
+          className="form-select"
+          value={selectedAcademicYearId}
+          onChange={(e) => {
+            setSelectedAcademicYearId(Number(e.target.value));
+            if (user?.departmentId) {
+              fetchProgramCounts(user.departmentId);
+            }
+          }}
+        >
+          <option value="">-- Select Academic Year --</option>
+          {academicYears.map((year) => (
+            <option key={year.id} value={year.id}>
+              {year.year}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* HoD Form */}
+      {user.role === "hod" && selectedAcademicYearId && (
         <ProgramEntryForm
           departmentId={user.departmentId}
-          academicYearId={academicYearId}
+          academicYearId={selectedAcademicYearId}
           userRole={user.role}
         />
       )}
 
+      {/* Principal Form */}
       {user.role === "principal" && (
         <>
           <div className="mb-3">
@@ -94,10 +137,10 @@ function App() {
             </select>
           </div>
 
-          {user.departmentId && (
+          {user.departmentId && selectedAcademicYearId && (
             <ProgramEntryForm
               departmentId={user.departmentId}
-              academicYearId={academicYearId}
+              academicYearId={selectedAcademicYearId}
               userRole={user.role}
             />
           )}

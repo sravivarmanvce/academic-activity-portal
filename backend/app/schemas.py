@@ -2,6 +2,8 @@
 
 from typing import Optional, List
 from pydantic import BaseModel
+from datetime import date
+
 
 # -------------------------------
 # Department Schemas
@@ -117,3 +119,13 @@ class HodRemarksOut(HodRemarksBase):
 
     class Config:
         orm_mode = True
+
+# -------------------------------
+class AcademicYearOut(BaseModel):
+    id: int
+    year: str
+    is_enabled: bool
+    deadline: date | None
+
+    class Config:
+        from_attributes = True  # Required for Pydantic v2

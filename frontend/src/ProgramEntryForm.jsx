@@ -1,4 +1,3 @@
-// SAME IMPORTS
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import html2pdf from "html2pdf.js";
@@ -13,33 +12,36 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [status, setStatus] = useState(null);
   const [principalRemarks, setPrincipalRemarks] = useState("");
   const [departmentName, setDepartmentName] = useState("");
+  const [hodRemarks, setHodRemarks] = useState("");
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
-
-  const [hodRemarks, setHodRemarks] = useState("");
-  const [hodRemarksSaved, setHodRemarksSaved] = useState(false);
-
-  const [isEditable, setIsEditable] = useState(userRole === "hod");
+  const [deadlineDisplay, setDeadlineDisplay] = useState("Invalid Date");
+  const [isEditable, setIsEditable] = useState(false);
 
   const printRef = useRef();
 
   useEffect(() => {
     if (!departmentId || !academicYearId) return;
 
-    const fetchData = async () => {
+    const fetchAll = async () => {
       try {
-        const [typesRes, countsRes, deptRes, principalRes, hodRes] = await Promise.all([
+        const [
+          typesRes,
+          countsRes,
+          deptRes,
+          principalRes,
+          hodRes,
+          yearsRes
+        ] = await Promise.all([
           axios.get("http://127.0.0.1:8000/program-types"),
           axios.get(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-            .catch((err) => {
-              if (err.response?.status === 404) return { data: [] };
-              throw err;
-            }),
+            .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
           axios.get("http://127.0.0.1:8000/departments"),
           axios.get(`http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
             .catch(() => ({ data: { remarks: "" } })),
           axios.get(`http://127.0.0.1:8000/hod-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
             .catch(() => ({ data: { remarks: "" } })),
+          axios.get("http://127.0.0.1:8000/academic-years")
         ]);
 
         const department = deptRes.data.find((d) => d.id === departmentId)?.name;
@@ -78,13 +80,33 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
         setMergedData(merged);
         setGrouped(groupedObj);
+
+        // Deadline logic
+        const yearObj = yearsRes.data.find((y) => y.id === academicYearId);
+        if (yearObj) {
+          const deadline = new Date(yearObj.deadline);
+          const today = new Date();
+          const isBeforeDeadline = today <= deadline;
+
+          setDeadlineDisplay(
+            deadline instanceof Date && !isNaN(deadline)
+              ? deadline.toLocaleDateString("en-GB")
+              : "Invalid Date"
+          );
+
+          if (userRole === "principal") {
+            setIsEditable(true); // Principal can always edit
+          } else if (userRole === "hod") {
+            setIsEditable(yearObj.is_enabled && isBeforeDeadline);
+          }
+        }
       } catch (error) {
-        console.error("Error loading program data", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchData();
-  }, [departmentId, academicYearId]);
+    fetchAll();
+  }, [departmentId, academicYearId, userRole]);
 
   const handleChange = (index, field, value) => {
     setMergedData((prev) => {
@@ -109,9 +131,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     );
 
     if (invalidRows.length > 0) {
-      const errors = invalidRows.map((entry) => {
-        return `${entry.program_type}${entry.sub_program_type ? ' - ' + entry.sub_program_type : ''}`;
-      });
+      const errors = invalidRows.map((entry) =>
+        `${entry.program_type}${entry.sub_program_type ? ' - ' + entry.sub_program_type : ''}`
+      );
       setValidationErrors(errors);
       setShowValidationModal(true);
       setSubmitting(false);
@@ -142,8 +164,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           academic_year_id: academicYearId,
           remarks: hodRemarks,
         });
-        setHodRemarksSaved(true);
-        setTimeout(() => setHodRemarksSaved(false), 2500);
       }
 
       if (userRole === "principal") {
@@ -154,7 +174,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         });
       }
 
-      setIsEditable(false);
       setStatus("success");
     } catch (error) {
       console.error("Submission failed", error);
@@ -166,14 +185,16 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
   const handleDownloadPDF = () => {
     if (!printRef.current) return;
-    const options = {
-      margin: 0.5,
-      filename: "program_entry.pdf",
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-    };
-    html2pdf().set(options).from(printRef.current).save();
+    html2pdf()
+      .set({
+        margin: 0.5,
+        filename: "program_entry.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+      })
+      .from(printRef.current)
+      .save();
   };
 
   const handleDownloadExcel = () => {
@@ -211,6 +232,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             Download Excel
           </button>
         </div>
+      </div>
+
+      <div className="alert alert-info text-center mt-3">
+        <strong>Submission Deadline:</strong> {deadlineDisplay}
       </div>
 
       <div ref={printRef}>
@@ -258,7 +283,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                       grandTotal.count += count;
                       grandTotal.budget += budget;
 
-                      const isVariableAndPrincipal = userRole === "principal" && item.budget_mode === "Variable";
+                      const isVariableAndPrincipal =
+                        userRole === "principal" && item.budget_mode === "Variable";
 
                       return (
                         <tr key={item.program_type + (item.sub_program_type || "")}>
@@ -282,7 +308,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                 globalIndex,
                                 "total_budget",
                                 mergedData[globalIndex].total_budget,
-                                isEditable && (userRole === "hod" || isVariableAndPrincipal)
+                                isEditable &&
+                                  (userRole === "hod" || isVariableAndPrincipal)
                               )
                             )}
                           </td>
@@ -344,14 +371,17 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           )}
         </div>
 
-        {/* Edit / Save Button */}
+        {/* Submit */}
         <div className="text-center mt-4">
-          <button
-            className={`btn ${isEditable ? "btn-primary" : "btn-warning"}`}
-            onClick={isEditable ? handleSubmit : () => setIsEditable(true)}
-          >
-            {isEditable ? "Save" : "Edit"}
-          </button>
+          {isEditable && (
+            <button
+              className="btn btn-primary"
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? "Submitting..." : "Submit"}
+            </button>
+          )}
         </div>
 
         {/* Signature Area */}
