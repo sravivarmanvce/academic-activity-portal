@@ -496,18 +496,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         </>
       ) : null}
 
-      {/* Submission Status 
-      {status === "success" && (
-        <div className="alert alert-success mt-3 text-center">
-          ✅ Submission successful!
-        </div>
-      )}
-      {status === "error" && (
-        <div className="alert alert-danger mt-3 text-center">
-          ❌ Submission failed.
-        </div>
-      )}*/}
-
       {/* Add white space at the bottom of the page */}
       <div style={{ height: "100px" }}></div>
 
