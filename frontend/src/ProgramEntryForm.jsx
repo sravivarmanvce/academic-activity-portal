@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import html2pdf from "html2pdf.js";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "./ProgramEntryForm.css";
@@ -17,6 +16,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [validationErrors, setValidationErrors] = useState([]);
   const [deadlineDisplay, setDeadlineDisplay] = useState("Invalid Date");
   const [isEditable, setIsEditable] = useState(false);
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
 
   const printRef = useRef();
 
@@ -93,6 +93,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
               ? deadline.toLocaleDateString("en-GB")
               : "Invalid Date"
           );
+
+          setSelectedAcademicYear(yearObj.year);
 
           if (userRole === "principal") {
             setIsEditable(true); // Principal can always edit
@@ -184,18 +186,74 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   };
 
   const handleDownloadPDF = () => {
-    if (!printRef.current) return;
-    html2pdf()
-      .set({
-        margin: 0.5,
-        filename: "program_entry.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-      })
-      .from(printRef.current)
-      .save();
+    const printContents = printRef.current.innerHTML;
+    const printWindow = window.open("", "_blank", "width=800,height=600");
+
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>Program Entry PDF</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: center;
+            word-wrap: break-word;
+          }
+          th {
+            background-color: #f2f2f2;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .logo {
+            display: block;
+            margin: 0 auto 10px;
+            max-height: 100px;
+          }
+          .remarks {
+            white-space: pre-wrap;
+            text-align: left;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+          }
+          .no-print {
+            display: none;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <img src="logo.png" alt="College Logo" class="logo" />
+          <div>
+            <strong>Department of ${departmentName} - Budget Proposals for Student Activities</strong><br/>
+            Academic Year: ${selectedAcademicYear}
+          </div>
+        </div>
+        ${printContents}
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+    </html>
+  `);
+    printWindow.document.close();
   };
+
 
   const handleDownloadExcel = () => {
     const table = printRef.current.querySelector("table");
@@ -223,7 +281,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center">
-        <h4>Program Entry Form ({departmentName})</h4>
+        <div className="alert alert-info text-center mt-3">
+        <strong>Submission Deadline:</strong> {deadlineDisplay}
+      </div>
         <div>
           <button className="btn btn-outline-danger me-2" onClick={handleDownloadPDF}>
             Download PDF
@@ -234,13 +294,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         </div>
       </div>
 
-      <div className="alert alert-info text-center mt-3">
-        <strong>Submission Deadline:</strong> {deadlineDisplay}
-      </div>
-
+      <h5 className="text-center mt-3">Department of {departmentName} - Budget Proposals for Student Activities</h5>
       <div ref={printRef}>
-        <h5 className="text-center mt-3">Department: {departmentName}</h5>
-
         <table className="table table-bordered table-striped mt-3">
           <thead className="table-dark">
             <tr>
