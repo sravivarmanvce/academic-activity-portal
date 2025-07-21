@@ -199,24 +199,69 @@ if (departmentObj) {
         <title>Program Entry PDF</title>
         <style>
           body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
+            font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
+            font-size: 11pt;
+            margin: 15px;
+            padding: 5px;
           }
           table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
+            font-size: 11pt;
           }
           th, td {
             border: 1px solid #000;
             padding: 6px;
-            text-align: center;
             word-wrap: break-word;
           }
+
+          td input[type="number"] {
+            width: 80px;           /* or 60px if tighter */
+            text-align: center;
+            font-size: 11pt;
+            padding: 4px;
+            box-sizing: border-box;
+          }
+
+          input[type="number"] {
+            border: none;
+            outline: none;
+            background-color: transparent;
+            width: 70px;
+            text-align: center;
+            font-size: 11pt;
+          }
+
           th {
             background-color: #f2f2f2;
+            font-size: 12pt;
+            font-weight: bold;
+            text-align: center;
           }
+
+          tr.table-warning td {
+            font-weight: bold;
+            background-color: #fff3cd; /* Light yellow like Bootstrap */
+          }
+
+          tr.table-info td {
+            font-weight: bold;
+            background-color: #d1ecf1; /* Light blue like Bootstrap */
+          }
+
+          /* Chrome, Safari, Edge, Opera */
+          input[type="number"]::-webkit-outer-spin-button,
+          input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+
+          /* Firefox */
+          input[type="number"] {
+            -moz-appearance: textfield;
+          }
+
           .header {
             text-align: center;
             margin-bottom: 20px;
@@ -232,6 +277,7 @@ if (departmentObj) {
             margin-top: 10px;
             border: 1px solid #ccc;
             padding: 10px;
+            font-size: 11pt;
           }
           .no-print {
             display: none;
@@ -351,7 +397,7 @@ if (departmentObj) {
                           <td>{item.program_type}</td>
                           <td>{item.sub_program_type || "-"}</td>
                           <td align="center">{item.budget_per_event || "-"}</td>
-                          <td className="text-center">
+                          <td align="center">
                             {renderInput(
                               globalIndex,
                               "count",
@@ -379,7 +425,7 @@ if (departmentObj) {
                       <td colSpan="4" className="text-end">
                         Subtotal for {category}
                       </td>
-                      <td className="text-center">{subtotal.count}</td>
+                      <td align="center">{subtotal.count}</td>
                       <td align="center">{subtotal.budget}</td>
                     </tr>
                   </React.Fragment>
@@ -394,13 +440,14 @@ if (departmentObj) {
                 {/* Grand Total Row */}
                 <tr className="table-warning fw-bold">
                   <td colSpan="4" className="text-end">Grand Total</td>
-                  <td className="text-center">{grandTotal.count}</td>
+                  <td align="center">{grandTotal.count}</td>
                   <td align="center">{grandTotal.budget}</td>
                 </tr>
 
                 {/* Empty row for spacing */}
                 <tr>
                   <td colSpan="6" className="text-center">
+                    <div style={{ height: "10px" }}></div>
                   </td>
                 </tr>
 
@@ -415,6 +462,12 @@ if (departmentObj) {
                   </tr>
                 )}
 
+                {/* Empty row for spacing */}
+                <tr>
+                  <td colSpan="6" className="text-center">
+                    <div style={{ height: "10px" }}></div>
+                  </td>
+                </tr>
 
                 {/* Principal Remarks Row */}
                 {principalRemarks && (
@@ -427,11 +480,8 @@ if (departmentObj) {
                 )}
               </>
             )}
-            {/* Empty row for spacing */}
-            <tr>
-              <td colSpan="6" className="text-center">
-              </td>
-            </tr>
+
+
           </tbody>
           <tr>
             <td colSpan="6">
@@ -446,9 +496,8 @@ if (departmentObj) {
               </div>
             </td>
           </tr>
-
         </table>
-
+      </div>
         {/* HoD Final Remarks */}
         <div className="mt-4">
           <label><strong>HoD Remarks Entry:</strong></label>
@@ -519,7 +568,6 @@ if (departmentObj) {
             </button>
           )}
         </div>
-      </div>
 
       {/* Submission Status Modal */}
       {status === "success" || status === "error" ? (

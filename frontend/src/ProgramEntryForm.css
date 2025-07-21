@@ -239,3 +239,29 @@ button:disabled {
     display: none !important;
   }
 }
+
+@media print {
+  body, table {
+    font-family: sans-serif, Arial;
+    font-size: 11pt;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-size: 12pt;
+  }
+
+  /* Adjust table layout for printing */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  table th, table td {
+    padding: 6px;
+    border: 1px solid #000;
+  }
+}
+
+input[type="number"] {
+  text-align: center;
+}
