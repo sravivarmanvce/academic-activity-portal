@@ -1,3 +1,3 @@
-# Student Program Planner
+# Students Program Budget Planner
 
-React + Node.js starter project for HoDs to plan student programs for budget allocation.
+React + FastAPI project for HoDs to plan student programs for budget allocation.
