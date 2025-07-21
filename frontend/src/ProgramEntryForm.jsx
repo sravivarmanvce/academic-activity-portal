@@ -11,6 +11,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [status, setStatus] = useState(null);
   const [principalRemarks, setPrincipalRemarks] = useState("");
   const [departmentName, setDepartmentName] = useState("");
+  const [departmentFullName, setDepartmentFullName] = useState("");
   const [hodRemarks, setHodRemarks] = useState("");
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [validationErrors, setValidationErrors] = useState([]);
@@ -44,15 +45,18 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           axios.get("http://127.0.0.1:8000/academic-years")
         ]);
 
-        const department = deptRes.data.find((d) => d.id === departmentId)?.name;
-        setDepartmentName(department || "");
+const departmentObj = deptRes.data.find((d) => d.id === departmentId);
+if (departmentObj) {
+  setDepartmentName(departmentObj.name || "");         // short name
+  setDepartmentFullName(departmentObj.full_name || ""); // full name
+}
         setPrincipalRemarks(principalRes.data.remarks || "");
         setHodRemarks(hodRes.data.remarks || "");
 
         const filteredTypes = typesRes.data.filter(
           (p) =>
             p.departments === "ALL" ||
-            p.departments.split(",").map((d) => d.trim()).includes(department)
+            p.departments.split(",").map((d) => d.trim()).includes(departmentObj.name)
         );
 
         const merged = filteredTypes.map((type) => {
@@ -238,7 +242,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         <div class="header">
           <img src="logo.png" alt="College Logo" class="logo" />
           <div>
-            <strong>Department of ${departmentName} - Budget Proposals for Student Activities</strong><br/>
+            <strong>Department of ${departmentFullName} - Budget Proposals for Student Activities</strong><br/>
             Academic Year: ${selectedAcademicYear}
           </div>
         </div>

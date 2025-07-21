@@ -13,7 +13,8 @@ class Department(Base):
     __tablename__ = "departments"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False)  # short name of department
+    full_name = Column(String, nullable=False)  # full name of department
 
 # -----------------------------
 # Academic Year

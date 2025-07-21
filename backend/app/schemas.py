@@ -14,6 +14,8 @@ class DepartmentBase(BaseModel):
 
 class DepartmentOut(DepartmentBase):
     id: int
+    name: str
+    full_name: str
 
     class Config:
         orm_mode = True
