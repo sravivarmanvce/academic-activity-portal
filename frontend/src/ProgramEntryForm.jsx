@@ -309,7 +309,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                 "total_budget",
                                 mergedData[globalIndex].total_budget,
                                 isEditable &&
-                                  (userRole === "hod" || isVariableAndPrincipal)
+                                (userRole === "hod" || isVariableAndPrincipal)
                               )
                             )}
                           </td>
@@ -339,224 +339,221 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   <td align="center">{grandTotal.budget}</td>
                 </tr>
 
-                  {/* Empty row for spacing */}
-                <tr>
-                  <td colSpan="6" className="text-center">
-                  </td>
-                </tr>
-
-
-                    {/* HoD Remarks Row */}
-                    {hodRemarks && (
-                      <tr>
-                        <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
-                          HoD Remarks:<br />
-                          <span style={{ fontWeight: "normal" }}>{hodRemarks}</span>
-                        </td>
-                      </tr>
-                    )}
-
-
-                    {/* Principal Remarks Row */}
-                    {principalRemarks && (
-                      <tr>
-                        <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
-                          Principal Remarks:<br />
-                          <span style={{ fontWeight: "normal" }}>{principalRemarks}</span>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                )}
                 {/* Empty row for spacing */}
                 <tr>
                   <td colSpan="6" className="text-center">
                   </td>
                 </tr>
-                </tbody>
-                <tr>
-                  <td colSpan="6">
-                    {/* Signature Area */}
-                    <div className="row mt-5 text-center">
-                      <div className="col">
-                       <p><strong>HoD, {departmentName}</strong></p>
-                      </div>
-                      <div className="col">
-                        <p><strong>Principal</strong></p>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-
-                </table>
-
-                          {/* HoD Final Remarks */}
-                          <div className="mt-4">
-                            <label><strong>HoD Remarks Entry:</strong></label>
-                            {userRole === "hod" ? (
-                              <>
-                                <textarea
-                                  rows={4}
-                                  className="form-control"
-                                  value={hodRemarks}
-                                  onChange={(e) => setHodRemarks(e.target.value)}
-                                  readOnly={!isEditable}
-                                  style={{ whiteSpace: "pre-wrap" }}
-                                />
-                                {/* Printable version for PDF */}
-                                <div
-                                  className="d-none d-print-block mt-2"
-                                  style={{
-                                    whiteSpace: "pre-wrap",
-                                    border: "1px solid #ccc",
-                                    padding: "10px",
-                                    marginTop: "10px",
-                                  }}
-                                >
-                                  {hodRemarks}
-                                </div>
-                              </>
-                            ) : (
-                              <div
-                                className="form-control bg-light"
-                                style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}
-                              >
-                                {hodRemarks}
-                              </div>
-                            )}
-                          </div>
 
 
-                            {/* Principal Final Remarks */}
-                         <div className="mt-4">
-                         <label><strong>Principal Remarks Entry:</strong></label>
-                         {userRole === "principal" ? (
-                          <textarea
-                            rows={4}
-                            className="form-control"
-                            value={principalRemarks}
-                            onChange={(e) => setPrincipalRemarks(e.target.value)}
-                            readOnly={!isEditable}
-                            style={{ whiteSpace: "pre-wrap" }}
-                            />
-                            ) : (
-                            <div
-                            className="form-control bg-light"
-                            style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}>
-                            {principalRemarks}
-                            </div>
-                            )}
-                            </div>
+                {/* HoD Remarks Row */}
+                {hodRemarks && (
+                  <tr>
+                    <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
+                      HoD Remarks:<br />
+                      <span style={{ fontWeight: "normal" }}>{hodRemarks}</span>
+                    </td>
+                  </tr>
+                )}
 
 
-                            {/* Submit */}
-                            <div className="text-center mt-4">
-                              {isEditable && (
-                              <button
-                              className="btn btn-primary"
-                              onClick={handleSubmit}
-                              disabled={submitting}>
-                              {submitting ? "Submitting..." : "Submit"}
-                              </button>
-                              )}
-                            </div>
-                            </div>
+                {/* Principal Remarks Row */}
+                {principalRemarks && (
+                  <tr>
+                    <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
+                      Principal Remarks:<br />
+                      <span style={{ fontWeight: "normal" }}>{principalRemarks}</span>
+                    </td>
+                  </tr>
+                )}
+              </>
+            )}
+            {/* Empty row for spacing */}
+            <tr>
+              <td colSpan="6" className="text-center">
+              </td>
+            </tr>
+          </tbody>
+          <tr>
+            <td colSpan="6">
+              {/* Signature Area */}
+              <div className="row mt-5 text-center">
+                <div className="col">
+                  <p><strong>HoD, {departmentName}</strong></p>
+                </div>
+                <div className="col">
+                  <p><strong>Principal</strong></p>
+                </div>
+              </div>
+            </td>
+          </tr>
 
-                            {/* Submission Status Modal */}
-                            {status === "success" || status === "error" ? (
-                              <>
-                                <div className="custom-modal-backdrop"></div>
-                                <div className="custom-modal-container bg-white border rounded shadow">
-                                  <div className="modal-header border-bottom">
-                                    <h5 className={`modal-title ${status === "success" ? "text-success" : "text-danger"}`}>
-                                      {status === "success" ? "Success" : "Error"}
-                                    </h5>
-                                    <button
-                                      type="button"
-                                      className="btn-close"
-                                      onClick={() => setStatus(null)}
-                                    ></button>
-                                  </div>
-                                  <div className="modal-body text-center">
-                                    <p>
-                                      {status === "success"
-                                        ? "✅ Submission successful!"
-                                        : "❌ Submission failed. Please try again."}
-                                    </p>
-                                  </div>
-                                  <div className="modal-footer border-top text-end">
-                                    <button
-                                      className="btn btn-secondary"
-                                      onClick={() => setStatus(null)}
-                                    >
-                                      Close
-                                    </button>
-                                  </div>
-                                </div>
-                              </>
-                            ) : null}
+        </table>
+
+        {/* HoD Final Remarks */}
+        <div className="mt-4">
+          <label><strong>HoD Remarks Entry:</strong></label>
+          {userRole === "hod" ? (
+            <>
+              <textarea
+                rows={4}
+                className="form-control"
+                value={hodRemarks}
+                onChange={(e) => setHodRemarks(e.target.value)}
+                readOnly={!isEditable}
+                style={{ whiteSpace: "pre-wrap" }}
+              />
+              {/* Printable version for PDF */}
+              <div
+                className="d-none d-print-block mt-2"
+                style={{
+                  whiteSpace: "pre-wrap",
+                  border: "1px solid #ccc",
+                  padding: "10px",
+                  marginTop: "10px",
+                }}
+              >
+                {hodRemarks}
+              </div>
+            </>
+          ) : (
+            <div
+              className="form-control bg-light"
+              style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}
+            >
+              {hodRemarks}
+            </div>
+          )}
+        </div>
 
 
+        {/* Principal Final Remarks */}
+        <div className="mt-4">
+          <label><strong>Principal Remarks Entry:</strong></label>
+          {userRole === "principal" ? (
+            <textarea
+              rows={4}
+              className="form-control"
+              value={principalRemarks}
+              onChange={(e) => setPrincipalRemarks(e.target.value)}
+              readOnly={!isEditable}
+              style={{ whiteSpace: "pre-wrap" }}
+            />
+          ) : (
+            <div
+              className="form-control bg-light"
+              style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}>
+              {principalRemarks}
+            </div>
+          )}
+        </div>
 
 
-                          {/* Submission Status 
-                          {status === "success" && (
-                            <div className="alert alert-success mt-3 text-center">
-                              ✅ Submission successful!
-                              </div>
-                              )}
-                              {status === "error" && (
-                              <div className="alert alert-danger mt-3 text-center">
-                              ❌ Submission failed.
-                            </div>
-                          )}*/}
+        {/* Submit */}
+        <div className="text-center mt-4">
+          {isEditable && (
+            <button
+              className="btn btn-primary"
+              onClick={handleSubmit}
+              disabled={submitting}>
+              {submitting ? "Submitting..." : "Submit"}
+            </button>
+          )}
+        </div>
+      </div>
 
-                          {/* Add white space at the bottom of the page */}
-                          <div style={{ height: "100px" }}></div>
+      {/* Submission Status Modal */}
+      {status === "success" || status === "error" ? (
+        <>
+          <div className="custom-modal-backdrop"></div>
+          <div className="custom-modal-container bg-white border rounded shadow">
+            <div className="modal-header border-bottom">
+              <h5 className={`modal-title ${status === "success" ? "text-success" : "text-danger"}`}>
+                {status === "success" ? "Success" : "Error"}
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setStatus(null)}
+              ></button>
+            </div>
+            <div className="modal-body text-center">
+              <p>
+                {status === "success"
+                  ? "✅ Submission successful!"
+                  : "❌ Submission failed. Please try again."}
+              </p>
+            </div>
+            <div className="modal-footer border-top text-end">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setStatus(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      ) : null}
 
-                          {/* Validation Modal */}
-                          {showValidationModal && (
-                            <>
-                              <div className="custom-modal-backdrop"></div>
-                              <div className="custom-modal-container bg-white border rounded shadow">
-                                <div className="modal-header border-bottom">
-                                  <h5 className="modal-title text-danger">Validation Error</h5>
-                                  <button
-                                    type="button"
-                                    className="btn-close"
-                                    onClick={() => setShowValidationModal(false)}
-                                  ></button>
-                                </div>
-                                <div className="modal-body text-center">
-                                  <p className="mb-3">
-                                    The following entries have inconsistent <br />
-                                    <strong>Count / Budget</strong>:
-                                  </p>
-                                  <ul className="text-start">
-                                    {validationErrors.map((err, idx) => (
-                                      <li key={idx}>
-                                        <strong>{err}</strong>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                  <p className="text-muted mt-3">
-                                    Both <span className="text-primary">Count</span> and{" "}
-                                    <span className="text-danger">Total Budget</span> must be either non-zero or both zero.
-                                  </p>
-                                </div>
-                                <div className="modal-footer border-top text-end">
-                                  <button
-                                    className="btn btn-secondary"
-                                    onClick={() => setShowValidationModal(false)}
-                                  >
-                                    Close
-                                  </button>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      );
-                    }
+      {/* Submission Status 
+      {status === "success" && (
+        <div className="alert alert-success mt-3 text-center">
+          ✅ Submission successful!
+        </div>
+      )}
+      {status === "error" && (
+        <div className="alert alert-danger mt-3 text-center">
+          ❌ Submission failed.
+        </div>
+      )}*/}
+
+      {/* Add white space at the bottom of the page */}
+      <div style={{ height: "100px" }}></div>
+
+      {/* Validation Modal */}
+      {showValidationModal && (
+        <>
+          <div className="custom-modal-backdrop"></div>
+          <div className="custom-modal-container bg-white border rounded shadow">
+            <div className="modal-header border-bottom">
+              <h5 className="modal-title text-danger">Validation Error</h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowValidationModal(false)}
+              ></button>
+            </div>
+            <div className="modal-body text-center">
+              <p className="mb-3">
+                The following entries have inconsistent <br />
+                <strong>Count / Budget</strong>:
+              </p>
+              <ul className="text-start">
+                {validationErrors.map((err, idx) => (
+                  <li key={idx}>
+                    <strong>{err}</strong>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-muted mt-3">
+                Both <span className="text-primary">Count</span> and{" "}
+                <span className="text-danger">Total Budget</span> must be either non-zero or both zero.
+              </p>
+            </div>
+            <div className="modal-footer border-top text-end">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowValidationModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default ProgramEntryForm;
