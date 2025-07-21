@@ -45,11 +45,11 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           axios.get("http://127.0.0.1:8000/academic-years")
         ]);
 
-const departmentObj = deptRes.data.find((d) => d.id === departmentId);
-if (departmentObj) {
-  setDepartmentName(departmentObj.name || "");         // short name
-  setDepartmentFullName(departmentObj.full_name || ""); // full name
-}
+        const departmentObj = deptRes.data.find((d) => d.id === departmentId);
+        if (departmentObj) {
+          setDepartmentName(departmentObj.name || "");         // short name
+          setDepartmentFullName(departmentObj.full_name || ""); // full name
+        }
         setPrincipalRemarks(principalRes.data.remarks || "");
         setHodRemarks(hodRes.data.remarks || "");
 
@@ -196,7 +196,7 @@ if (departmentObj) {
     printWindow.document.write(`
     <html>
       <head>
-        <title>Program Entry PDF</title>
+        <title>Budget Proposals for Student Activities - ${departmentName}</title>
         <style>
           body {
             font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
@@ -282,6 +282,9 @@ if (departmentObj) {
           .no-print {
             display: none;
           }
+          tr, td, th {
+           page-break-inside: avoid;
+          }
         </style>
       </head>
       <body>
@@ -289,7 +292,7 @@ if (departmentObj) {
           <img src="assets/logo.png" alt="College Logo" class="logo" />
           <div>
             <strong>Department of ${departmentFullName} - Budget Proposals for Student Activities</strong><br/>
-            Academic Year: ${selectedAcademicYear}
+            <strong>Academic Year: ${selectedAcademicYear}</strong>
           </div>
         </div>
         ${printContents}
@@ -332,8 +335,8 @@ if (departmentObj) {
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center">
         <div className="alert alert-info text-center mt-3">
-        <strong>Submission Deadline:</strong> {deadlineDisplay}
-      </div>
+          <strong>Submission Deadline:</strong> {deadlineDisplay}
+        </div>
         <div>
           <button className="btn btn-outline-danger me-2" onClick={handleDownloadPDF}>
             Download PDF
@@ -443,131 +446,116 @@ if (departmentObj) {
                   <td align="center">{grandTotal.count}</td>
                   <td align="center">{grandTotal.budget}</td>
                 </tr>
-
-                {/* Empty row for spacing */}
-                <tr>
-                  <td colSpan="6" className="text-center">
-                    <div style={{ height: "10px" }}></div>
-                  </td>
-                </tr>
-
-
-                {/* HoD Remarks Row */}
-                {hodRemarks && (
-                  <tr>
-                    <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
-                      HoD Remarks:<br />
-                      <span style={{ fontWeight: "normal" }}>{hodRemarks}</span>
-                    </td>
-                  </tr>
-                )}
-
-                {/* Empty row for spacing */}
-                <tr>
-                  <td colSpan="6" className="text-center">
-                    <div style={{ height: "10px" }}></div>
-                  </td>
-                </tr>
-
-                {/* Principal Remarks Row */}
-                {principalRemarks && (
-                  <tr>
-                    <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
-                      Principal Remarks:<br />
-                      <span style={{ fontWeight: "normal" }}>{principalRemarks}</span>
-                    </td>
-                  </tr>
-                )}
               </>
             )}
+          </tbody>
 
+        </table>
+        <div style={{ height: "24px" }}></div>{/* Empty row for spacing */}
+        <table className="table table-bordered  mt-3">
+          <tbody>
+            {/* HoD Remarks Row */}
+            {hodRemarks && (
+              <tr>
+                <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
+                  HoD Remarks:<br />
+                  <span style={{ fontWeight: "normal" }}>{hodRemarks}</span>
+                  <div style={{ height: "14px" }}></div>{/* Empty row for spacing */}
+                </td>
+              </tr>
+            )}
+
+            {/* Principal Remarks Row */}
+            {principalRemarks && (
+              <tr>
+                <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
+                  Principal Remarks:<br />
+                  <span style={{ fontWeight: "normal" }}>{principalRemarks}</span>
+                  <div style={{ height: "14px" }}></div>{/* Empty row for spacing */}
+                </td>
+              </tr>
+            )}
 
           </tbody>
+        </table>
+        <div style={{ height: "24px" }}></div>{/* Empty row for spacing */}
+        <table border="0">
           <tr>
-            <td colSpan="6">
-              {/* Signature Area */}
-              <div className="row mt-5 text-center">
-                <div className="col">
-                  <p><strong>HoD, {departmentName}</strong></p>
-                </div>
-                <div className="col">
-                  <p><strong>Principal</strong></p>
-                </div>
-              </div>
-            </td>
+            <td align="center"><div style={{ height: "50px" }}></div><strong>HoD, {departmentName}</strong></td>
+            <td align="center"><div style={{ height: "50px" }}></div><strong>Principal</strong></td>
           </tr>
         </table>
       </div>
-        {/* HoD Final Remarks */}
-        <div className="mt-4">
-          <label><strong>HoD Remarks Entry:</strong></label>
-          {userRole === "hod" ? (
-            <>
-              <textarea
-                rows={4}
-                className="form-control"
-                value={hodRemarks}
-                onChange={(e) => setHodRemarks(e.target.value)}
-                readOnly={!isEditable}
-                style={{ whiteSpace: "pre-wrap" }}
-              />
-              {/* Printable version for PDF */}
-              <div
-                className="d-none d-print-block mt-2"
-                style={{
-                  whiteSpace: "pre-wrap",
-                  border: "1px solid #ccc",
-                  padding: "10px",
-                  marginTop: "10px",
-                }}
-              >
-                {hodRemarks}
-              </div>
-            </>
-          ) : (
-            <div
-              className="form-control bg-light"
-              style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}
-            >
-              {hodRemarks}
-            </div>
-          )}
-        </div>
-
-
-        {/* Principal Final Remarks */}
-        <div className="mt-4">
-          <label><strong>Principal Remarks Entry:</strong></label>
-          {userRole === "principal" ? (
+      {/* HoD Final Remarks */}
+      <div className="mt-4">
+        <label><strong>HoD Remarks Entry:</strong></label>
+        {userRole === "hod" ? (
+          <>
             <textarea
               rows={4}
               className="form-control"
-              value={principalRemarks}
-              onChange={(e) => setPrincipalRemarks(e.target.value)}
+              value={hodRemarks}
+              onChange={(e) => setHodRemarks(e.target.value)}
               readOnly={!isEditable}
               style={{ whiteSpace: "pre-wrap" }}
             />
-          ) : (
+            {/* Printable version for PDF */}
             <div
-              className="form-control bg-light"
-              style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}>
-              {principalRemarks}
+              className="d-none d-print-block mt-2"
+              style={{
+                whiteSpace: "pre-wrap",
+                border: "1px solid #ccc",
+                padding: "10px",
+                marginTop: "10px",
+              }}
+            >
+              {hodRemarks}
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          <div
+            className="form-control bg-light"
+            style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}
+          >
+            {hodRemarks}
+          </div>
+        )}
+      </div>
 
 
-        {/* Submit */}
-        <div className="text-center mt-4">
-          {isEditable && (
-            <button
-              className="btn btn-primary"
-              onClick={handleSubmit}
-              disabled={submitting}>
-              {submitting ? "Submitting..." : "Submit"}
-            </button>
-          )}
-        </div>
+      {/* Principal Final Remarks */}
+      <div className="mt-4">
+        <label><strong>Principal Remarks Entry:</strong></label>
+        {userRole === "principal" ? (
+          <textarea
+            rows={4}
+            className="form-control"
+            value={principalRemarks}
+            onChange={(e) => setPrincipalRemarks(e.target.value)}
+            readOnly={!isEditable}
+            style={{ whiteSpace: "pre-wrap" }}
+          />
+        ) : (
+          <div
+            className="form-control bg-light"
+            style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}>
+            {principalRemarks}
+          </div>
+        )}
+      </div>
+
+
+      {/* Submit */}
+      <div className="text-center mt-4">
+        {isEditable && (
+          <button
+            className="btn btn-primary"
+            onClick={handleSubmit}
+            disabled={submitting}>
+            {submitting ? "Submitting..." : "Submit"}
+          </button>
+        )}
+      </div>
 
       {/* Submission Status Modal */}
       {status === "success" || status === "error" ? (
