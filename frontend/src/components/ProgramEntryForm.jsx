@@ -89,6 +89,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         const yearObj = yearsRes.data.find((y) => y.id === academicYearId);
         if (yearObj) {
           const deadline = new Date(yearObj.deadline);
+          console.log("Fetched deadline raw value:", yearObj.deadline);
+          console.log("Parsed deadline object:", deadline);
           const today = new Date();
           const isBeforeDeadline = today <= deadline;
 

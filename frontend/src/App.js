@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Login from "./Login";
-import ProgramEntryForm from "./ProgramEntryForm";
+import Dashboard from './components/Dashboard';
+import ProgramEntryForm from "./components/ProgramEntryForm";
+import ProgramTypeManager from './components/ProgramTypeManager';
 import axios from "axios";
 
 function App() {
@@ -10,6 +12,7 @@ function App() {
   const [departments, setDepartments] = useState([]);
   const [academicYears, setAcademicYears] = useState([]);
   const [selectedAcademicYearId, setSelectedAcademicYearId] = useState("");
+  const [page, setPage] = useState("dashboard");  // <--- NEW: Track page
 
   // Load user from localStorage
   useEffect(() => {
@@ -27,14 +30,14 @@ function App() {
     }
   }, [user]);
 
-  // Load all academic years (not just enabled)
+  // Load academic years
   useEffect(() => {
     axios
       .get("http://127.0.0.1:8000/academic-years")
       .then((res) => {
         setAcademicYears(res.data);
         if (res.data.length > 0) {
-          setSelectedAcademicYearId(res.data[0].id); // Default to first
+          setSelectedAcademicYearId(res.data[0].id);
         }
       })
       .catch((err) => console.error("Failed to load academic years", err));
@@ -44,18 +47,14 @@ function App() {
     (departmentId) => {
       if (!selectedAcademicYearId) return;
       axios
-        .get(
-          `http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`
-        )
+        .get(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
         .catch((err) => {
           if (err.response?.status !== 404)
             console.error("Error fetching program counts", err);
         });
 
       axios
-        .get(
-          `http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`
-        )
+        .get(`http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
         .catch(() => {});
     },
     [selectedAcademicYearId]
@@ -70,9 +69,10 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
+    setPage("dashboard");
   };
 
-  if (!user) return <Login onLogin={setUser} />;
+  if (!user) return <Login onLogin={(u) => { setUser(u); setPage("dashboard"); }} />;
 
   return (
     <div className="container mt-4">
@@ -105,44 +105,54 @@ function App() {
         </select>
       </div>
 
-      {/* HoD Form */}
-      {user.role === "hod" && selectedAcademicYearId && (
-        <ProgramEntryForm
-          departmentId={user.departmentId}
-          academicYearId={selectedAcademicYearId}
-          userRole={user.role}
+      {/* Switch between Dashboard and ProgramEntryForm */}
+      {page === "dashboard" && (
+        <Dashboard
+          role={user.role}
+          onGoToProgramEntry={() => setPage("form")}
         />
       )}
 
-      {/* Principal Form */}
-      {user.role === "principal" && (
+      {page === "form" && (
         <>
-          <div className="mb-3">
-            <label><strong>Select Department:</strong></label>
-            <select
-              className="form-select"
-              value={user.departmentId || ""}
-              onChange={(e) => {
-                const deptId = Number(e.target.value);
-                setUser({ ...user, departmentId: deptId });
-                fetchProgramCounts(deptId);
-              }}
-            >
-              <option value="">-- Select Department --</option>
-              {departments.map((dept) => (
-                <option key={dept.id} value={dept.id}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {user.departmentId && selectedAcademicYearId && (
+          {user.role === "hod" && selectedAcademicYearId && (
             <ProgramEntryForm
               departmentId={user.departmentId}
               academicYearId={selectedAcademicYearId}
               userRole={user.role}
             />
+          )}
+
+          {user.role === "principal" && (
+            <>
+              <div className="mb-3">
+                <label><strong>Select Department:</strong></label>
+                <select
+                  className="form-select"
+                  value={user.departmentId || ""}
+                  onChange={(e) => {
+                    const deptId = Number(e.target.value);
+                    setUser({ ...user, departmentId: deptId });
+                    fetchProgramCounts(deptId);
+                  }}
+                >
+                  <option value="">-- Select Department --</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {user.departmentId && selectedAcademicYearId && (
+                <ProgramEntryForm
+                  departmentId={user.departmentId}
+                  academicYearId={selectedAcademicYearId}
+                  userRole={user.role}
+                />
+              )}
+            </>
           )}
         </>
       )}

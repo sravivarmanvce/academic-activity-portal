@@ -48,6 +48,12 @@ class ProgramTypeBase(BaseModel):
 class ProgramTypeCreate(ProgramTypeBase):
     pass
 
+class ProgramTypeCreate(ProgramTypeBase):
+    pass
+
+class ProgramTypeUpdate(ProgramTypeBase):
+    pass
+
 class ProgramTypeOut(ProgramTypeBase):
     id: int
 

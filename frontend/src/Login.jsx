@@ -1,10 +1,12 @@
 // src/Login.jsx
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login({ onLogin }) {
   const [role, setRole] = useState("hod");
   const [departmentId, setDepartmentId] = useState("");
   const [departments, setDepartments] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/departments")
@@ -23,6 +25,7 @@ function Login({ onLogin }) {
     };
     localStorage.setItem("user", JSON.stringify(user));
     onLogin(user);
+    navigate("/dashboard");
   };
 
   return (
