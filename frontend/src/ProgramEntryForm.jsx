@@ -240,7 +240,7 @@ if (departmentObj) {
       </head>
       <body>
         <div class="header">
-          <img src="logo.png" alt="College Logo" class="logo" />
+          <img src="assets/logo.png" alt="College Logo" class="logo" />
           <div>
             <strong>Department of ${departmentFullName} - Budget Proposals for Student Activities</strong><br/>
             Academic Year: ${selectedAcademicYear}
