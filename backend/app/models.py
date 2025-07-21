@@ -1,6 +1,6 @@
 # app/models.py
 
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, Boolean, Date
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, Boolean, DateTime
 from app.database import Base
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -25,7 +25,7 @@ class AcademicYear(Base):
     id = Column(Integer, primary_key=True, index=True)
     year = Column(String, unique=True, nullable=False)
     is_enabled = Column(Boolean, default=True)
-    deadline = Column(Date, nullable=True) 
+    deadline = Column(DateTime, nullable=True) 
 
 # -----------------------------
 # Program Types

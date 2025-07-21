@@ -2,7 +2,7 @@
 
 from typing import Optional, List
 from pydantic import BaseModel
-from datetime import date
+from datetime import datetime
 
 
 # -------------------------------
@@ -127,7 +127,7 @@ class AcademicYearOut(BaseModel):
     id: int
     year: str
     is_enabled: bool
-    deadline: date | None
+    deadline: datetime | None
 
     class Config:
         from_attributes = True  # Required for Pydantic v2

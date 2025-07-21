@@ -94,9 +94,19 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
           setDeadlineDisplay(
             deadline instanceof Date && !isNaN(deadline)
-              ? deadline.toLocaleDateString("en-GB")
+              ? deadline.toLocaleString("en-IN", {
+                  weekday: "long",       // e.g., Tuesday
+                  day: "2-digit",        // e.g., 22
+                  month: "2-digit",      // e.g., 07
+                  year: "numeric",       // e.g., 2025
+                  hour: "2-digit",       // e.g., 15
+                  minute: "2-digit",     // e.g., 45
+                  hour12: false,         // 24-hour format
+                  timeZone: "Asia/Kolkata"
+                }).replaceAll("/", "-")  // Change date separator
               : "Invalid Date"
           );
+
 
           setSelectedAcademicYear(yearObj.year);
 
