@@ -12,7 +12,7 @@ const Dashboard = ({ role }) => {
     <div className="container mt-4">
       <h4 className="mb-4">Dashboard ({role.toUpperCase()})</h4>
 
-      <div className="row g-4">
+      <div className="row g-3">
         {/* Program Entry Form Tile */}
         <div className="col-sm-6 col-lg-4">
           <div

@@ -1,12 +1,15 @@
-// src/App.js
-
 import React, { useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import Login from "./Login";
-import Dashboard from './components/Dashboard';
-import ProgramEntryForm from "./components/ProgramEntryForm";
-import ProgramTypeManager from './components/ProgramTypeManager';
 import axios from "axios";
+import Login from "./Login";
+import Header from "./components/Header";
+import Dashboard from "./components/Dashboard";
+import ProgramEntryForm from "./components/ProgramEntryForm";
+import ProgramTypeManager from "./components/ProgramTypeManager";
+
+// Future admin pages
+// import UserManagement from "./components/UserManagement";
+// import AcademicYearSetup from "./components/AcademicYearSetup";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -43,6 +46,7 @@ function App() {
 
   const fetchProgramCounts = useCallback((departmentId) => {
     if (!selectedAcademicYearId) return;
+
     axios.get(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
       .catch((err) => {
         if (err.response?.status !== 404)
@@ -65,16 +69,18 @@ function App() {
     navigate("/");
   };
 
-  if (!user) return <Login onLogin={(u) => { setUser(u); navigate("/"); }} />;
+  if (!user) {
+    return <Login onLogin={(u) => { setUser(u); navigate("/"); }} />;
+  }
 
   return (
     <div className="container mt-4">
-      <div className="d-flex justify-content-between mb-3">
-        <h3>Welcome, {user.role.toUpperCase()}</h3>
-        <button className="btn btn-secondary" onClick={handleLogout}>Logout</button>
-      </div>
+      <Header
+        userRole={user.role}
+        onLogout={handleLogout}
+      />
 
-      {/* Academic Year Dropdown */}
+      {/* Academic Year Dropdown - visible globally */}
       <div className="mb-3">
         <label><strong>Select Academic Year:</strong></label>
         <select
@@ -144,6 +150,17 @@ function App() {
         <Route path="/manage-types" element={
           user.role === "principal" && <ProgramTypeManager />
         } />
+
+        {/* Future routes for Admin */}
+        {/* 
+        <Route path="/manage-users" element={
+          user.role === "admin" && <UserManagement />
+        } />
+
+        <Route path="/academic-years" element={
+          user.role === "admin" && <AcademicYearSetup />
+        } />
+        */}
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

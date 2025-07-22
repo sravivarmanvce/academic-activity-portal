@@ -1,0 +1,38 @@
+/* src/components/Header.css */
+
+/* Sticky and styled navbar */
+.custom-navbar {
+  background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+  z-index: 1050; /* Always on top */
+}
+
+/* Style nav links */
+.navbar-nav .nav-link {
+  color: #ffffff;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffd700; /* gold on hover */
+}
+
+/* Welcome text spacing */
+.navbar-text {
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+/* Sticky padding to avoid overlap */
+body {
+  padding-top: 70px;
+}
+
+/* Collapse nav toggle (hamburger) */
+.navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255,255,255,0.8%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
