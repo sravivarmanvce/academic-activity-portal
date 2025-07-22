@@ -1,22 +1,50 @@
 // src/components/Dashboard.jsx
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { FaClipboardList, FaCogs } from "react-icons/fa";
+import "./Dashboard.css"; // Optional for tile styling
 
-import React from 'react';
+const Dashboard = ({ role }) => {
+  const isPrincipal = role === "principal";
+  const navigate = useNavigate();
 
-const Dashboard = ({ role, onGoToProgramEntry, onGoToProgramTypeManager }) => {
   return (
-    <div className="card p-4">
-      <h4>Dashboard ({role})</h4>
-      <p>This is your dashboard. You can navigate below:</p>
+    <div className="container mt-4">
+      <h4 className="mb-4">Dashboard ({role.toUpperCase()})</h4>
 
-      <button className="btn btn-primary me-2" onClick={onGoToProgramEntry}>
-        Go to Program Entry Form
-      </button>
+      <div className="row g-4">
+        {/* Program Entry Form Tile */}
+        <div className="col-sm-6 col-lg-4">
+          <div
+            className="card text-white bg-primary h-100 shadow dashboard-tile clickable-tile"
+            onClick={() => navigate("/bpsaform")}
+          >
+            <div className="card-body text-center">
+              <FaClipboardList size={36} className="mb-2" />
+              <h5 className="card-title">Budget Proposals for Student Activities</h5>
+              <p className="card-text">Submit or Review Student Activity Budgets</p>
+              <button className="btn btn-light mt-2">Go to Form</button>
+            </div>
+          </div>
+        </div>
 
-      {(role === "principal" || role === "admin") && (
-        <button className="btn btn-secondary mt-2" onClick={onGoToProgramTypeManager}>
-          Manage Program Types
-        </button>
-      )}
+        {/* Program Type Manager Tile (Principal only) */}
+        {isPrincipal && (
+          <div className="col-sm-6 col-lg-4">
+            <div
+              className="card text-white bg-success h-100 shadow dashboard-tile clickable-tile"
+              onClick={() => navigate("/manage-types")}
+            >
+              <div className="card-body text-center">
+                <FaCogs size={36} className="mb-2" />
+                <h5 className="card-title">Student Activities Program Type Manager</h5>
+                <p className="card-text">Manage Program Types, Categories and Access</p>
+                <button className="btn btn-light mt-2">Manage</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

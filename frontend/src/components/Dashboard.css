@@ -1,0 +1,13 @@
+/* src/components/Dashboard.css */
+
+/* Common tile styling */
+.dashboard-tile {
+  transition: transform 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+/* On hover: scale, lift, slight opacity */
+.dashboard-tile:hover {
+  transform: translateY(-5px) scale(1.02);
+  opacity: 0.95;
+}
