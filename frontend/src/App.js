@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import axios from "axios";
 import Login from "./Login";
 import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import ProgramEntryForm from "./components/ProgramEntryForm";
 import ProgramTypeManager from "./components/ProgramTypeManager";
-
+import API from "./Api";
 // Future admin pages
 // import UserManagement from "./components/UserManagement";
 // import AcademicYearSetup from "./components/AcademicYearSetup";
@@ -27,14 +26,14 @@ function App() {
 
   useEffect(() => {
     if (user?.role === "principal") {
-      axios.get("http://127.0.0.1:8000/departments")
+      API.get("/departments")
         .then((res) => setDepartments(res.data))
         .catch((err) => console.error("Failed to load departments", err));
     }
   }, [user]);
 
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/academic-years")
+    API.get("/academic-years")
       .then((res) => {
         setAcademicYears(res.data);
         if (res.data.length > 0) {
@@ -47,14 +46,24 @@ function App() {
   const fetchProgramCounts = useCallback((departmentId) => {
     if (!selectedAcademicYearId) return;
 
-    axios.get(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+    API.get(`/program-counts`, {
+      params: {
+        department_id: departmentId,
+        academic_year_id: selectedAcademicYearId,
+      },
+    })
       .catch((err) => {
         if (err.response?.status !== 404)
           console.error("Error fetching program counts", err);
       });
 
-    axios.get(`http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
-      .catch(() => {});
+    API.get("/principal-remarks", {
+      params: {
+        department_id: departmentId,
+        academic_year_id: selectedAcademicYearId,
+      },
+    })
+      .catch(() => { });
   }, [selectedAcademicYearId]);
 
   useEffect(() => {

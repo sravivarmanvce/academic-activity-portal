@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import API from "../Api";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "./ProgramEntryForm.css";
@@ -34,15 +34,15 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           hodRes,
           yearsRes
         ] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/program-types"),
-          axios.get(`http://127.0.0.1:8000/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
+          API.get("/program-types"),
+          API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
             .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
-          axios.get("http://127.0.0.1:8000/departments"),
-          axios.get(`http://127.0.0.1:8000/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
+          API.get("/departments"),
+          API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
             .catch(() => ({ data: { remarks: "" } })),
-          axios.get(`http://127.0.0.1:8000/hod-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
+          API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
             .catch(() => ({ data: { remarks: "" } })),
-          axios.get("http://127.0.0.1:8000/academic-years")
+          API.get("/academic-years")
         ]);
 
         const departmentObj = deptRes.data.find((d) => d.id === departmentId);
@@ -174,10 +174,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         remarks: entry.remarks || "",
       }));
 
-      await axios.post("http://127.0.0.1:8000/program-counts", { entries: payload });
+      await API.post("/program-counts", { entries: payload });
 
       if (userRole === "hod") {
-        await axios.post("http://127.0.0.1:8000/hod-remarks", {
+        await API.post("/hod-remarks", {
           department_id: departmentId,
           academic_year_id: academicYearId,
           remarks: hodRemarks,
@@ -185,7 +185,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       }
 
       if (userRole === "principal") {
-        await axios.post("http://127.0.0.1:8000/principal-remarks", {
+        await API.post("/principal-remarks", {
           department_id: departmentId,
           academic_year_id: academicYearId,
           remarks: principalRemarks,

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import departments, academic_years, program_counts, program_types
 from app.api.endpoints import principal_remarks
 from app.api.endpoints import hod_remarks
+from app.api.endpoints import program_types
 
 # Initialize FastAPI app
 app = FastAPI()

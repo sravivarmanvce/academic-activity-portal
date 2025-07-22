@@ -1,11 +1,13 @@
-// src/ProgramTypeManager.jsx
+// src/components/ProgramTypeManager.jsx
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../Api";
 import { Modal, Button, Form, Table } from "react-bootstrap";
 
 const ProgramTypeManager = () => {
   const [programTypes, setProgramTypes] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
 
@@ -15,26 +17,50 @@ const ProgramTypeManager = () => {
     activity_category: "",
     departments: "",
     budget_mode: "Fixed",
-    budget_per_event: ""
+    budget_per_event: "0",
   });
 
-  // Fetch program types
+  useEffect(() => {
+    API.get("/departments")
+      .then((res) => setDepartments(res.data))
+      .catch((err) => console.error("Failed to load departments", err));
+  }, []);
+
   const fetchProgramTypes = async () => {
     try {
-      const res = await axios.get("/program-types");
+      const res = await API.get("/program-types");
       setProgramTypes(res.data);
     } catch (error) {
       console.error("Failed to fetch program types:", error);
     }
   };
 
+  const fetchActivityCategories = async () => {
+    try {
+      const res = await API.get("/activity-categories");
+      setCategories(res.data);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
+  };
+
   useEffect(() => {
     fetchProgramTypes();
+    fetchActivityCategories();
   }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "budget_mode") {
+      setFormData((prev) => ({
+        ...prev,
+        budget_mode: value,
+        budget_per_event: value === "Variable" ? "0" : prev.budget_per_event || "",
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleAddClick = () => {
@@ -45,7 +71,7 @@ const ProgramTypeManager = () => {
       activity_category: "",
       departments: "",
       budget_mode: "Fixed",
-      budget_per_event: ""
+      budget_per_event: "0",
     });
     setShowModal(true);
   };
@@ -58,7 +84,7 @@ const ProgramTypeManager = () => {
       activity_category: pt.activity_category || "",
       departments: pt.departments || "",
       budget_mode: pt.budget_mode,
-      budget_per_event: pt.budget_per_event || ""
+      budget_per_event: pt.budget_per_event?.toString() || "0",
     });
     setShowModal(true);
   };
@@ -66,7 +92,7 @@ const ProgramTypeManager = () => {
   const handleDeleteClick = async (id) => {
     if (window.confirm("Are you sure you want to delete this program type?")) {
       try {
-        await axios.delete(`/program-types/${id}`);
+        await API.delete(`/program-types/${id}`);
         fetchProgramTypes();
       } catch (error) {
         alert("Failed to delete.");
@@ -76,11 +102,17 @@ const ProgramTypeManager = () => {
 
   const handleSubmit = async () => {
     try {
+      const payload = {
+        ...formData,
+        budget_per_event: formData.budget_mode === "Variable" ? 0 : parseFloat(formData.budget_per_event || "0"),
+      };
+
       if (editing) {
-        await axios.put(`/program-types/${editing}`, formData);
+        await API.put(`/program-types/${editing}`, payload);
       } else {
-        await axios.post("/program-types", formData);
+        await API.post("/program-types", payload);
       }
+
       fetchProgramTypes();
       setShowModal(false);
     } catch (error) {
@@ -157,23 +189,37 @@ const ProgramTypeManager = () => {
 
             <Form.Group className="mb-2">
               <Form.Label>Activity Category</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
                 name="activity_category"
                 value={formData.activity_category}
                 onChange={handleInputChange}
-              />
+              >
+                <option value="">-- Select --</option>
+                {categories.map((cat, idx) => (
+                  <option key={idx} value={cat}>{cat}</option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-2">
               <Form.Label>Departments</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
+                multiple
                 name="departments"
-                value={formData.departments}
-                onChange={handleInputChange}
-                placeholder="e.g., ALL or CSE, INF"
-              />
+                value={formData.departments.split(",")}
+                onChange={(e) => {
+                  const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+                  setFormData((prev) => ({ ...prev, departments: selected.join(",") }));
+                }}
+              >
+                <option value="ALL">ALL</option>
+                {departments.map((dept) => (
+                  <option key={dept.id} value={dept.name}>
+                    {dept.name}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Text muted>Use Ctrl/Command to select multiple departments</Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-2">
