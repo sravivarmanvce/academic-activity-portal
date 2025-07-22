@@ -4,6 +4,8 @@ from . import models
 from app.models import ProgramType
 from app.models import ProgramCount
 from app.models import AcademicYear
+from app.models import ModuleDeadline
+from app.schemas import ModuleDeadlineOut
 from app.schemas import ProgramCountCreate
 from app.schemas import ProgramTypeCreate
 from app.models import PrincipalRemark
@@ -16,6 +18,16 @@ import datetime
 
 def get_enabled_academic_years(db: Session):
     return db.query(models.AcademicYear).filter_by(is_enabled=True).all()
+
+def get_module_deadline(db: Session, academic_year_id: int, module: str):
+    return (
+        db.query(ModuleDeadline)
+        .filter(
+            ModuleDeadline.academic_year_id == academic_year_id,
+            ModuleDeadline.module == module
+        )
+        .first()
+    )
 
 def get_program_types(db: Session, department: Optional[str] = None):
     query = db.query(ProgramType)

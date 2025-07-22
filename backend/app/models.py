@@ -25,7 +25,18 @@ class AcademicYear(Base):
     id = Column(Integer, primary_key=True, index=True)
     year = Column(String, unique=True, nullable=False)
     is_enabled = Column(Boolean, default=True)
-    deadline = Column(DateTime, nullable=True) 
+
+# ----------------------------- 
+# Module Deadlines
+# -----------------------------
+
+class ModuleDeadline(Base):
+    __tablename__ = "module_deadlines"
+
+    id = Column(Integer, primary_key=True, index=True)
+    academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
+    module = Column(String, index=True)
+    deadline = Column(DateTime)
 
 # -----------------------------
 # Program Types
@@ -79,3 +90,4 @@ class HodRemarks(Base):
     department_id = Column(Integer, ForeignKey("departments.id"))
     academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
     remarks = Column(Text)
+

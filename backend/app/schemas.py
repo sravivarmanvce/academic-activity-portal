@@ -34,6 +34,23 @@ class AcademicYearOut(AcademicYearBase):
         orm_mode = True
 
 # -------------------------------
+# Module Deadline Schemas
+# -------------------------------
+class ModuleDeadlineBase(BaseModel):
+    academic_year_id: int
+    module: str
+    deadline: Optional[datetime]
+
+class ModuleDeadlineCreate(ModuleDeadlineBase):
+    pass
+
+class ModuleDeadlineOut(ModuleDeadlineBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------------------
 # Program Type Schemas
 # -------------------------------
 
@@ -133,7 +150,6 @@ class AcademicYearOut(BaseModel):
     id: int
     year: str
     is_enabled: bool
-    deadline: datetime | None
 
     class Config:
         from_attributes = True  # Required for Pydantic v2

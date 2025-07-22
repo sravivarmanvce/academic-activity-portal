@@ -22,109 +22,116 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const printRef = useRef();
 
   useEffect(() => {
-    if (!departmentId || !academicYearId) return;
+  if (!departmentId || !academicYearId) return;
 
-    const fetchAll = async () => {
-      try {
-        const [
-          typesRes,
-          countsRes,
-          deptRes,
-          principalRes,
-          hodRes,
-          yearsRes
-        ] = await Promise.all([
-          API.get("/program-types"),
-          API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-            .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
-          API.get("/departments"),
-          API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-            .catch(() => ({ data: { remarks: "" } })),
-          API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-            .catch(() => ({ data: { remarks: "" } })),
-          API.get("/academic-years")
-        ]);
+  const fetchAll = async () => {
+    try {
+      const [
+        typesRes,
+        countsRes,
+        deptRes,
+        principalRes,
+        hodRes,
+        yearsRes
+      ] = await Promise.all([
+        API.get("/program-types"),
+        API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
+          .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
+        API.get("/departments"),
+        API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
+          .catch(() => ({ data: { remarks: "" } })),
+        API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
+          .catch(() => ({ data: { remarks: "" } })),
+        API.get("/academic-years")
+      ]);
 
-        const departmentObj = deptRes.data.find((d) => d.id === departmentId);
-        if (departmentObj) {
-          setDepartmentName(departmentObj.name || "");         // short name
-          setDepartmentFullName(departmentObj.full_name || ""); // full name
+      const departmentObj = deptRes.data.find((d) => d.id === departmentId);
+      if (departmentObj) {
+        setDepartmentName(departmentObj.name || "");
+        setDepartmentFullName(departmentObj.full_name || "");
+      }
+
+      setPrincipalRemarks(principalRes.data.remarks || "");
+      setHodRemarks(hodRes.data.remarks || "");
+
+      const filteredTypes = typesRes.data.filter(
+        (p) =>
+          p.departments === "ALL" ||
+          p.departments.split(",").map((d) => d.trim()).includes(departmentObj.name)
+      );
+
+      const merged = filteredTypes.map((type) => {
+        const match = countsRes.data.find(
+          (c) =>
+            c.program_type === type.program_type &&
+            c.sub_program_type === type.sub_program_type
+        );
+        return {
+          ...type,
+          count: match?.count ?? 0,
+          total_budget: match?.total_budget ?? 0,
+          remarks: match?.remarks ?? "",
+          id: match?.id || null,
+        };
+      });
+
+      const groupedObj = {};
+      merged.forEach((item) => {
+        if (!groupedObj[item.activity_category]) {
+          groupedObj[item.activity_category] = [];
         }
-        setPrincipalRemarks(principalRes.data.remarks || "");
-        setHodRemarks(hodRes.data.remarks || "");
+        groupedObj[item.activity_category].push(item);
+      });
 
-        const filteredTypes = typesRes.data.filter(
-          (p) =>
-            p.departments === "ALL" ||
-            p.departments.split(",").map((d) => d.trim()).includes(departmentObj.name)
+      setMergedData(merged);
+      setGrouped(groupedObj);
+
+      // 🔁 Academic year name
+      const yearObj = yearsRes.data.find((y) => y.id === academicYearId);
+      setSelectedAcademicYear(yearObj?.year || "");
+
+      // 🔁 Fetch deadline from module_deadlines
+      try {
+        const deadlineRes = await API.get(
+          `/module-deadlines?academic_year_id=${academicYearId}&module_name=program_entry`
+        );
+        const deadline = new Date(deadlineRes.data.deadline);
+        const today = new Date();
+        const isBeforeDeadline = today <= deadline;
+
+        setDeadlineDisplay(
+          deadline instanceof Date && !isNaN(deadline)
+            ? deadline.toLocaleString("en-IN", {
+                weekday: "long",
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+                timeZone: "Asia/Kolkata"
+              }).replaceAll("/", "-")
+            : "Invalid Date"
         );
 
-        const merged = filteredTypes.map((type) => {
-          const match = countsRes.data.find(
-            (c) =>
-              c.program_type === type.program_type &&
-              c.sub_program_type === type.sub_program_type
-          );
-          return {
-            ...type,
-            count: match?.count ?? 0,
-            total_budget: match?.total_budget ?? 0,
-            remarks: match?.remarks ?? "",
-            id: match?.id || null,
-          };
-        });
-
-        const groupedObj = {};
-        merged.forEach((item) => {
-          if (!groupedObj[item.activity_category]) {
-            groupedObj[item.activity_category] = [];
-          }
-          groupedObj[item.activity_category].push(item);
-        });
-
-        setMergedData(merged);
-        setGrouped(groupedObj);
-
-        // Deadline logic
-        const yearObj = yearsRes.data.find((y) => y.id === academicYearId);
-        if (yearObj) {
-          const deadline = new Date(yearObj.deadline);
-          console.log("Fetched deadline raw value:", yearObj.deadline);
-          console.log("Parsed deadline object:", deadline);
-          const today = new Date();
-          const isBeforeDeadline = today <= deadline;
-
-          setDeadlineDisplay(
-            deadline instanceof Date && !isNaN(deadline)
-              ? deadline.toLocaleString("en-IN", {
-                  weekday: "long",       // e.g., Tuesday
-                  day: "2-digit",        // e.g., 22
-                  month: "2-digit",      // e.g., 07
-                  year: "numeric",       // e.g., 2025
-                  hour: "2-digit",       // e.g., 15
-                  minute: "2-digit",     // e.g., 45
-                  hour12: false,         // 24-hour format
-                  timeZone: "Asia/Kolkata"
-                }).replaceAll("/", "-")  // Change date separator
-              : "Invalid Date"
-          );
-
-
-          setSelectedAcademicYear(yearObj.year);
-
-          if (userRole === "principal") {
-            setIsEditable(true); // Principal can always edit
-          } else if (userRole === "hod") {
-            setIsEditable(yearObj.is_enabled && isBeforeDeadline);
-          }
+        if (userRole === "principal") {
+          setIsEditable(true);
+        } else if (userRole === "hod") {
+          setIsEditable(yearObj?.is_enabled && isBeforeDeadline);
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } catch (e) {
+        console.warn("No module deadline found");
+        setDeadlineDisplay("No deadline set");
+        setIsEditable(false);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
-    fetchAll();
-  }, [departmentId, academicYearId, userRole]);
+  fetchAll();
+}, [departmentId, academicYearId, userRole]);
+
 
   const handleChange = (index, field, value) => {
     setMergedData((prev) => {
