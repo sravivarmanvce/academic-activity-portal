@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../Api";
 import { FaTrash, FaEdit } from "react-icons/fa";
-import { MdPersonAddAlt1 } from "react-icons/md";
+import { MdPersonAddAlt1, MdUploadFile, MdPersonSearch } from "react-icons/md";
 
 const defaultUser = {
   name: "",
@@ -16,6 +16,11 @@ const ManageUsers = () => {
   const [editingId, setEditingId] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [csvFile, setCsvFile] = useState(null);
+  const [selectedDept, setSelectedDept] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchPerformed, setSearchPerformed] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -103,7 +108,32 @@ const ManageUsers = () => {
     }
   };
 
-    // ✅ CSV Upload Handlers
+  // ✅ Search Functionality
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const results = users.filter((user) => {
+      const matchesDept = !selectedDept || user.department_id === parseInt(selectedDept);
+      const matchesRole = !selectedRole || user.role === selectedRole;
+      const matchesText =
+        !searchTerm ||
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return matchesDept && matchesRole && matchesText;
+    });
+    setFilteredUsers(results);
+    setSearchPerformed(true);
+  };
+
+  const handleReset = () => {
+    setSelectedDept("");
+    setSelectedRole("");
+    setSearchTerm("");
+    setFilteredUsers([]);
+    setSearchPerformed(false);
+  };
+
+  // ✅ CSV Upload Handlers
   const handleCsvChange = (e) => {
     setCsvFile(e.target.files[0]);
   };
@@ -135,11 +165,11 @@ const ManageUsers = () => {
   return (
     <div className="container py-4">
       <h2 className="fs-4 fw-bold mb-4 d-flex align-items-center gap-2 text-primary">
-        <MdPersonAddAlt1 size={24} />
-        Manage Users
+        <MdUploadFile size={24} />
+        Upload Users
       </h2>
 
-{/* ✅ CSV Upload Section */}
+      {/* ✅ CSV Upload Section */}
       <div className="mb-3 d-flex align-items-center gap-2">
         <input
           type="file"
@@ -152,12 +182,15 @@ const ManageUsers = () => {
           Upload CSV
         </button>
       </div>
-<div style={{ height: "40px" }}></div>
+      <div style={{ height: "10px" }}></div>
+      <h5 className="mb-4 text-primary fw-bold">
+        <MdPersonAddAlt1 size={24} /> Add Users
+      </h5>
       {/* Form */}
+      <div className="p-4 rounded-4 shadow bg-white border border-primary-subtle mb-4">
       <form
         onSubmit={handleSubmit}
-        className="row g-3 bg-light p-4 rounded-4 shadow-sm border"
-      >
+        className="row g-3 p-1">
         <div className="col-md-3">
           <input
             type="text"
@@ -233,8 +266,64 @@ const ManageUsers = () => {
             </button>
           )}
         </div>
-
       </form>
+      </div>
+      <div style={{ height: "10px" }}></div>
+      <h5 className="mb-4 text-primary fw-bold">
+        <MdPersonSearch size={24} />Search Users
+      </h5>
+      {/* Search Section */}
+      <div className="p-4 rounded-4 shadow bg-white border border-primary-subtle mb-4">
+      <form onSubmit={handleSearch} className="mb-4 p-2">
+        <div className="row">
+          <div className="col-md-3 mb-2">
+            <select
+              className="form-control"
+              value={selectedDept}
+              onChange={(e) => setSelectedDept(e.target.value)}
+            >
+              <option value="">All Departments</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-md-3 mb-2">
+            <select
+              className="form-control"
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+            >
+              <option value="">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="principal">Principal</option>
+              <option value="hod">HoD</option>
+              <option value="faculty">Faculty</option>
+              <option value="dean">Dean</option>
+            </select>
+          </div>
+          <div className="col-md-3 mb-2">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by name or email"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="col-md-3 mb-2 d-flex gap-2">
+            <button className="btn btn-primary w-50" type="submit">
+              Search
+            </button>
+            <button className="btn btn-secondary w-50" type="button" onClick={handleReset}>
+              Reset
+            </button>
+          </div>
+        </div>
+      </form>
+      </div>
 
       {/* Table */}
       <div className="table-responsive mt-5">
@@ -249,14 +338,14 @@ const ManageUsers = () => {
             </tr>
           </thead>
           <tbody>
-            {users.length === 0 ? (
+            {(searchPerformed ? filteredUsers : users).length === 0 ? (
               <tr>
                 <td colSpan="5" className="text-center py-4 text-secondary">
                   No users found.
                 </td>
               </tr>
             ) : (
-              users.map((u) => (
+              (searchPerformed ? filteredUsers : users).map((u) => (
                 <tr key={u.id}>
                   <td>{u.name}</td>
                   <td>{u.email}</td>
@@ -282,6 +371,7 @@ const ManageUsers = () => {
               ))
             )}
           </tbody>
+
         </table>
       </div>
     </div>
