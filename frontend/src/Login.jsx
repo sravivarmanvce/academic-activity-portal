@@ -41,6 +41,7 @@ function Login({ onLogin }) {
           >
             <option value="hod">HoD</option>
             <option value="principal">Principal</option>
+            <option value="admin">Admin</option>
           </select>
         </div>
 

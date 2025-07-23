@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import ProgramEntryForm from "./components/ProgramEntryForm";
 import ProgramTypeManager from "./components/ProgramTypeManager";
+import AdminDashboard from "./components/AdminDashboard";
 import API from "./Api";
 // Future admin pages
 // import UserManagement from "./components/UserManagement";
@@ -25,12 +26,22 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (user?.role === "principal") {
+    if (user?.role === "principal" || user?.role === "admin") {
       API.get("/departments")
         .then((res) => setDepartments(res.data))
         .catch((err) => console.error("Failed to load departments", err));
     }
   }, [user]);
+
+  useEffect(() => {
+  if (user?.role === "principal" || user?.role === "admin") {
+    API.get("/departments")
+      .then((res) => {
+        setDepartments(res.data);
+      })
+      .catch((err) => console.error("Failed to load departments", err));
+  }
+}, [user]);
 
   useEffect(() => {
     API.get("/academic-years")
@@ -114,6 +125,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Dashboard role={user.role} />} />
 
+        <Route path="/admin" element={<AdminDashboard />} />
+
         <Route path="/bpsaform" element={
           <>
             {user.role === "hod" && selectedAcademicYearId && (
@@ -153,6 +166,38 @@ function App() {
                 )}
               </>
             )}
+
+
+            {/* ✅ For Admin (similar to Principal) */}
+            {user.role === "admin" && (
+              <>
+                <div className="mb-3">
+                  <label><strong>Select Department:</strong></label>
+                  <select
+                    className="form-select"
+                    value={user.departmentId || ""}
+                    onChange={(e) => {
+                      const deptId = Number(e.target.value);
+                      setUser({ ...user, departmentId: deptId });
+                      fetchProgramCounts(deptId);
+                    }}
+                  >
+                    <option value="">-- Select Department --</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>{dept.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {user.departmentId && selectedAcademicYearId && (
+                  <ProgramEntryForm
+                    departmentId={user.departmentId}
+                    academicYearId={selectedAcademicYearId}
+                    userRole="admin"
+                  />
+                )}
+              </>
+            )}  
           </>
         } />
 

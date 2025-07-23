@@ -114,7 +114,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             : "Invalid Date"
         );
 
-        if (userRole === "principal") {
+        if (userRole === "principal" || userRole === "admin") {
           setIsEditable(true);
         } else if (userRole === "hod") {
           setIsEditable(yearObj?.is_enabled && isBeforeDeadline);
