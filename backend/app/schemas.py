@@ -1,9 +1,29 @@
 # app/schemas.py
 
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
+# -------------------------------
+# User Schemas
+# -------------------------------
+class UserBase(BaseModel):
+    name: str
+    email: EmailStr
+    role: str
+    department_id: Optional[int] = None
+
+class UserCreate(UserBase):
+    pass
+
+class UserUpdate(UserBase):
+    pass
+
+class UserOut(UserBase):
+    id: int
+
+    class Config:
+        orm_mode = True
 
 # -------------------------------
 # Department Schemas

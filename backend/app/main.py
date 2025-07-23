@@ -1,6 +1,7 @@
 # app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.endpoints import users
 from app.api.endpoints import departments, academic_years, program_counts, program_types
 from app.api.endpoints import deadlines
 from app.api.endpoints import principal_remarks
@@ -17,6 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(users.router)
 app.include_router(departments.router)
 app.include_router(academic_years.router)
 app.include_router(deadlines.router)

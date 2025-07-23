@@ -5,7 +5,9 @@ import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import ProgramEntryForm from "./components/ProgramEntryForm";
 import ProgramTypeManager from "./components/ProgramTypeManager";
-import AdminDashboard from "./components/AdminDashboard";
+import ManageUsers from "./components/ManageUsers";
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import API from "./Api";
 // Future admin pages
 // import UserManagement from "./components/UserManagement";
@@ -125,7 +127,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Dashboard role={user.role} />} />
 
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<ManageUsers />} />
 
         <Route path="/bpsaform" element={
           <>
@@ -202,7 +204,7 @@ function App() {
         } />
 
         <Route path="/manage-types" element={
-          user.role === "principal" && <ProgramTypeManager />
+          (user.role === "principal" || user.role === "admin") && <ProgramTypeManager />
         } />
 
         {/* Future routes for Admin */}
