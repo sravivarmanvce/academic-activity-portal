@@ -15,6 +15,7 @@ const ManageUsers = () => {
   const [formData, setFormData] = useState(defaultUser);
   const [editingId, setEditingId] = useState(null);
   const [departments, setDepartments] = useState([]);
+  const [csvFile, setCsvFile] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -102,6 +103,35 @@ const ManageUsers = () => {
     }
   };
 
+    // ✅ CSV Upload Handlers
+  const handleCsvChange = (e) => {
+    setCsvFile(e.target.files[0]);
+  };
+
+  const handleCsvUpload = async () => {
+    if (!csvFile) {
+      alert("Please select a CSV file to upload.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", csvFile);
+
+    try {
+      await API.post("/users/upload-csv", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      alert("CSV uploaded successfully");
+      fetchUsers();
+      setCsvFile(null);
+    } catch (err) {
+      alert(err.response?.data?.detail || "CSV upload failed");
+    }
+  };
+
+
   return (
     <div className="container py-4">
       <h2 className="fs-4 fw-bold mb-4 d-flex align-items-center gap-2 text-primary">
@@ -109,6 +139,20 @@ const ManageUsers = () => {
         Manage Users
       </h2>
 
+{/* ✅ CSV Upload Section */}
+      <div className="mb-3 d-flex align-items-center gap-2">
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleCsvChange}
+          className="form-control"
+          style={{ maxWidth: "300px" }}
+        />
+        <button className="btn btn-success" onClick={handleCsvUpload}>
+          Upload CSV
+        </button>
+      </div>
+<div style={{ height: "40px" }}></div>
       {/* Form */}
       <form
         onSubmit={handleSubmit}
