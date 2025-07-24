@@ -1,0 +1,53 @@
+/* src/Login.css */
+
+.login-page {
+  background: linear-gradient(to bottom, #0d6efd, #6610f2); /* white to light grey */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.login-container {
+  background: linear-gradient(135deg, #0d6efd, #6610f2);
+  background-position: center;
+}
+
+.login-box {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 30px 40px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.login-logo {
+  width: 150px;
+  height: auto;
+}
+
+.fade-in {
+  animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-control,
+.form-check-input {
+  background-color: #fff;
+}
+
+.btn-light:hover {
+  background-color: #f8f9fa;
+  color: #000;
+}

@@ -11,7 +11,7 @@ import ManageUsers from "./components/ManageUsers";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import API from "./Api";
-import ProtectedRoute from "./ProtectedRoute"; // ✅ Added
+import ProtectedRoute from "./ProtectedRoute"; 
 
 function App() {
   const [user, setUser] = useState(null);
