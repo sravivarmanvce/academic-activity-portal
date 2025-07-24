@@ -90,56 +90,54 @@ function App() {
   };
 
   return (
-    <div className="container mt-4">
-      {user && (
-  <Header
-    userRole={user.role}
-    onLogout={handleLogout}
-  />
-)}
-
-      {/* Academic Year Dropdown - visible globally */}
-      <div className="mb-3">
-        <label><strong>Select Academic Year:</strong></label>
-        <select
-          className="form-select"
-          value={selectedAcademicYearId}
-          onChange={(e) => {
-            setSelectedAcademicYearId(Number(e.target.value));
-            if (user?.departmentId) {
-              fetchProgramCounts(user.departmentId);
-            }
-          }}
-        >
-          <option value="">-- Select Academic Year --</option>
-          {academicYears.map((year) => (
-            <option key={year.id} value={year.id}>
-              {year.year}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <Routes key={user?.id}>
+  <div className="container mt-4">
+    {!user ? (
+      <Routes>
         <Route path="/login" element={<Login onLogin={(u) => setUser(u)} />} />
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    ) : (
+      <>
+        <Header userRole={user.role} onLogout={handleLogout} />
 
-        <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+        {/* Academic Year Dropdown */}
+        <div className="mb-3">
+          <label><strong>Select Academic Year:</strong></label>
+          <select
+            className="form-select"
+            value={selectedAcademicYearId}
+            onChange={(e) => {
+              setSelectedAcademicYearId(Number(e.target.value));
+              if (user?.departmentId) {
+                fetchProgramCounts(user.departmentId);
+              }
+            }}
+          >
+            <option value="">-- Select Academic Year --</option>
+            {academicYears.map((year) => (
+              <option key={year.id} value={year.id}>{year.year}</option>
+            ))}
+          </select>
+        </div>
 
-        <Route path="/dashboard" element={
-          <ProtectedRoute user={user}>
-            <Dashboard role={user.role} />
-          </ProtectedRoute>
-        } />
+        <Routes key={user.id}>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
 
-        <Route path="/admin/users" element={
-          <ProtectedRoute user={user} allowedRoles={["admin"]}>
-            <ManageUsers />
-          </ProtectedRoute>
-        } />
+          <Route path="/dashboard" element={
+            <ProtectedRoute user={user}>
+              <Dashboard role={user.role} />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/bpsaform" element={
-          <ProtectedRoute user={user} allowedRoles={["hod", "principal", "admin"]}>
-            <>
+          <Route path="/admin/users" element={
+            <ProtectedRoute user={user} allowedRoles={["admin"]}>
+              <ManageUsers />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/bpsaform" element={
+            <ProtectedRoute user={user} allowedRoles={["hod", "principal", "admin"]}>
+              {/* BPSA logic remains same */}
               {user.role === "hod" && selectedAcademicYearId && (
                 <ProgramEntryForm
                   departmentId={user.departmentId}
@@ -147,7 +145,6 @@ function App() {
                   userRole={user.role}
                 />
               )}
-
               {user.role === "principal" && (
                 <>
                   <div className="mb-3">
@@ -167,7 +164,6 @@ function App() {
                       ))}
                     </select>
                   </div>
-
                   {user.departmentId && selectedAcademicYearId && (
                     <ProgramEntryForm
                       departmentId={user.departmentId}
@@ -177,8 +173,6 @@ function App() {
                   )}
                 </>
               )}
-
-              {/* ✅ For Admin (similar to Principal) */}
               {user.role === "admin" && (
                 <>
                   <div className="mb-3">
@@ -198,7 +192,6 @@ function App() {
                       ))}
                     </select>
                   </div>
-
                   {user.departmentId && selectedAcademicYearId && (
                     <ProgramEntryForm
                       departmentId={user.departmentId}
@@ -208,30 +201,22 @@ function App() {
                   )}
                 </>
               )}
-            </>
-          </ProtectedRoute>
-        } />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/manage-types" element={
-          <ProtectedRoute user={user} allowedRoles={["principal", "admin"]}>
-            <ManageProgramTypes />
-          </ProtectedRoute>
-        } />
+          <Route path="/manage-types" element={
+            <ProtectedRoute user={user} allowedRoles={["principal", "admin"]}>
+              <ManageProgramTypes />
+            </ProtectedRoute>
+          } />
 
-        {/* Future routes for Admin */}
-        {/* 
-        <Route path="/academic-years" element={
-          <ProtectedRoute user={user} allowedRoles={["admin"]}>
-            <AcademicYearSetup />
-          </ProtectedRoute>
-        } />
-        */}
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
+      </>
+    )}
+  </div>
+);
 
-        <Route path="/" element={<Navigate to="/dashboard" />} />
-        <Route path="*" element={<Navigate to="/dashboard" />} />
-      </Routes>
-    </div>
-  );
 }
 
 export default App;
