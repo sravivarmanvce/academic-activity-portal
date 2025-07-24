@@ -6,6 +6,7 @@ from app.api.endpoints import departments, academic_years, program_counts, progr
 from app.api.endpoints import deadlines
 from app.api.endpoints import principal_remarks
 from app.api.endpoints import hod_remarks
+from app.api.endpoints import auth
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -26,3 +27,4 @@ app.include_router(program_counts.router)
 app.include_router(program_types.router)
 app.include_router(principal_remarks.router)
 app.include_router(hod_remarks.router)
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])

@@ -40,7 +40,7 @@ function Header({ userRole, onLogout }) {
           {userRole === "admin" && (
             <>
               <li className="nav-item">
-                <Link className="nav-link" to="/manage-users">User Management</Link>
+                <Link className="nav-link" to="/admin/users">User Management</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/academic-years">Academic Year Setup</Link>

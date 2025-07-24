@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ...database import SessionLocal
 from ... import crud, schemas
+from app.models import AcademicYear
 
 router = APIRouter(prefix="/academic-years", tags=["Academic Years"])
 
@@ -24,7 +25,7 @@ def get_enabled_years(db: Session = Depends(get_db)):
 
 @router.get("/academic-years/{year_id}", response_model=schemas.AcademicYearOut)
 def get_year(year_id: int, db: Session = Depends(get_db)):
-    year = db.query(models.AcademicYear).filter(models.AcademicYear.id == year_id).first()
+    year = db.query(AcademicYear).filter(AcademicYear.id == year_id).first()
     if not year:
         raise HTTPException(status_code=404, detail="Year not found")
     return year

@@ -1,72 +1,63 @@
-// src/Login.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import API from "./Api";
 import { useNavigate } from "react-router-dom";
 
-function Login({ onLogin }) {
-  const [role, setRole] = useState("hod");
-  const [departmentId, setDepartmentId] = useState("");
-  const [departments, setDepartments] = useState([]);
+const Login = ({ onLogin }) => {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/departments")
-      .then((res) => res.json())
-      .then((data) => setDepartments(data))
-      .catch((err) => console.error("Failed to load departments", err));
-  }, []);
-
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (role === "hod" && !departmentId) return alert("Select Department");
+    setError("");
 
-    const user = {
-      role,
-      departmentId: role === "hod" ? parseInt(departmentId) : null,
-    };
-    localStorage.setItem("user", JSON.stringify(user));
-    onLogin(user);
-    navigate("/dashboard");
+    try {
+      const res = await API.post("/auth/login", null, {
+        params: { email },
+      });
+
+      if (res?.data) {
+        const mappedUser = {
+          ...res.data,
+          departmentId: res.data.department_id, // consistent field for frontend
+        };
+
+        localStorage.setItem("user", JSON.stringify(mappedUser));
+        onLogin(mappedUser); // ✅ update App.js user state
+        navigate("/dashboard"); // ✅ route to dashboard
+      } else {
+        setError("Login failed: No user data returned.");
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        setError("User not found. Please check your email.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    }
   };
 
   return (
-    <div className="container mt-5">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Role</label>
-          <select
-            className="form-select"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="hod">HoD</option>
-            <option value="principal">Principal</option>
-            <option value="admin">Admin</option>
-          </select>
+    <div className="container mt-5" style={{ maxWidth: "400px" }}>
+      <h3 className="mb-4">Login with Email</h3>
+      <form onSubmit={handleLogin}>
+        <div className="form-group mb-3">
+          <label>Email</label>
+          <input
+            type="email"
+            className="form-control"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
-
-        {role === "hod" && (
-          <div className="mb-3">
-            <label className="form-label">Department</label>
-            <select
-              className="form-select"
-              value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value)}
-            >
-              <option value="">-- Select --</option>
-              {departments.map((dept) => (
-                <option key={dept.id} value={dept.id}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <button type="submit" className="btn btn-primary">Login</button>
+        {error && <div className="alert alert-danger">{error}</div>}
+        <button type="submit" className="btn btn-primary w-100">
+          Login
+        </button>
       </form>
     </div>
   );
-}
+};
 
 export default Login;

@@ -99,3 +99,13 @@ def save_or_update_hod_remark(db: Session, data: HodRemarksCreate):
     db.commit()
     db.refresh(existing)
     return existing
+
+def get_module_deadline(db: Session, academic_year_id: int, module: str):
+    return db.query(models.ModuleDeadline).filter_by(
+        academic_year_id=academic_year_id,
+        module=module
+    ).first()
+
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()

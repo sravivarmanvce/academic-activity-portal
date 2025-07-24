@@ -1,10 +1,11 @@
-// src/components/ProgramTypeManager.jsx
+// src/components/ManageProgramTypes.jsx
 
 import React, { useEffect, useState } from "react";
 import API from "../Api";
 import { Modal, Button, Form, Table } from "react-bootstrap";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
-const ProgramTypeManager = () => {
+const ManageProgramTypes = () => {
   const [programTypes, setProgramTypes] = useState([]);
   const [categories, setCategories] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -152,8 +153,8 @@ const ProgramTypeManager = () => {
               <td>{pt.budget_mode}</td>
               <td>{pt.budget_per_event}</td>
               <td>
-                <Button variant="warning" size="sm" onClick={() => handleEditClick(pt)}>Edit</Button>{" "}
-                <Button variant="danger" size="sm" onClick={() => handleDeleteClick(pt.id)}>Delete</Button>
+                <Button variant="warning" size="sm" onClick={() => handleEditClick(pt)}><FaEdit /></Button>{" "}
+                <Button variant="danger" size="sm" onClick={() => handleDeleteClick(pt.id)}><FaTrash /></Button>
               </td>
             </tr>
           ))}
@@ -255,4 +256,4 @@ const ProgramTypeManager = () => {
   );
 };
 
-export default ProgramTypeManager;
+export default ManageProgramTypes;

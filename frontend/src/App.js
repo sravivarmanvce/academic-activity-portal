@@ -1,17 +1,17 @@
+// frontend/src/App.js
+
 import React, { useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Login from "./Login";
 import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import ProgramEntryForm from "./components/ProgramEntryForm";
-import ProgramTypeManager from "./components/ProgramTypeManager";
+import ManageProgramTypes from "./components/ManageProgramTypes";
 import ManageUsers from "./components/ManageUsers";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import API from "./Api";
-// Future admin pages
-// import UserManagement from "./components/UserManagement";
-// import AcademicYearSetup from "./components/AcademicYearSetup";
+import ProtectedRoute from "./ProtectedRoute"; // ✅ Added
 
 function App() {
   const [user, setUser] = useState(null);
@@ -36,14 +36,14 @@ function App() {
   }, [user]);
 
   useEffect(() => {
-  if (user?.role === "principal" || user?.role === "admin") {
-    API.get("/departments")
-      .then((res) => {
-        setDepartments(res.data);
-      })
-      .catch((err) => console.error("Failed to load departments", err));
-  }
-}, [user]);
+    if (user?.role === "principal" || user?.role === "admin") {
+      API.get("/departments")
+        .then((res) => {
+          setDepartments(res.data);
+        })
+        .catch((err) => console.error("Failed to load departments", err));
+    }
+  }, [user]);
 
   useEffect(() => {
     API.get("/academic-years")
@@ -64,19 +64,17 @@ function App() {
         department_id: departmentId,
         academic_year_id: selectedAcademicYearId,
       },
-    })
-      .catch((err) => {
-        if (err.response?.status !== 404)
-          console.error("Error fetching program counts", err);
-      });
+    }).catch((err) => {
+      if (err.response?.status !== 404)
+        console.error("Error fetching program counts", err);
+    });
 
     API.get("/principal-remarks", {
       params: {
         department_id: departmentId,
         academic_year_id: selectedAcademicYearId,
       },
-    })
-      .catch(() => { });
+    }).catch(() => { });
   }, [selectedAcademicYearId]);
 
   useEffect(() => {
@@ -91,16 +89,14 @@ function App() {
     navigate("/");
   };
 
-  if (!user) {
-    return <Login onLogin={(u) => { setUser(u); navigate("/"); }} />;
-  }
-
   return (
     <div className="container mt-4">
-      <Header
-        userRole={user.role}
-        onLogout={handleLogout}
-      />
+      {user && (
+  <Header
+    userRole={user.role}
+    onLogout={handleLogout}
+  />
+)}
 
       {/* Academic Year Dropdown - visible globally */}
       <div className="mb-3">
@@ -124,101 +120,115 @@ function App() {
         </select>
       </div>
 
-      <Routes>
-        <Route path="/" element={<Dashboard role={user.role} />} />
+      <Routes key={user?.id}>
+        <Route path="/login" element={<Login onLogin={(u) => setUser(u)} />} />
 
-        <Route path="/admin/users" element={<ManageUsers />} />
+        <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+
+        <Route path="/dashboard" element={
+          <ProtectedRoute user={user}>
+            <Dashboard role={user.role} />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/users" element={
+          <ProtectedRoute user={user} allowedRoles={["admin"]}>
+            <ManageUsers />
+          </ProtectedRoute>
+        } />
 
         <Route path="/bpsaform" element={
-          <>
-            {user.role === "hod" && selectedAcademicYearId && (
-              <ProgramEntryForm
-                departmentId={user.departmentId}
-                academicYearId={selectedAcademicYearId}
-                userRole={user.role}
-              />
-            )}
+          <ProtectedRoute user={user} allowedRoles={["hod", "principal", "admin"]}>
+            <>
+              {user.role === "hod" && selectedAcademicYearId && (
+                <ProgramEntryForm
+                  departmentId={user.departmentId}
+                  academicYearId={selectedAcademicYearId}
+                  userRole={user.role}
+                />
+              )}
 
-            {user.role === "principal" && (
-              <>
-                <div className="mb-3">
-                  <label><strong>Select Department:</strong></label>
-                  <select
-                    className="form-select"
-                    value={user.departmentId || ""}
-                    onChange={(e) => {
-                      const deptId = Number(e.target.value);
-                      setUser({ ...user, departmentId: deptId });
-                      fetchProgramCounts(deptId);
-                    }}
-                  >
-                    <option value="">-- Select Department --</option>
-                    {departments.map((dept) => (
-                      <option key={dept.id} value={dept.id}>{dept.name}</option>
-                    ))}
-                  </select>
-                </div>
+              {user.role === "principal" && (
+                <>
+                  <div className="mb-3">
+                    <label><strong>Select Department:</strong></label>
+                    <select
+                      className="form-select"
+                      value={user.departmentId || ""}
+                      onChange={(e) => {
+                        const deptId = Number(e.target.value);
+                        setUser({ ...user, departmentId: deptId });
+                        fetchProgramCounts(deptId);
+                      }}
+                    >
+                      <option value="">-- Select Department --</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>{dept.name}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                {user.departmentId && selectedAcademicYearId && (
-                  <ProgramEntryForm
-                    departmentId={user.departmentId}
-                    academicYearId={selectedAcademicYearId}
-                    userRole={user.role}
-                  />
-                )}
-              </>
-            )}
+                  {user.departmentId && selectedAcademicYearId && (
+                    <ProgramEntryForm
+                      departmentId={user.departmentId}
+                      academicYearId={selectedAcademicYearId}
+                      userRole={user.role}
+                    />
+                  )}
+                </>
+              )}
 
+              {/* ✅ For Admin (similar to Principal) */}
+              {user.role === "admin" && (
+                <>
+                  <div className="mb-3">
+                    <label><strong>Select Department:</strong></label>
+                    <select
+                      className="form-select"
+                      value={user.departmentId || ""}
+                      onChange={(e) => {
+                        const deptId = Number(e.target.value);
+                        setUser({ ...user, departmentId: deptId });
+                        fetchProgramCounts(deptId);
+                      }}
+                    >
+                      <option value="">-- Select Department --</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>{dept.name}</option>
+                      ))}
+                    </select>
+                  </div>
 
-            {/* ✅ For Admin (similar to Principal) */}
-            {user.role === "admin" && (
-              <>
-                <div className="mb-3">
-                  <label><strong>Select Department:</strong></label>
-                  <select
-                    className="form-select"
-                    value={user.departmentId || ""}
-                    onChange={(e) => {
-                      const deptId = Number(e.target.value);
-                      setUser({ ...user, departmentId: deptId });
-                      fetchProgramCounts(deptId);
-                    }}
-                  >
-                    <option value="">-- Select Department --</option>
-                    {departments.map((dept) => (
-                      <option key={dept.id} value={dept.id}>{dept.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {user.departmentId && selectedAcademicYearId && (
-                  <ProgramEntryForm
-                    departmentId={user.departmentId}
-                    academicYearId={selectedAcademicYearId}
-                    userRole="admin"
-                  />
-                )}
-              </>
-            )}  
-          </>
+                  {user.departmentId && selectedAcademicYearId && (
+                    <ProgramEntryForm
+                      departmentId={user.departmentId}
+                      academicYearId={selectedAcademicYearId}
+                      userRole="admin"
+                    />
+                  )}
+                </>
+              )}
+            </>
+          </ProtectedRoute>
         } />
 
         <Route path="/manage-types" element={
-          (user.role === "principal" || user.role === "admin") && <ProgramTypeManager />
+          <ProtectedRoute user={user} allowedRoles={["principal", "admin"]}>
+            <ManageProgramTypes />
+          </ProtectedRoute>
         } />
 
         {/* Future routes for Admin */}
         {/* 
-        <Route path="/manage-users" element={
-          user.role === "admin" && <UserManagement />
-        } />
-
         <Route path="/academic-years" element={
-          user.role === "admin" && <AcademicYearSetup />
+          <ProtectedRoute user={user} allowedRoles={["admin"]}>
+            <AcademicYearSetup />
+          </ProtectedRoute>
         } />
         */}
 
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </div>
   );

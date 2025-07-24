@@ -173,3 +173,20 @@ class AcademicYearOut(BaseModel):
 
     class Config:
         from_attributes = True  # Required for Pydantic v2
+        
+# -------------------------------
+# Module Deadline Schemas   
+# -------------------------------
+class ModuleDeadlineIn(BaseModel):
+    academic_year_id: int
+    module: str
+    deadline: datetime
+
+class ModuleDeadlineOut(BaseModel):
+    id: int
+    academic_year_id: int
+    module: str
+    deadline: datetime
+
+    class Config:
+        orm_mode = True

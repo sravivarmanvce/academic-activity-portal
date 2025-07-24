@@ -19,19 +19,22 @@ const Dashboard = ({ role }) => {
       <div className="row g-3">
 
         {/* Program Entry Form - For all roles */}
-        <div className="col-sm-6 col-lg-4">
-          <div
-            className="card text-white bg-primary h-100 shadow dashboard-tile clickable-tile"
-            onClick={() => navigate("/bpsaform")}
-          >
-            <div className="card-body text-center">
-              <FaClipboardList size={36} className="mb-2" />
-              <h5 className="card-title">Budget Proposals for Student Activities</h5>
-              <p className="card-text">Submit or Review Student Activity Budgets</p>
-              <button className="btn btn-light mt-2">Go to Form</button>
+        {["hod", "principal", "admin"].includes(role) && (
+          <div className="col-sm-6 col-lg-4">
+            <div
+              className="card text-white bg-primary h-100 shadow dashboard-tile clickable-tile"
+              onClick={() => navigate("/bpsaform")}
+            >
+              <div className="card-body text-center">
+                <FaClipboardList size={36} className="mb-2" />
+                <h5 className="card-title">Budget Proposals for Student Activities</h5>
+                <p className="card-text">Submit or Review Student Activity Budgets</p>
+                <button className="btn btn-light mt-2">Go to Form</button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
 
         {/* Program Type Manager - Principal and Admin */}
         {(role === "principal" || role === "admin") && (

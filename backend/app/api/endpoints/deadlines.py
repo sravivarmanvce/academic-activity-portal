@@ -18,3 +18,24 @@ def get_module_deadline(
     if not deadline:
         raise HTTPException(status_code=404, detail="Deadline not found")
     return deadline
+
+@router.post("/module-deadlines", response_model=schemas.ModuleDeadlineOut)
+def create_or_update_module_deadline(
+    data: schemas.ModuleDeadlineIn,
+    db: Session = Depends(get_db)
+):
+    existing = crud.get_module_deadline(db, data.academic_year_id, data.module)
+    
+    if existing:
+        existing.deadline = data.deadline
+    else:
+        existing = models.ModuleDeadline(
+            academic_year_id=data.academic_year_id,
+            module=data.module,
+            deadline=data.deadline
+        )
+        db.add(existing)
+
+    db.commit()
+    db.refresh(existing)
+    return existing
