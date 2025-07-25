@@ -8,6 +8,7 @@ import Dashboard from "./components/Dashboard";
 import ProgramEntryForm from "./components/ProgramEntryForm";
 import ManageProgramTypes from "./components/ManageProgramTypes";
 import ManageUsers from "./components/ManageUsers";
+import ManageAcademicYearsDeadlines from "./components/ManageAcademicYearsDeadlines";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import API from "./Api";
@@ -132,6 +133,12 @@ function App() {
           <Route path="/admin/users" element={
             <ProtectedRoute user={user} allowedRoles={["admin"]}>
               <ManageUsers />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/admin/manage-academic-years" element={
+            <ProtectedRoute user={user} allowedRoles={["admin"]}>
+              <ManageAcademicYearsDeadlines />
             </ProtectedRoute>
           } />
 

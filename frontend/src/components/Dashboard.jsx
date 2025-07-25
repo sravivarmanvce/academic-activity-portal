@@ -56,11 +56,11 @@ const Dashboard = ({ role }) => {
         {/* Admin-only */}
         {role === "admin" && (
           <>
-            {/* Future Admin: Academic Year Management */}
+            {/* Admin: Academic Years and Deadlines Management */}
             <div className="col-sm-6 col-lg-4">
               <div
                 className="card text-white bg-warning h-100 shadow dashboard-tile clickable-tile"
-                onClick={() => navigate("/admin/academic-years")}
+                onClick={() => navigate("/admin/manage-academic-years")}
               >
                 <div className="card-body text-center">
                   <FaUniversity size={36} className="mb-2" />
@@ -71,7 +71,7 @@ const Dashboard = ({ role }) => {
               </div>
             </div>
 
-            {/* Future Admin: User Management */}
+            {/* Admin: User Management */}
             <div className="col-sm-6 col-lg-4">
               <div
                 className="card text-white bg-dark h-100 shadow dashboard-tile clickable-tile"
