@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
 from app.models import ProgramCount
+from app.models import Department
 from app.schemas import ProgramCountOut, ProgramCountBatch, PrincipalRemarksInput
 
 router = APIRouter()
@@ -70,3 +71,20 @@ def update_principal_remarks(input: PrincipalRemarksInput, db: Session = Depends
 
     db.commit()
     return {"message": "Remarks updated successfully"}
+
+@router.get("/program-counts/status-summary")
+def get_program_counts_status_summary(
+    academic_year_id: int = Query(...),
+    db: Session = Depends(get_db)
+):
+    # Get all departments
+    departments = db.query(Department).all()
+    status_summary = {}
+    for dept in departments:
+        # Check if any program count exists for this department and academic year
+        exists = db.query(ProgramCount).filter_by(
+            department_id=dept.id,
+            academic_year_id=academic_year_id
+        ).first()
+        status_summary[dept.id] = "Submitted" if exists else "Not Submitted"
+    return status_summary

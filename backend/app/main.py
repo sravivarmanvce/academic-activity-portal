@@ -28,4 +28,6 @@ app.include_router(program_types.router)
 app.include_router(principal_remarks.router)
 app.include_router(hod_remarks.router)
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+from app.api.endpoints import mail_reminder
+app.include_router(mail_reminder.router)
 

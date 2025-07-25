@@ -17,8 +17,44 @@ const Dashboard = ({ role }) => {
       <h4 className="mb-4">Dashboard ({role.toUpperCase()})</h4>
 
       <div className="row g-3">
+        {/* 1st row: User Management, Manage Deadlines */}
+        {role === "admin" && (
+          <>
+            <div className="col-sm-6 col-lg-4">
+              <div
+                className="card text-white bg-dark h-100 shadow dashboard-tile clickable-tile"
+                onClick={() => navigate("/admin/users")}
+              >
+                <div className="card-body text-center">
+                  <FaUserShield size={36} className="mb-2" />
+                  <h5 className="card-title">User Management</h5>
+                  <p className="card-text">Add, Edit, or Delete Users</p>
+                  <button className="btn btn-light mt-2">Manage</button>
+                </div>
+              </div>
+            </div>
+            </>
+          )}
+        {(role === "admin" || role === "principal") && (
+          <>
+            <div className="col-sm-6 col-lg-4">
+              <div
+                className="card text-white bg-warning h-100 shadow dashboard-tile clickable-tile"
+                onClick={() => navigate("/admin/manage-academic-years")}
+              >
+                <div className="card-body text-center">
+                  <FaUniversity size={36} className="mb-2" />
+                  <h5 className="card-title">Years & Dealines Setup</h5>
+                  <p className="card-text">Manage Academic Years and Deadlines</p>
+                  <button className="btn btn-light mt-2">Setup</button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
-        {/* Program Entry Form - For all roles */}
+        {/* 2nd row: BPSA Entry Form, Status, Program Type Manager */}
+        <div className="w-100"></div> {/* Force new row */}
         {["hod", "principal", "admin"].includes(role) && (
           <div className="col-sm-6 col-lg-4">
             <div
@@ -34,9 +70,21 @@ const Dashboard = ({ role }) => {
             </div>
           </div>
         )}
-
-
-        {/* Program Type Manager - Principal and Admin */}
+        {(role === "admin" || role === "principal") && (
+          <div className="col-sm-6 col-lg-4">
+            <div
+              className="card text-white bg-info h-100 shadow dashboard-tile clickable-tile"
+              onClick={() => navigate("/program-entry-summary")}
+            >
+              <div className="card-body text-center">
+                <FaClipboardList size={36} className="mb-2" />
+                <h5 className="card-title">Program Entry Status</h5>
+                <p className="card-text">View submission status and send reminders</p>
+                <button className="btn btn-light mt-2">View Status</button>
+              </div>
+            </div>
+          </div>
+        )}
         {(role === "principal" || role === "admin") && (
           <div className="col-sm-6 col-lg-4">
             <div
@@ -52,44 +100,6 @@ const Dashboard = ({ role }) => {
             </div>
           </div>
         )}
-
-        {/* Admin-only */}
-        {role === "admin" && (
-          <>
-            {/* Admin: Academic Years and Deadlines Management */}
-            <div className="col-sm-6 col-lg-4">
-              <div
-                className="card text-white bg-warning h-100 shadow dashboard-tile clickable-tile"
-                onClick={() => navigate("/admin/manage-academic-years")}
-              >
-                <div className="card-body text-center">
-                  <FaUniversity size={36} className="mb-2" />
-                  <h5 className="card-title">Academic Year Setup</h5>
-                  <p className="card-text">Manage Academic Years and Deadlines</p>
-                  <button className="btn btn-light mt-2">Setup</button>
-                </div>
-              </div>
-            </div>
-
-            {/* Admin: User Management */}
-            <div className="col-sm-6 col-lg-4">
-              <div
-                className="card text-white bg-dark h-100 shadow dashboard-tile clickable-tile"
-                onClick={() => navigate("/admin/users")}
-              >
-                <div className="card-body text-center">
-                  <FaUserShield size={36} className="mb-2" />
-                  <h5 className="card-title">User Management</h5>
-                  <p className="card-text">Add, Edit, or Delete Users</p>
-                  <button className="btn btn-light mt-2">Manage</button>
-                </div>
-              </div>
-            </div>
-
-
-          </>
-        )}
-
       </div>
     </div>
   );

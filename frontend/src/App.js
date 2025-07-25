@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Login from "./Login";
+import ProgramEntrySummary from "./components/ProgramEntrySummary";
 import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
 import ProgramEntryForm from "./components/ProgramEntryForm";
@@ -113,6 +114,13 @@ function App() {
             <Route path="/admin/users" element={
               <ProtectedRoute user={user} allowedRoles={["admin"]}>
                 <ManageUsers />
+              </ProtectedRoute>
+            } />
+
+            {/* Program Entry Summary for Admin/Principal */}
+            <Route path="/program-entry-summary" element={
+              <ProtectedRoute user={user} allowedRoles={["admin", "principal"]}>
+                <ProgramEntrySummary userRole={user.role} />
               </ProtectedRoute>
             } />
 
