@@ -8,6 +8,17 @@ from typing import List, Optional
 
 router = APIRouter()
 
+
+@router.get("/module-deadlines/{academic_year_id}", response_model=List[schemas.ModuleDeadlineOut])
+def get_all_deadlines_for_year(
+    academic_year_id: int,
+    db: Session = Depends(get_db)
+):
+    deadlines = db.query(models.ModuleDeadline).filter_by(academic_year_id=academic_year_id).all()
+    return deadlines
+
+
+
 @router.get("/module-deadlines", response_model=schemas.ModuleDeadlineOut)
 def get_module_deadline(
     academic_year_id: int,

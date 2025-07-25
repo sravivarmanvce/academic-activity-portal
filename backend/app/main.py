@@ -28,3 +28,4 @@ app.include_router(program_types.router)
 app.include_router(principal_remarks.router)
 app.include_router(hod_remarks.router)
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+

@@ -53,6 +53,18 @@ class AcademicYearOut(AcademicYearBase):
     class Config:
         orm_mode = True
 
+class AcademicYearCreate(BaseModel):
+    year: str
+    is_enabled: bool
+
+class AcademicYearOut(BaseModel):
+    id: int
+    year: str
+    is_enabled: bool
+
+    class Config:
+        orm_mode = True
+
 # -------------------------------
 # Module Deadline Schemas
 # -------------------------------

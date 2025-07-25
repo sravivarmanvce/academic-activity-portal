@@ -31,7 +31,7 @@ function Header({ userRole, onLogout }) {
             </li>
           )}
 
-          {userRole === "principal" && (
+          {(userRole === "principal" || userRole === "admin") && (
             <li className="nav-item">
               <Link className="nav-link" to="/manage-types">BPSA Manager</Link>
             </li>
@@ -40,10 +40,15 @@ function Header({ userRole, onLogout }) {
           {userRole === "admin" && (
             <>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/users">User Management</Link>
+                <Link className="nav-link" to="/admin/users">Users</Link>
               </li>
+            </>
+          )}
+
+          {(userRole === "principal" || userRole === "admin") && (
+            <>
               <li className="nav-item">
-                <Link className="nav-link" to="/academic-years">Academic Year Setup</Link>
+                <Link className="nav-link" to="/admin/manage-academic-years">Deadlines</Link>
               </li>
             </>
           )}

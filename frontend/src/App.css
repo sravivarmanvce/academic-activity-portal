@@ -1,4 +1,4 @@
-import 'bootstrap-icons/font/bootstrap-icons.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
 .App {
   text-align: center;
 }
@@ -14,7 +14,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
   }
 }
 
-/*.App-header {
+.App-header {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -23,7 +23,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-}*/
+}
 
 .App-link {
   color: #61dafb;
@@ -36,4 +36,33 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
   to {
     transform: rotate(360deg);
   }
+}
+
+
+.custom-tabs-scroll .nav {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.custom-tabs-scroll .nav-item {
+  margin-right: 0.5rem;
+}
+
+.custom-tabs-scroll .nav-link {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: #333;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-tabs-scroll .nav-link.active {
+  color: #0d6efd;
+  border-bottom: 2px solid #0d6efd;
+  background-color: transparent;
 }

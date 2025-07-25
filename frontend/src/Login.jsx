@@ -5,6 +5,7 @@ import "./Login.css";
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -61,10 +62,10 @@ const Login = ({ onLogin }) => {
             <label className="text-white">Password</label>
             <input
               type="password"
-              className="form-control"              
+              className="form-control"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
