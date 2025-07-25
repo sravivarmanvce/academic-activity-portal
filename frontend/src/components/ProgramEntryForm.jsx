@@ -18,119 +18,133 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [deadlineDisplay, setDeadlineDisplay] = useState("Invalid Date");
   const [isEditable, setIsEditable] = useState(false);
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedAcademicYearId, setSelectedAcademicYearId] = useState("");
 
   const printRef = useRef();
 
   useEffect(() => {
-  if (!departmentId || !academicYearId) return;
-
-  const fetchAll = async () => {
-    try {
-      const [
-        typesRes,
-        countsRes,
-        deptRes,
-        principalRes,
-        hodRes,
-        yearsRes
-      ] = await Promise.all([
-        API.get("/program-types"),
-        API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-          .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
-        API.get("/departments"),
-        API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-          .catch(() => ({ data: { remarks: "" } })),
-        API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${academicYearId}`)
-          .catch(() => ({ data: { remarks: "" } })),
-        API.get("/academic-years")
-      ]);
-
-      const departmentObj = deptRes.data.find((d) => d.id === departmentId);
-      if (departmentObj) {
-        setDepartmentName(departmentObj.name || "");
-        setDepartmentFullName(departmentObj.full_name || "");
-      }
-
-      setPrincipalRemarks(principalRes.data.remarks || "");
-      setHodRemarks(hodRes.data.remarks || "");
-
-      const filteredTypes = typesRes.data.filter(
-        (p) =>
-          p.departments === "ALL" ||
-          p.departments.split(",").map((d) => d.trim()).includes(departmentObj.name)
-      );
-
-      const merged = filteredTypes.map((type) => {
-        const match = countsRes.data.find(
-          (c) =>
-            c.program_type === type.program_type &&
-            c.sub_program_type === type.sub_program_type
-        );
-        return {
-          ...type,
-          count: match?.count ?? 0,
-          total_budget: match?.total_budget ?? 0,
-          remarks: match?.remarks ?? "",
-          id: match?.id || null,
-        };
-      });
-
-      const groupedObj = {};
-      merged.forEach((item) => {
-        if (!groupedObj[item.activity_category]) {
-          groupedObj[item.activity_category] = [];
+    // Fetch academic years on mount
+    API.get("/academic-years")
+      .then((res) => {
+        setAcademicYears(res.data);
+        if (res.data.length > 0) {
+          setSelectedAcademicYearId(res.data[0].id);
         }
-        groupedObj[item.activity_category].push(item);
-      });
+      })
+      .catch((err) => console.error("Failed to load academic years", err));
+  }, []);
 
-      setMergedData(merged);
-      setGrouped(groupedObj);
+  useEffect(() => {
+    if (!departmentId || !selectedAcademicYearId) return;
 
-      // 🔁 Academic year name
-      const yearObj = yearsRes.data.find((y) => y.id === academicYearId);
-      setSelectedAcademicYear(yearObj?.year || "");
-
-      // 🔁 Fetch deadline from module_deadlines
+    const fetchAll = async () => {
       try {
-        const deadlineRes = await API.get(
-          `/module-deadlines?academic_year_id=${academicYearId}&module_name=program_entry`
-        );
-        const deadline = new Date(deadlineRes.data.deadline);
-        const today = new Date();
-        const isBeforeDeadline = today <= deadline;
+        const [
+          typesRes,
+          countsRes,
+          deptRes,
+          principalRes,
+          hodRes,
+          yearsRes
+        ] = await Promise.all([
+          API.get("/program-types"),
+          API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+            .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
+          API.get("/departments"),
+          API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+            .catch(() => ({ data: { remarks: "" } })),
+          API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+            .catch(() => ({ data: { remarks: "" } })),
+          API.get("/academic-years")
+        ]);
 
-        setDeadlineDisplay(
-          deadline instanceof Date && !isNaN(deadline)
-            ? deadline.toLocaleString("en-IN", {
-                weekday: "long",
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-                timeZone: "Asia/Kolkata"
-              }).replaceAll("/", "-")
-            : "Invalid Date"
-        );
-
-        if (userRole === "principal" || userRole === "admin") {
-          setIsEditable(true);
-        } else if (userRole === "hod") {
-          setIsEditable(yearObj?.is_enabled && isBeforeDeadline);
+        const departmentObj = deptRes.data.find((d) => d.id === departmentId);
+        if (departmentObj) {
+          setDepartmentName(departmentObj.name || "");
+          setDepartmentFullName(departmentObj.full_name || "");
         }
-      } catch (e) {
-        console.warn("No module deadline found");
-        setDeadlineDisplay("No deadline set");
-        setIsEditable(false);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
 
-  fetchAll();
-}, [departmentId, academicYearId, userRole]);
+        setPrincipalRemarks(principalRes.data.remarks || "");
+        setHodRemarks(hodRes.data.remarks || "");
+
+        const filteredTypes = typesRes.data.filter(
+          (p) =>
+            p.departments === "ALL" ||
+            p.departments.split(",").map((d) => d.trim()).includes(departmentObj.name)
+        );
+
+        const merged = filteredTypes.map((type) => {
+          const match = countsRes.data.find(
+            (c) =>
+              c.program_type === type.program_type &&
+              c.sub_program_type === type.sub_program_type
+          );
+          return {
+            ...type,
+            count: match?.count ?? 0,
+            total_budget: match?.total_budget ?? 0,
+            remarks: match?.remarks ?? "",
+            id: match?.id || null,
+          };
+        });
+
+        const groupedObj = {};
+        merged.forEach((item) => {
+          if (!groupedObj[item.activity_category]) {
+            groupedObj[item.activity_category] = [];
+          }
+          groupedObj[item.activity_category].push(item);
+        });
+
+        setMergedData(merged);
+        setGrouped(groupedObj);
+
+        // 🔁 Academic year name
+        const yearObj = yearsRes.data.find((y) => y.id === selectedAcademicYearId);
+        setSelectedAcademicYear(yearObj?.year || "");
+
+        // 🔁 Fetch deadline from module_deadlines
+        try {
+          const deadlineRes = await API.get(
+            `/module-deadlines?academic_year_id=${selectedAcademicYearId}&module_name=program_entry`
+          );
+          const deadline = new Date(deadlineRes.data.deadline);
+          const today = new Date();
+          const isBeforeDeadline = today <= deadline;
+
+          setDeadlineDisplay(
+            deadline instanceof Date && !isNaN(deadline)
+              ? deadline.toLocaleString("en-IN", {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                  timeZone: "Asia/Kolkata"
+                }).replaceAll("/", "-")
+              : "Invalid Date"
+          );
+
+          if (userRole === "principal" || userRole === "admin") {
+            setIsEditable(true);
+          } else if (userRole === "hod") {
+            setIsEditable(yearObj?.is_enabled && isBeforeDeadline);
+          }
+        } catch (e) {
+          console.warn("No module deadline found");
+          setDeadlineDisplay("No deadline set");
+          setIsEditable(false);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchAll();
+  }, [departmentId, selectedAcademicYearId, userRole]);
 
 
   const handleChange = (index, field, value) => {
@@ -168,7 +182,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     try {
       const payload = mergedData.map((entry) => ({
         department_id: departmentId,
-        academic_year_id: academicYearId,
+        academic_year_id: selectedAcademicYearId,
         program_type: entry.program_type,
         sub_program_type: entry.sub_program_type,
         activity_category: entry.activity_category,
@@ -186,7 +200,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       if (userRole === "hod") {
         await API.post("/hod-remarks", {
           department_id: departmentId,
-          academic_year_id: academicYearId,
+          academic_year_id: selectedAcademicYearId,
           remarks: hodRemarks,
         });
       }
@@ -194,7 +208,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       if (userRole === "principal") {
         await API.post("/principal-remarks", {
           department_id: departmentId,
-          academic_year_id: academicYearId,
+          academic_year_id: selectedAcademicYearId,
           remarks: principalRemarks,
         });
       }
@@ -352,6 +366,21 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
   return (
     <div className="container mt-4">
+      {/* Academic Year Dropdown - now only in ProgramEntryForm */}
+      <div className="mb-3">
+        <label><strong>Select Academic Year:</strong></label>
+        <select
+          className="form-select"
+          value={selectedAcademicYearId}
+          onChange={(e) => setSelectedAcademicYearId(Number(e.target.value))}
+        >
+          <option value="">-- Select Academic Year --</option>
+          {academicYears.map((year) => (
+            <option key={year.id} value={year.id}>{year.year}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="d-flex justify-content-between align-items-center">
         <div className="alert alert-info text-center mt-3">
           <strong>Submission Deadline:</strong> {deadlineDisplay}

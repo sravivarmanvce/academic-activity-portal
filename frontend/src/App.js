@@ -101,26 +101,6 @@ function App() {
         <>
           <Header userRole={user.role} onLogout={handleLogout} />
 
-          {/* Academic Year Dropdown */}
-          <div className="mb-3">
-            <label><strong>Select Academic Year:</strong></label>
-            <select
-              className="form-select"
-              value={selectedAcademicYearId}
-              onChange={(e) => {
-                setSelectedAcademicYearId(Number(e.target.value));
-                if (user?.departmentId) {
-                  fetchProgramCounts(user.departmentId);
-                }
-              }}
-            >
-              <option value="">-- Select Academic Year --</option>
-              {academicYears.map((year) => (
-                <option key={year.id} value={year.id}>{year.year}</option>
-              ))}
-            </select>
-          </div>
-
           <Routes key={user.id}>
             <Route index element={<Navigate to="/dashboard" />} />
 
