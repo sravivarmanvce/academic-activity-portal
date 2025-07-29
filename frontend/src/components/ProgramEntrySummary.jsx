@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../Api";
+import { exportSummaryToExcel } from "../utils/exportSummaryToExcel";
+import { exportSummaryToPDF } from "../utils/exportSummaryToPDF";
 
 function ProgramEntrySummary({ userRole }) {
   const [departments, setDepartments] = useState([]);
@@ -64,6 +66,29 @@ function ProgramEntrySummary({ userRole }) {
     }
   };
 
+  const handleExportExcel = async () => {
+    try {
+      await exportSummaryToExcel(departments, statuses, selectedAcademicYear);
+    } catch (error) {
+      console.error("Failed to export Excel:", error);
+      alert("Failed to export Excel file.");
+    }
+  };
+
+  const handleExportPDF = () => {
+    try {
+      exportSummaryToPDF(departments, statuses, selectedAcademicYear);
+    } catch (error) {
+      console.error("Failed to export PDF:", error);
+      alert("Failed to export PDF file.");
+    }
+  };
+
+  // Calculate total budget
+  const totalBudget = departments.reduce((total, dept) => {
+    return total + (statuses[dept.id]?.grand_total_budget || 0);
+  }, 0);
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -92,28 +117,45 @@ function ProgramEntrySummary({ userRole }) {
       <div className="mb-2">
         <strong>Academic Year:</strong> {selectedAcademicYear}
       </div>
+      
+      <div className="d-flex justify-content-end mb-3">
+        <button 
+          className="btn btn-outline-danger me-2" 
+          onClick={handleExportPDF}
+          disabled={departments.length === 0}
+        >
+          Export PDF
+        </button>
+        <button 
+          className="btn btn-outline-success" 
+          onClick={handleExportExcel}
+          disabled={departments.length === 0}
+        >
+          Export Excel
+        </button>
+      </div>
       <table className="table table-bordered mt-3">
         <thead>
           <tr>
-            <th>Sl. No</th>
+            <th style={{ textAlign: "center" }}>Sl. No</th>
             <th>Department</th>
-            <th>Grand Total Budget</th>
-            <th>Status</th>
-            <th>Action</th>
+            <th style={{ textAlign: "center" }}>Budget Proposed</th>
+            <th style={{ textAlign: "center" }}>Status</th>
+            <th style={{ textAlign: "center" }}>Action</th>
           </tr>
         </thead>
         <tbody>
           {departments.map((dept, index) => (
             <tr key={dept.id}>
-              <td>{index + 1}</td>
+              <td style={{ textAlign: "center" }}>{index + 1}</td>
               <td>{dept.full_name}</td>
-              <td>
+              <td style={{ textAlign: "right" }}>
                 {statuses[dept.id]?.grand_total_budget !== undefined
                   ? `₹${statuses[dept.id].grand_total_budget.toLocaleString()}`
                   : <span className="text-muted">₹0</span>}
               </td>
-              <td>{statuses[dept.id]?.status || "Not Submitted"}</td>
-              <td>
+              <td style={{ textAlign: "center" }}>{statuses[dept.id]?.status || "Not Submitted"}</td>
+              <td style={{ textAlign: "center" }}>
                 {statuses[dept.id]?.status !== "Submitted" && (
                   <button
                     className="btn btn-warning btn-sm"
@@ -126,8 +168,18 @@ function ProgramEntrySummary({ userRole }) {
               </td>
             </tr>
           ))}
+          {/* Total Row */}
+          <tr className="table-warning fw-bold">
+            <td></td>
+            <td style={{ textAlign: "right" }}>Total Budget</td>
+            <td style={{ textAlign: "right" }}>₹{totalBudget.toLocaleString()}</td>
+            <td></td>
+            <td></td>
+          </tr>
         </tbody>
       </table>
+      <div className="my-5"></div>
+      <div className="my-5"></div>
     </div>
   );
 }
