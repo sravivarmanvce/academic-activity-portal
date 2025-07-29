@@ -7,18 +7,21 @@ from app.api.endpoints import deadlines
 from app.api.endpoints import principal_remarks
 from app.api.endpoints import hod_remarks
 from app.api.endpoints import auth
+from app.api.endpoints import reminder
 
 # Initialize FastAPI app
 app = FastAPI()
 
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Update with frontend URL in production
+    allow_origins=["http://localhost:3000"],  # React dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Include routers
 app.include_router(users.router)
 app.include_router(departments.router)
 app.include_router(academic_years.router)
@@ -28,6 +31,5 @@ app.include_router(program_types.router)
 app.include_router(principal_remarks.router)
 app.include_router(hod_remarks.router)
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-from app.api.endpoints import mail_reminder
-app.include_router(mail_reminder.router)
+app.include_router(reminder.router, tags=["reminder"])
 

@@ -50,11 +50,15 @@ function ProgramEntrySummary({ userRole }) {
   const handleSendReminder = async (deptId) => {
     setSending((prev) => ({ ...prev, [deptId]: true }));
     try {
-      await API.post("/reminder/send", { dept_id: deptId, academic_year_id: selectedAcademicYearId }
-);
-      alert("Reminder email sent!");
-    } catch (err) {
-      alert("Failed to send reminder email.");
+      // Make sure this is a POST request
+      await API.post("/reminder/send", {
+        dept_id: deptId,
+        academic_year_id: selectedAcademicYearId,
+      });
+      alert("Reminder sent successfully!");
+    } catch (error) {
+      console.error("Failed to send reminder:", error);
+      alert("Failed to send reminder.");
     } finally {
       setSending((prev) => ({ ...prev, [deptId]: false }));
     }
@@ -93,6 +97,7 @@ function ProgramEntrySummary({ userRole }) {
           <tr>
             <th>Department</th>
             <th>Status</th>
+            <th>Grand Total Budget</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -100,9 +105,14 @@ function ProgramEntrySummary({ userRole }) {
           {departments.map((dept) => (
             <tr key={dept.id}>
               <td>{dept.name}</td>
-              <td>{statuses[dept.id] || "Not Submitted"}</td>
+              <td>{statuses[dept.id]?.status || "Not Submitted"}</td>
               <td>
-                {statuses[dept.id] !== "Submitted" && (
+                {statuses[dept.id]?.grand_total_budget !== undefined
+                  ? `₹${statuses[dept.id].grand_total_budget.toLocaleString()}`
+                  : <span className="text-muted">₹0</span>}
+              </td>
+              <td>
+                {statuses[dept.id]?.status !== "Submitted" && (
                   <button
                     className="btn btn-warning btn-sm"
                     onClick={() => handleSendReminder(dept.id)}
