@@ -95,22 +95,24 @@ function ProgramEntrySummary({ userRole }) {
       <table className="table table-bordered mt-3">
         <thead>
           <tr>
+            <th>Sl. No</th>
             <th>Department</th>
-            <th>Status</th>
             <th>Grand Total Budget</th>
+            <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {departments.map((dept) => (
+          {departments.map((dept, index) => (
             <tr key={dept.id}>
-              <td>{dept.name}</td>
-              <td>{statuses[dept.id]?.status || "Not Submitted"}</td>
+              <td>{index + 1}</td>
+              <td>{dept.full_name}</td>
               <td>
                 {statuses[dept.id]?.grand_total_budget !== undefined
                   ? `₹${statuses[dept.id].grand_total_budget.toLocaleString()}`
                   : <span className="text-muted">₹0</span>}
               </td>
+              <td>{statuses[dept.id]?.status || "Not Submitted"}</td>
               <td>
                 {statuses[dept.id]?.status !== "Submitted" && (
                   <button
