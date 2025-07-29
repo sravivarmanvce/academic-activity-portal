@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./Header.css";
 
-function Header({ userRole, onLogout }) {
+function Header({ userRole, userName, onLogout }) {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark custom-navbar fixed-top shadow-sm px-3">
       <Link className="navbar-brand d-flex align-items-center" to="/">
@@ -56,7 +56,7 @@ function Header({ userRole, onLogout }) {
 
         <div className="d-flex align-items-center">
           <span className="navbar-text me-3">
-            👤 <strong>{userRole.toUpperCase()}</strong>
+            👤 <strong className="text-white">{userName}</strong>
           </span>
           <button className="btn btn-outline-light btn-sm" onClick={onLogout}>
             Logout

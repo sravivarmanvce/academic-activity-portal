@@ -100,7 +100,7 @@ function App() {
         </Routes>
       ) : (
         <>
-          <Header userRole={user.role} onLogout={handleLogout} />
+          <Header userRole={user.role} userName={user.name} onLogout={handleLogout} />
 
           <Routes key={user.id}>
             <Route index element={<Navigate to="/dashboard" />} />
