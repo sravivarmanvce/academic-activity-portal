@@ -528,10 +528,12 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         </table>
         <div style={{ height: "24px" }}></div>{/* Empty row for spacing */}
         <table border="0">
+          <tbody>
           <tr>
             <td align="center"><div style={{ height: "50px" }}></div><strong>HoD, {departmentName}</strong></td>
             <td align="center"><div style={{ height: "50px" }}></div><strong>Principal</strong></td>
           </tr>
+          </tbody>
         </table>
       </div>
       {/* HoD Final Remarks */}
