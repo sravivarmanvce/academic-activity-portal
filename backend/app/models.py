@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
 
 Base = declarative_base()  
 
@@ -85,6 +86,34 @@ class ProgramCount(Base):
     count = Column(Integer, nullable=False)
     total_budget = Column(Float, nullable=False)
     remarks = Column(Text, nullable=True)
+
+# -----------------------------
+# Workflow Status
+# -----------------------------
+class WorkflowStatus(Base):
+    __tablename__ = "workflow_status"
+
+    id = Column(Integer, primary_key=True, index=True)
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=False)
+    academic_year_id = Column(Integer, ForeignKey("academic_years.id"), nullable=False)
+    status = Column(String(20), nullable=False, default='draft')  # 'draft', 'submitted', 'approved', 'events_planned', 'completed'
+    updated_at = Column(DateTime, nullable=True)
+
+# -----------------------------
+# Deadline Override
+# -----------------------------
+class DeadlineOverride(Base):
+    __tablename__ = "deadline_overrides"
+
+    id = Column(Integer, primary_key=True, index=True)
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=False)
+    academic_year_id = Column(Integer, ForeignKey("academic_years.id"), nullable=False)
+    module_name = Column(String(50), nullable=False)  # 'program_entry', etc.
+    enabled_by_principal = Column(Boolean, default=True)
+    reason = Column(Text, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+    duration_hours = Column(Integer, default=24)
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
 
 # -----------------------------
 # Principal Remarks

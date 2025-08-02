@@ -8,6 +8,8 @@ from app.api.endpoints import principal_remarks
 from app.api.endpoints import hod_remarks
 from app.api.endpoints import auth
 from app.api.endpoints import reminder
+from app.api.endpoints import workflow_status
+from app.api.endpoints import deadline_override
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -32,4 +34,6 @@ app.include_router(principal_remarks.router)
 app.include_router(hod_remarks.router)
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(reminder.router, tags=["reminder"])
+app.include_router(workflow_status.router, tags=["workflow"])
+app.include_router(deadline_override.router, tags=["deadline_override"])
 

@@ -202,3 +202,46 @@ class ModuleDeadlineOut(BaseModel):
 
     class Config:
         orm_mode = True
+
+# -------------------------------
+# Workflow Status Schemas   
+# -------------------------------
+class WorkflowStatusUpdate(BaseModel):
+    department_id: int
+    academic_year_id: int
+    status: str  # 'draft', 'submitted', 'approved', 'events_planned', 'completed'
+
+class WorkflowStatusResponse(BaseModel):
+    id: int
+    department_id: int
+    academic_year_id: int
+    status: str
+    updated_at: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+# -------------------------------
+# Deadline Override Schemas   
+# -------------------------------
+class DeadlineOverrideCreate(BaseModel):
+    department_id: int
+    academic_year_id: int
+    module_name: str
+    enabled_by_principal: bool = True
+    reason: Optional[str] = None
+    duration_hours: int = 24  # Default 24 hours
+
+class DeadlineOverrideResponse(BaseModel):
+    id: int
+    department_id: int
+    academic_year_id: int
+    module_name: str
+    enabled_by_principal: bool
+    reason: Optional[str]
+    expires_at: Optional[datetime]
+    duration_hours: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
