@@ -453,7 +453,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                               globalIndex,
                               "count",
                               mergedData[globalIndex].count,
-                              userRole === "hod" && isEditable
+                              (userRole === "hod" || userRole === "principal") && isEditable
                             )}
                           </td>
                           <td align="center">
