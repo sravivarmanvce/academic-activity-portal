@@ -6,6 +6,7 @@ from typing import List, Optional
 from app.database import get_db
 from app.models import ProgramCount
 from app.models import Department
+from app.models import WorkflowStatus
 from app.schemas import ProgramCountOut, ProgramCountBatch, PrincipalRemarksInput
 
 router = APIRouter()
@@ -88,14 +89,25 @@ def get_program_counts_status_summary(
             academic_year_id=academic_year_id
         ).all()
         
-        # Determine status
-        status = "Submitted" if entries else "Not Submitted"
+        # Determine basic submission status
+        basic_status = "Submitted" if entries else "Not Submitted"
+        
+        # Get workflow status from workflow_status table
+        workflow_entry = db.query(WorkflowStatus).filter_by(
+            department_id=dept.id,
+            academic_year_id=academic_year_id
+        ).first()
+        
+        workflow_status = workflow_entry.status if workflow_entry else 'draft'
+        last_updated = workflow_entry.updated_at if workflow_entry else None
         
         # Calculate grand total budget
         grand_total_budget = sum(entry.total_budget or 0 for entry in entries)
         
         status_summary[dept.id] = {
-            "status": status,
+            "status": basic_status,
+            "workflow_status": workflow_status,
+            "last_updated": last_updated,
             "grand_total_budget": grand_total_budget
         }
     

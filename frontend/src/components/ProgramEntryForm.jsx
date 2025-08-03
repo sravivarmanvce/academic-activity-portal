@@ -147,7 +147,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             hasOverride = overrideRes.data.has_override;
             setOverrideInfo(overrideRes.data); // Store override info including expiration
           } catch (e) {
-            console.log("No deadline override found");
             setOverrideInfo(null);
           }
 
