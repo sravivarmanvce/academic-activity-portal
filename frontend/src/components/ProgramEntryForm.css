@@ -265,3 +265,13 @@ button:disabled {
 input[type="number"] {
   text-align: center;
 }
+
+/* Animation for refresh spinner */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

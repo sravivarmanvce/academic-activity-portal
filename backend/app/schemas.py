@@ -245,3 +245,41 @@ class DeadlineOverrideResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+# -------------------------------
+# Event Schemas   
+# -------------------------------
+from datetime import date, time
+
+class EventBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    event_date: date
+    budget_amount: float
+    coordinator_name: Optional[str] = None
+    coordinator_contact: Optional[str] = None
+    department_id: int
+    academic_year_id: int
+    program_type_id: int
+
+class EventCreate(EventBase):
+    pass
+
+class EventUpdate(EventBase):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    event_date: Optional[date] = None
+    budget_amount: Optional[float] = None
+    coordinator_name: Optional[str] = None
+    coordinator_contact: Optional[str] = None
+
+class EventResponse(EventBase):
+    id: int
+    event_status: str
+    created_at: datetime
+    updated_at: Optional[datetime]
+    created_by: Optional[int]
+    updated_by: Optional[int]
+
+    class Config:
+        orm_mode = True

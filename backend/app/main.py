@@ -10,6 +10,7 @@ from app.api.endpoints import auth
 from app.api.endpoints import reminder
 from app.api.endpoints import workflow_status
 from app.api.endpoints import deadline_override
+from app.api.endpoints import events
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -17,7 +18,11 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=[
+        "http://localhost:3000",  # React dev server
+        "http://127.0.0.1:3000",  # Alternative localhost
+        "http://localhost:3001",  # In case you change ports
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,4 +41,5 @@ app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(reminder.router, tags=["reminder"])
 app.include_router(workflow_status.router, tags=["workflow"])
 app.include_router(deadline_override.router, tags=["deadline_override"])
+app.include_router(events.router, tags=["events"])
 

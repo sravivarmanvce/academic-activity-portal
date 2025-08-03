@@ -137,3 +137,36 @@ class HodRemarks(Base):
     academic_year_id = Column(Integer, ForeignKey("academic_years.id"))
     remarks = Column(Text)
 
+# -----------------------------
+# Events
+# -----------------------------
+class Event(Base):
+    __tablename__ = "events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    event_date = Column(DateTime, nullable=False)
+    budget_amount = Column(Float, nullable=False)
+    coordinator_name = Column(String(100), nullable=True)
+    coordinator_contact = Column(String(100), nullable=True)
+    
+    # Foreign Keys
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=False)
+    academic_year_id = Column(Integer, ForeignKey("academic_years.id"), nullable=False)
+    program_type_id = Column(Integer, ForeignKey("program_types.id"), nullable=False)
+    
+    # Status and Audit Fields
+    event_status = Column(String(20), nullable=False, default='planned')  # 'planned', 'ongoing', 'completed', 'cancelled'
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
+    updated_at = Column(DateTime, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Relationships
+    department = relationship("Department")
+    academic_year = relationship("AcademicYear")
+    program_type = relationship("ProgramType")
+    creator = relationship("User", foreign_keys=[created_by])
+    updater = relationship("User", foreign_keys=[updated_by])
+

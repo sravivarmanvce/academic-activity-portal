@@ -736,54 +736,6 @@ function ProgramEntrySummary({ userRole }) {
               </div>
             </div>
           )}
-
-          {/* Email Automation Section for Admins/Principals */}
-          {(userRole === "admin" || userRole === "principal") && deadlineInfo && (
-            <div className="card mb-3">
-              <div className="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                <h6 className="mb-0"><i className="fas fa-robot"></i> Automatic Email Reminders</h6>
-                <button 
-                  className="btn btn-light btn-sm"
-                  onClick={handleScheduleAutomaticReminders}
-                  title="Configure automatic reminder schedule"
-                >
-                  <i className="fas fa-cog"></i> Configure
-                </button>
-              </div>
-              <div className="card-body p-3">
-                <div className="row">
-                  <div className="col-md-8">
-                    <p className="mb-2 small text-muted">
-                      Set up automatic reminder emails that will be sent to departments before the submission deadline.
-                      These reminders help ensure departments don't miss important deadlines.
-                    </p>
-                    <div className="small text-muted">
-                      <i className="fas fa-lightbulb"></i> 
-                      <strong>Tip:</strong> Automatic reminders will only be sent to departments that haven't submitted yet.
-                      Set multiple reminder times (e.g., 24h, 6h, 1h before deadline) for better coverage.
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="text-end">
-                      <small className="text-muted d-block">Next deadline in:</small>
-                      <div className="fw-semibold text-primary">
-                        {deadlineInfo && (() => {
-                          const now = new Date();
-                          const deadline = new Date(deadlineInfo.deadline);
-                          const diffMs = deadline - now;
-                          const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
-                          
-                          if (diffMs < 0) return "Deadline passed";
-                          if (diffHours < 24) return `${diffHours} hours`;
-                          return `${Math.ceil(diffHours / 24)} days`;
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </>
       )}
       {/* Department Status Table */}
