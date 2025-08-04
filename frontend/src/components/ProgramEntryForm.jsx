@@ -846,7 +846,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
     return (
       <div className="mb-4">
-        <h6 className="text-center mb-3">Workflow Status</h6>
         <div className="d-flex justify-content-center">
           <div className="row text-center" style={{ maxWidth: '800px' }}>
             {statusSteps.map((step, index) => {
@@ -1203,57 +1202,49 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       </div>
 
       {/* Configuration Section */}
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body py-3">
-              <label className="form-label mb-2">
-                <strong><i className="fas fa-graduation-cap"></i> Academic Year:</strong>
-              </label>
-              <select
-                className="form-select"
-                value={selectedAcademicYearId}
-                onChange={(e) => setSelectedAcademicYearId(Number(e.target.value))}
-              >
-                <option value="">-- Select Academic Year --</option>
-                {academicYears.map((year) => (
-                  <option key={year.id} value={year.id}>{year.year}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-        
-        <div className="col-md-6">
-          <div className="card bg-light">
-            <div className="card-body py-3">
-              <label className="form-label mb-2">
-                <strong><i className="fas fa-calendar-alt"></i> Submission Deadline:</strong>
-              </label>
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="fw-semibold text-primary">{deadlineDisplay}</div>
-                  {overrideInfo && overrideInfo.has_override && overrideInfo.expires_at && (
-                    <small className="text-warning">
-                      <i className="fas fa-unlock"></i> Override Active {timeRemaining && `(${timeRemaining})`}
-                    </small>
-                  )}
-                  {overrideInfo && overrideInfo.expired && (
-                    <small className="text-danger">
-                      <i className="fas fa-clock"></i> Override Expired
-                    </small>
-                  )}
-                </div>
-              </div>
+      <div className="card mb-3">
+        <div className="card-body py-3">
+          <div className="d-flex align-items-center gap-3">
+            <label className="form-label mb-0 text-nowrap">
+              <strong><i className="fas fa-graduation-cap"></i> Academic Year:</strong>
+            </label>
+            <select
+              className="form-select"
+              style={{ maxWidth: "200px" }}
+              value={selectedAcademicYearId}
+              onChange={(e) => setSelectedAcademicYearId(Number(e.target.value))}
+            >
+              <option value="">-- Select Academic Year --</option>
+              {academicYears.map((year) => (
+                <option key={year.id} value={year.id}>{year.year}</option>
+              ))}
+            </select>
+            
+            <div className="vr mx-2"></div>
+            <label className="form-label mb-0 text-nowrap">
+              <strong><i className="fas fa-calendar-alt"></i> Submission Deadline:</strong>
+            </label>
+            <div>
+              <div className="fw-semibold text-primary">{deadlineDisplay}</div>
+              {overrideInfo && overrideInfo.has_override && overrideInfo.expires_at && (
+                <small className="text-warning">
+                  <i className="fas fa-unlock"></i> Override Active {timeRemaining && `(${timeRemaining})`}
+                </small>
+              )}
+              {overrideInfo && overrideInfo.expired && (
+                <small className="text-danger">
+                  <i className="fas fa-clock"></i> Override Expired
+                </small>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Workflow Status & Actions */}
+      {/* Workflow Status */}
       <div className="card mb-4">
         <div className="card-header bg-primary text-white">
-          <h6 className="mb-0"><i className="fas fa-tasks"></i> Workflow Status & Actions</h6>
+          <h6 className="mb-0"><i className="fas fa-tasks"></i> Workflow Status</h6>
         </div>
         <div className="card-body">
           {/* Status Indicator */}

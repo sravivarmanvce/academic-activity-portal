@@ -499,6 +499,47 @@ function ProgramEntrySummary({ userRole }) {
     return total + (statuses[dept.id]?.grand_total_budget || 0);
   }, 0);
 
+  // Add this function after your other handler functions
+  const handleTileClick = (statusType) => {
+    const filteredDepartments = departments.filter(dept => {
+      const statusInfo = getEnhancedStatus(dept);
+      
+      switch(statusType) {
+        case 'completed':
+          return statusInfo.stage === 'completed';
+        case 'approved':
+          return statusInfo.stage === 'approved';
+        case 'submitted':
+          return statusInfo.stage === 'submitted';
+        case 'drafting':
+          return statusInfo.stage === 'drafting' || statusInfo.stage === 'draft_overdue';
+        case 'deadline_missed':
+          return statusInfo.stage === 'deadline_missed';
+        case 'extended':
+          return overrides[dept.id]?.has_override;
+        default:
+          return false;
+      }
+    });
+    
+    if (filteredDepartments.length === 0) {
+      alert(`No departments found for this status.`);
+      return;
+    }
+    
+    const deptNames = filteredDepartments.map(d => d.name).join(', ');
+    const statusLabels = {
+      'completed': 'Completed',
+      'approved': 'Approved', 
+      'submitted': 'Pending Approval',
+      'drafting': 'In Progress',
+      'deadline_missed': 'Missed Deadline',
+      'extended': 'Have Extensions'
+    };
+    
+    alert(`${statusLabels[statusType]} Departments (${filteredDepartments.length}):\n\n${deptNames}`);
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -529,60 +570,46 @@ function ProgramEntrySummary({ userRole }) {
       </div>
 
       {/* Academic Year Selection */}
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body py-3">
-              <label className="form-label mb-2">
-                <strong><i className="fas fa-graduation-cap"></i> Academic Year:</strong>
-              </label>
-              <select
-                className="form-select"
-                value={selectedAcademicYearId}
-                onChange={(e) => setSelectedAcademicYearId(Number(e.target.value))}
-              >
-                {academicYears.map((year) => (
-                  <option key={year.id} value={year.id}>
-                    {year.year}
-                  </option>
-                ))}
-              </select>
-            </div>
+      <div className="card mb-3">
+        <div className="card-body py-3">
+          <div className="d-flex align-items-center gap-3">
+            <label className="form-label mb-0 text-nowrap">
+              <strong><i className="fas fa-graduation-cap"></i> Academic Year:</strong>
+            </label>
+            <select
+              className="form-select"
+              style={{ maxWidth: "200px" }}
+              value={selectedAcademicYearId}
+              onChange={(e) => setSelectedAcademicYearId(Number(e.target.value))}
+            >
+              {academicYears.map((year) => (
+                <option key={year.id} value={year.id}>
+                  {year.year}
+                </option>
+              ))}
+            </select>
+            
+            {/* Deadline Information */}
+            {deadlineInfo && (
+              <>
+                <div className="vr mx-2"></div>
+                <label className="form-label mb-0 text-nowrap">
+                  <strong><i className="fas fa-calendar-alt"></i> Submission Deadline:</strong>
+                </label>
+                <div className="text-primary fw-semibold">
+                  {new Date(deadlineInfo.deadline).toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </div>
-        
-        {/* Deadline Information */}
-        {deadlineInfo && (
-          <div className="col-md-6">
-            <div className="card bg-light">
-              <div className="card-body py-3">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <label className="form-label mb-1">
-                      <strong><i className="fas fa-calendar-alt"></i> Submission Deadline:</strong>
-                    </label>
-                    <div className="text-primary fw-semibold">
-                      {new Date(deadlineInfo.deadline).toLocaleString('en-IN', {
-                        timeZone: 'Asia/Kolkata',
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  </div>
-                  <div className="text-end">
-                    <small className="text-muted">Active Extensions:</small>
-                    <div className="badge bg-warning text-dark ms-1">
-                      {Object.values(overrides).filter(o => o?.has_override).length}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Summary Statistics Dashboard */}
@@ -590,154 +617,148 @@ function ProgramEntrySummary({ userRole }) {
         <div className="card mb-4">
           <div className="card-header bg-primary text-white">
             <h6 className="mb-0"><i className="fas fa-chart-pie"></i> Submission Overview</h6>
+            <small className="text-white-50">Click on any tile to view related departments</small>
           </div>
           <div className="card-body p-3">
             <div className="row g-3">
               <div className="col-lg-2 col-md-4 col-6">
-                <div className="text-center p-2 bg-success bg-opacity-10 rounded">
+                <div 
+                  className="text-center p-2 bg-success bg-opacity-10 rounded cursor-pointer hover-effect"
+                  onClick={() => handleTileClick('completed')}
+                  style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  title="Click to view completed departments"
+                >
                   <div className="h4 mb-1 text-success">{getSummaryStats().completed || 0}</div>
                   <small className="text-success fw-semibold"><i className="fas fa-trophy"></i> Completed</small>
                 </div>
               </div>
               <div className="col-lg-2 col-md-4 col-6">
-                <div className="text-center p-2 bg-success bg-opacity-10 rounded">
+                <div 
+                  className="text-center p-2 bg-success bg-opacity-10 rounded cursor-pointer"
+                  onClick={() => handleTileClick('approved')}
+                  style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  title="Click to view approved departments"
+                >
                   <div className="h4 mb-1 text-success">{getSummaryStats().approved || 0}</div>
                   <small className="text-success fw-semibold"><i className="fas fa-check-circle"></i> Approved</small>
                 </div>
               </div>
               <div className="col-lg-2 col-md-4 col-6">
-                <div className="text-center p-2 bg-primary bg-opacity-10 rounded">
+                <div 
+                  className="text-center p-2 bg-primary bg-opacity-10 rounded cursor-pointer"
+                  onClick={() => handleTileClick('submitted')}
+                  style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  title="Click to view pending departments"
+                >
                   <div className="h4 mb-1 text-primary">{getSummaryStats().submitted || 0}</div>
                   <small className="text-primary fw-semibold"><i className="fas fa-paper-plane"></i> Pending</small>
                 </div>
               </div>
               <div className="col-lg-2 col-md-4 col-6">
-                <div className="text-center p-2 bg-info bg-opacity-10 rounded">
+                <div 
+                  className="text-center p-2 bg-info bg-opacity-10 rounded cursor-pointer"
+                  onClick={() => handleTileClick('drafting')}
+                  style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  title="Click to view in-progress departments"
+                >
                   <div className="h4 mb-1 text-info">{getSummaryStats().drafting || 0}</div>
                   <small className="text-info fw-semibold"><i className="fas fa-pencil-alt"></i> In Progress</small>
                 </div>
               </div>
               <div className="col-lg-2 col-md-4 col-6">
-                <div className="text-center p-2 bg-danger bg-opacity-10 rounded">
+                <div 
+                  className="text-center p-2 bg-danger bg-opacity-10 rounded cursor-pointer"
+                  onClick={() => handleTileClick('deadline_missed')}
+                  style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  title="Click to view departments that missed deadline"
+                >
                   <div className="h4 mb-1 text-danger">{getSummaryStats().deadline_missed || 0}</div>
                   <small className="text-danger fw-semibold"><i className="fas fa-clock"></i> Missed</small>
                 </div>
               </div>
               <div className="col-lg-2 col-md-4 col-6">
-                <div className="text-center p-2 bg-warning bg-opacity-10 rounded">
+                <div 
+                  className="text-center p-2 bg-warning bg-opacity-10 rounded cursor-pointer"
+                  onClick={() => handleTileClick('extended')}
+                  style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  title="Click to view departments with extensions"
+                >
                   <div className="h4 mb-1 text-warning">{Object.values(overrides).filter(o => o?.has_override).length}</div>
                   <small className="text-warning fw-semibold"><i className="fas fa-unlock"></i> Extended</small>
                 </div>
               </div>
             </div>
+
+            {/* Quick Actions for Principal/Admin */}
+            {(userRole === "principal" || userRole === "admin") && (
+              <div className="mt-4 pt-3 border-top">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h6 className="mb-0 text-muted">
+                    <i className="fas fa-bolt"></i> Quick Actions
+                  </h6>
+                  
+                  <button 
+                    className="btn btn-warning btn-sm"
+                    onClick={handleGrantOverrideToAllMissed}
+                    disabled={departments.filter(dept => {
+                      const statusInfo = getEnhancedStatus(dept);
+                      return statusInfo.stage === 'deadline_missed' && !overrides[dept.id]?.has_override;
+                    }).length === 0}
+                    title="Grant deadline override to all departments that missed the deadline"
+                  >
+                    <i className="fas fa-unlock-alt"></i> Grant Override to All Missed 
+                    <span className="badge bg-light text-dark ms-1">
+                      {departments.filter(dept => {
+                        const statusInfo = getEnhancedStatus(dept);
+                        return statusInfo.stage === 'deadline_missed' && !overrides[dept.id]?.has_override;
+                      }).length}
+                    </span>
+                  </button>
+                  
+                  <button 
+                    className="btn btn-info btn-sm"
+                    onClick={handleSendReminderToAllPending}
+                    disabled={departments.filter(dept => {
+                      const statusInfo = getEnhancedStatus(dept);
+                      return ['not_started', 'drafting', 'draft_overdue', 'deadline_missed'].includes(statusInfo.stage);
+                    }).length === 0}
+                    title="Send reminder emails to all departments that haven't submitted"
+                  >
+                    <i className="fas fa-envelope-open-text"></i> Send Reminder to All Pending 
+                    <span className="badge bg-light text-dark ms-1">
+                      {departments.filter(dept => {
+                        const statusInfo = getEnhancedStatus(dept);
+                        return ['not_started', 'drafting', 'draft_overdue', 'deadline_missed'].includes(statusInfo.stage);
+                      }).length}
+                    </span>
+                  </button>
+                  
+                  <button 
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={handleScheduleAutomaticReminders}
+                    title="Schedule automatic reminder emails before deadline"
+                  >
+                    <i className="fas fa-clock"></i> Schedule Auto Reminders
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Management Sections - Only show when there are departments */}
-      {departments.length > 0 && (
-        <>
-          {/* Principal Deadline Management */}
-          {userRole === "principal" && (
-            <div className="card mb-3">
-              <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                <h6 className="mb-0"><i className="fas fa-shield-alt"></i> Principal Deadline Management</h6>
-                <button 
-                  className="btn btn-outline-dark btn-sm"
-                  onClick={() => {
-                    const missedDepartments = departments.filter(dept => {
-                      const statusInfo = getEnhancedStatus(dept);
-                      return statusInfo.stage === 'deadline_missed';
-                    });
-                    if (missedDepartments.length === 0) {
-                      alert('No departments have missed the deadline.');
-                      return;
-                    }
-                    const deptNames = missedDepartments.map(d => d.name).join(', ');
-                    alert(`Departments that missed deadline: ${deptNames}`);
-                  }}
-                >
-                  <i className="fas fa-list"></i> View Missed ({getSummaryStats().deadline_missed || 0})
-                </button>
-              </div>
-              <div className="card-body p-3">
-                <div className="row mb-3">
-                  <div className="col-md-12">
-                    <p className="mb-2 small text-muted">
-                      Manage deadline overrides and send bulk reminders to departments. 
-                      Use these tools to efficiently handle multiple departments that need assistance.
-                    </p>
-                    <div className="d-flex gap-2 align-items-center flex-wrap mb-3">
-                      <span className="badge bg-danger px-2 py-1">
-                        <i className="fas fa-clock"></i> {getSummaryStats().deadline_missed || 0} Missed Deadline
-                      </span>
-                      <span className="badge bg-warning text-dark px-2 py-1">
-                        <i className="fas fa-unlock"></i> {Object.values(overrides).filter(o => o?.has_override).length} Active Extensions
-                      </span>
-                      <span className="badge bg-info px-2 py-1">
-                        <i className="fas fa-envelope"></i> {departments.filter(dept => {
-                          const statusInfo = getEnhancedStatus(dept);
-                          return ['not_started', 'drafting', 'draft_overdue', 'deadline_missed'].includes(statusInfo.stage);
-                        }).length} Need Reminders
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Bulk Action Buttons */}
-                <div className="border-top pt-3">
-                  <h6 className="mb-2 text-muted">Quick Actions</h6>
-                  <div className="d-flex gap-2 flex-wrap">
-                    <button 
-                      className="btn btn-warning btn-sm"
-                      onClick={handleGrantOverrideToAllMissed}
-                      disabled={departments.filter(dept => {
-                        const statusInfo = getEnhancedStatus(dept);
-                        return statusInfo.stage === 'deadline_missed' && !overrides[dept.id]?.has_override;
-                      }).length === 0}
-                      title="Grant deadline override to all departments that missed the deadline"
-                    >
-                      <i className="fas fa-unlock-alt"></i> Grant Override to All Missed 
-                      <span className="badge bg-light text-dark ms-1">
-                        {departments.filter(dept => {
-                          const statusInfo = getEnhancedStatus(dept);
-                          return statusInfo.stage === 'deadline_missed' && !overrides[dept.id]?.has_override;
-                        }).length}
-                      </span>
-                    </button>
-                    
-                    <button 
-                      className="btn btn-info btn-sm"
-                      onClick={handleSendReminderToAllPending}
-                      disabled={departments.filter(dept => {
-                        const statusInfo = getEnhancedStatus(dept);
-                        return ['not_started', 'drafting', 'draft_overdue', 'deadline_missed'].includes(statusInfo.stage);
-                      }).length === 0}
-                      title="Send reminder emails to all departments that haven't submitted"
-                    >
-                      <i className="fas fa-envelope-open-text"></i> Send Reminder to All Pending 
-                      <span className="badge bg-light text-dark ms-1">
-                        {departments.filter(dept => {
-                          const statusInfo = getEnhancedStatus(dept);
-                          return ['not_started', 'drafting', 'draft_overdue', 'deadline_missed'].includes(statusInfo.stage);
-                        }).length}
-                      </span>
-                    </button>
-                    
-                    <button 
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={handleScheduleAutomaticReminders}
-                      title="Schedule automatic reminder emails before deadline"
-                    >
-                      <i className="fas fa-clock"></i> Schedule Auto Reminders
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
       {/* Department Status Table */}
       <div className="card">
         <div className="card-header bg-light">
@@ -817,8 +838,8 @@ function ProgramEntrySummary({ userRole }) {
                             </button>
                           )}
                           
-                          {/* Override actions for Principals */}
-                          {userRole === "principal" && (
+                          {/* Override actions for Principals and Admins */}
+                          {(userRole === "principal" || userRole === "admin") && (
                             <>
                               {!overrides[dept.id]?.has_override && statusInfo.stage === 'deadline_missed' && (
                                 <button
