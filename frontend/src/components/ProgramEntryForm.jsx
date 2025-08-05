@@ -27,7 +27,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [selectedAcademicYearId, setSelectedAcademicYearId] = useState("");
   
   // New workflow states
-  const [submissionStatus, setSubmissionStatus] = useState('draft'); // 'draft', 'submitted', 'approved', 'events_planned', 'completed'
+  const [submissionStatus, setSubmissionStatus] = useState('draft'); // 'draft', 'submitted', 'approved', 'events_submitted', 'events_planned', 'completed'
   const [canPlanEvents, setCanPlanEvents] = useState(false); // Can access events tab
   const [canEditEvents, setCanEditEvents] = useState(false); // Can edit events (Admin or HoD)
   const [activeTab, setActiveTab] = useState('budget'); // 'budget' or 'events'
@@ -43,6 +43,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [dataUpdatedNotification, setDataUpdatedNotification] = useState(false);
 
   const printRef = useRef();
+  const refreshDataRef = useRef();
 
   useEffect(() => {
     // Fetch academic years on mount
@@ -241,6 +242,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             // Store deadline status for override button logic
             setDeadlinePassed(!isBeforeDeadline && !hasOverride);
           } else if (userRole === "hod") {
+            // HoDs initial editability based on deadline - will be further restricted by status later
             setIsEditable(yearObj?.is_enabled && (isBeforeDeadline || hasOverride));
           }
         } catch (e) {
@@ -263,16 +265,24 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             setCanEditEvents(true);
           } else if (userRole === 'principal') {
             // Principal can view events once approved, but cannot edit
-            if (status === 'approved' || status === 'events_planned') {
+            if (status === 'approved' || status === 'events_submitted' || status === 'events_planned') {
               setCanPlanEvents(true);
               setCanEditEvents(false);
             }
           } else if (userRole === 'hod') {
-            // HoD can view and edit events once approved
+            // HoD can view and edit events once approved, view-only after submitted for approval
             if (status === 'approved') {
               setCanPlanEvents(true);
               setCanEditEvents(true);
+              // Disable budget editing once approved
+              setIsEditable(false);
+            } else if (status === 'events_submitted' || status === 'events_planned') {
+              setCanPlanEvents(true);
+              setCanEditEvents(false); // Read-only after submission
+              setIsEditable(false); // Budget editing disabled
             }
+            // For draft/submitted status, budget editing depends on deadline and current isEditable state
+            // The isEditable was already set based on deadline/override above
           }
         } catch (e) {
           console.warn("Could not fetch submission status, defaulting to draft");
@@ -328,60 +338,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     }
   }, [overrideInfo]);
 
-  // Regenerate events whenever mergedData changes (but only if not already loaded from DB)
-  useEffect(() => {
-    if (mergedData.length > 0 && Object.keys(programEvents).length === 0) {
-      console.log('🔄 Generating new events (no saved events found)...');
-      const eventRows = {};
-      
-      mergedData.forEach(program => {
-        const count = program.count || 0;
-        const totalBudget = program.total_budget || 0;
-        
-        console.log(`📊 ${program.program_type}: Count=${count}, Budget=${totalBudget}`);
-        
-        // Only create events if count > 0
-        if (count > 0) {
-          const programKey = `${program.program_type}_${program.sub_program_type || 'default'}`;
-          console.log(`✅ Creating ${count} new events for: ${programKey}`);
-          
-          // Generate individual event rows based on count
-          const rows = [];
-          for (let i = 0; i < count; i++) {
-            const budgetPerEvent = program.budget_mode === 'Fixed' 
-              ? program.budget_per_event 
-              : Math.round(totalBudget / count);
-              
-            rows.push({
-              id: `${programKey}_${i}`,
-              eventNumber: i + 1,
-              title: `Event ${i + 1}`,
-              description: '',
-              event_date: '',
-              coordinator_name: '',
-              coordinator_contact: '',
-              budget_amount: budgetPerEvent,
-              status: 'planning'
-            });
-          }
-          
-          eventRows[programKey] = {
-            programInfo: program,
-            totalCount: count,
-            totalBudget: totalBudget,
-            events: rows
-          };
-        } else {
-          console.log(`❌ No events for ${program.program_type} (count = 0)`);
-        }
-      });
-      
-      console.log('🎯 Final eventRows:', Object.keys(eventRows));
-      setProgramEvents(eventRows);
-    } else {
-      console.log('⚠️ No new events to generate (mergedData empty or events already loaded)');
-    }
-  }, [mergedData, programEvents]);
+  // Note: Event generation is now handled in the refreshData function
+  // This prevents infinite loops and ensures events are properly loaded from database
 
   // Real-time data synchronization
   const refreshData = useCallback(async () => {
@@ -459,15 +417,26 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       if (userRole === 'admin') {
         setCanPlanEvents(true);
         setCanEditEvents(true);
+        setIsEditable(true); // Admin can always edit
       } else if (userRole === 'principal') {
-        if (status === 'approved' || status === 'events_planned') {
+        if (status === 'approved' || status === 'events_submitted' || status === 'events_planned') {
           setCanPlanEvents(true);
           setCanEditEvents(false);
         }
+        setIsEditable(true); // Principal can always edit budget
       } else if (userRole === 'hod') {
         if (status === 'approved') {
           setCanPlanEvents(true);
           setCanEditEvents(true);
+          // Disable budget editing once approved
+          setIsEditable(false);
+        } else if (status === 'events_submitted' || status === 'events_planned') {
+          setCanPlanEvents(true);
+          setCanEditEvents(false); // Read-only after submission
+          setIsEditable(false); // Budget editing disabled
+        } else {
+          // For draft/submitted status, keep current isEditable state (based on deadline)
+          // Don't change isEditable here as it depends on deadline logic
         }
       }
 
@@ -593,11 +562,22 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     principalRemarks, 
     hodRemarks, 
     submissionStatus, 
-    mergedData, 
-    programEvents, 
     userRole, 
     lastUpdateTime
   ]);
+
+  // Update the ref whenever refreshData changes
+  useEffect(() => {
+    refreshDataRef.current = refreshData;
+  }, [refreshData]);
+
+  // Check event completion status whenever programEvents changes
+  useEffect(() => {
+    if (Object.keys(programEvents).length > 0 && submissionStatus === 'approved') {
+      // Note: Removed automatic status update - now manual submission required
+      console.log('📊 Events loaded, ready for planning');
+    }
+  }, [programEvents, submissionStatus]);
 
   // Auto-refresh data every 30 seconds when viewing (not editing)
   useEffect(() => {
@@ -608,12 +588,15 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     
     if (shouldAutoRefresh) {
       const interval = setInterval(() => {
-        refreshData();
+        // Use the ref to avoid dependency issues
+        if (refreshDataRef.current) {
+          refreshDataRef.current();
+        }
       }, 30000); // Refresh every 30 seconds
       
       return () => clearInterval(interval);
     }
-  }, [departmentId, selectedAcademicYearId, userRole, submissionStatus, autoRefreshEnabled, refreshData]);
+  }, [departmentId, selectedAcademicYearId, userRole, submissionStatus, autoRefreshEnabled]);
 
   const handleChange = (index, field, value) => {
     setMergedData((prev) => {
@@ -833,44 +816,129 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   // Status Indicator Component
   const StatusIndicator = ({ status, userRole }) => {
     const statusSteps = [
-      { key: 'draft', label: 'Entry', icon: '📝', desc: 'HoD enters counts & budgets' },
-      { key: 'submitted', label: 'Submitted', icon: '📤', desc: 'Awaiting Principal approval' },
-      { key: 'approved', label: 'Approved', icon: '✅', desc: 'Ready for event planning' },
-      { key: 'events_planned', label: 'Events Planned', icon: '📅', desc: 'Individual events added' },
-      { key: 'completed', label: 'Completed', icon: '🎯', desc: 'All events executed' }
+      { key: 'draft', label: 'Form Entry', icon: 'fas fa-edit', desc: 'HoD enters counts & budgets' },
+      { key: 'approved', label: 'Budget Approved', icon: 'fas fa-check-circle', desc: 'Budget approved, plan events' },
+      { key: 'events_planned', label: 'Events Planned', icon: 'fas fa-calendar-check', desc: 'Events planned by HoD' },
+      { key: 'completed', label: 'Completed', icon: 'fas fa-trophy', desc: 'All events executed' }
     ];
 
     const getCurrentStepIndex = () => {
-      return statusSteps.findIndex(step => step.key === status);
+      // Map actual status to display status for visual flow
+      const statusMapping = {
+        'draft': -1,          // Show Form Entry as next (blue), others gray
+        'submitted': 0,       // Show Form Entry as completed (green), Budget Approved as next (blue)
+        'approved': 1,        // Show Form Entry + Budget Approved as completed (green), Events Planned as next (blue)
+        'events_submitted': 1, // Show Form Entry + Budget Approved as completed (green), Events Planned as next (blue)
+        'events_planned': 2,  // Show Form Entry + Budget Approved + Events Planned as completed (green), Completed as next (blue)
+        'completed': 3        // Show all as completed (green)
+      };
+      
+      return statusMapping[status] !== undefined ? statusMapping[status] : -1;
     };
+
+    const currentIndex = getCurrentStepIndex();
 
     return (
       <div className="mb-4">
         <div className="d-flex justify-content-center">
-          <div className="row text-center" style={{ maxWidth: '800px' }}>
+          <div className="d-flex align-items-center" style={{ maxWidth: '900px', gap: '1rem' }}>
             {statusSteps.map((step, index) => {
-              const isActive = step.key === status;
-              const isCompleted = getCurrentStepIndex() > index;
-              const stepClass = isActive ? 'text-primary fw-bold' : isCompleted ? 'text-success' : 'text-muted';
+              const isCompleted = currentIndex > index;
+              const isCurrentStep = index === currentIndex;
+              const isNextStep = index === currentIndex + 1;
+              const isPending = currentIndex < index && !isNextStep;
+              
+              let stepClass, badgeClass, iconColor, bgClass;
+              
+              // Green for completed steps OR current step (when it's a completed action)
+              if (isCompleted || (isCurrentStep && status !== 'draft')) {
+                stepClass = 'text-success';
+                badgeClass = 'bg-success text-white';
+                iconColor = '#198754';
+                bgClass = 'bg-success bg-opacity-10 border-success';
+              } 
+              // Blue for next step that needs action (one step ahead)
+              else if (isNextStep) {
+                stepClass = 'text-primary';
+                badgeClass = 'bg-primary text-white';
+                iconColor = '#0d6efd';
+                bgClass = 'bg-primary bg-opacity-10 border-primary';
+              } 
+              // Muted for pending future steps
+              else {
+                stepClass = 'text-muted';
+                badgeClass = 'bg-light text-muted border';
+                iconColor = '#6c757d';
+                bgClass = 'bg-light border';
+              }
               
               return (
-                <div key={step.key} className="col">
-                  <div className={stepClass}>
-                    <div style={{ fontSize: '1.5rem' }}>{step.icon}</div>
-                    <div className="small fw-bold">{step.label}</div>
-                    <div className="small" style={{ fontSize: '0.75rem' }}>{step.desc}</div>
+                <React.Fragment key={step.key}>
+                  <div className="text-center" style={{ minWidth: '120px' }}>
+                    <div className={`card ${bgClass} border-2 p-3 position-relative`} style={{ minHeight: '100px' }}>
+                      {/* Step Number Badge */}
+                      <div 
+                        className={`badge rounded-circle position-absolute ${badgeClass}`}
+                        style={{ 
+                          top: '-10px', 
+                          right: '-10px', 
+                          width: '25px', 
+                          height: '25px', 
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {isCompleted ? (
+                          <i className="fas fa-check" style={{ fontSize: '0.7rem' }}></i>
+                        ) : (
+                          index + 1
+                        )}
+                      </div>
+                      
+                      {/* Status Icon */}
+                      <div className="mb-2">
+                        <i 
+                          className={step.icon} 
+                          style={{ 
+                            fontSize: '1.8rem', 
+                            color: iconColor
+                          }}
+                        ></i>
+                      </div>
+                      
+                      {/* Status Label */}
+                      <div className={`fw-bold mb-1 ${stepClass}`} style={{ fontSize: '0.9rem' }}>
+                        {step.label}
+                      </div>
+                      
+                      {/* Active Indicator */}
+                      {isNextStep && (
+                        <div className="position-absolute bottom-0 start-50 translate-middle-x mb-1">
+                          <div className="badge bg-primary rounded-pill px-2 py-1" style={{ fontSize: '0.6rem' }}>
+                            <i className="fas fa-arrow-right me-1"></i>
+                            Next
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Arrow Connector */}
                   {index < statusSteps.length - 1 && (
-                    <div className="position-absolute" style={{ 
-                      top: '50%', 
-                      right: '-50%', 
-                      transform: 'translateY(-50%)',
-                      color: isCompleted ? '#198754' : '#6c757d'
-                    }}>
-                      →
+                    <div className="d-flex align-items-center">
+                      <i 
+                        className="fas fa-chevron-right" 
+                        style={{ 
+                          fontSize: '1.2rem',
+                          color: isCompleted ? '#198754' : '#dee2e6'
+                        }}
+                      ></i>
                     </div>
                   )}
-                </div>
+                </React.Fragment>
               );
             })}
           </div>
@@ -941,18 +1009,78 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     setActiveTab('events');
   };
 
+  // New function to submit events for Principal approval
+  const handleSubmitEventsForApproval = async () => {
+    try {
+      // First validate that all events are complete
+      const programsWithApprovedCounts = mergedData.filter(program => (program.count || 0) > 0);
+      
+      const allEventsComplete = programsWithApprovedCounts.every(program => {
+        const programKey = `${program.program_type}_${program.sub_program_type || 'default'}`;
+        const programEventData = programEvents[programKey];
+        
+        if (!programEventData) return false;
+        
+        return programEventData.events.every(event => {
+          return event.title && event.title.trim() !== '' &&
+                 event.event_date && event.event_date !== '' &&
+                 event.budget_amount && parseFloat(event.budget_amount) > 0;
+        });
+      });
+
+      if (!allEventsComplete) {
+        alert('❌ Cannot submit events!\n\nPlease complete all required fields (Title, Date, Budget) for all events before submitting for Principal approval.');
+        return;
+      }
+
+      // Update workflow status to 'events_submitted'
+      await API.put(`/workflow-status`, { 
+        academic_year_id: selectedAcademicYearId,
+        department_id: departmentId,
+        status: 'events_submitted'
+      });
+      
+      setSubmissionStatus('events_submitted');
+      alert('✅ Events submitted successfully!\n\nYour event plans have been sent to the Principal for approval.');
+    } catch (error) {
+      console.error('Error submitting events for approval:', error);
+      alert('❌ Error submitting events for approval. Please try again.');
+    }
+  };
+
+  // Function for Principal to approve events
+  const handlePrincipalEventApproval = async () => {
+    try {
+      await API.put(`/workflow-status`, { 
+        academic_year_id: selectedAcademicYearId,
+        department_id: departmentId,
+        status: 'events_planned'
+      });
+      
+      setSubmissionStatus('events_planned');
+      alert('✅ Events approved!\n\nThe department\'s event plans have been approved.');
+    } catch (error) {
+      console.error('Error approving events:', error);
+      alert('❌ Error approving events. Please try again.');
+    }
+  };
+
   const handleEventChange = (programKey, eventIndex, field, value) => {
-    setProgramEvents(prev => ({
-      ...prev,
+    const updatedProgramEvents = {
+      ...programEvents,
       [programKey]: {
-        ...prev[programKey],
-        events: prev[programKey].events.map((event, idx) => 
+        ...programEvents[programKey],
+        events: programEvents[programKey].events.map((event, idx) => 
           idx === eventIndex 
             ? { ...event, [field]: value }
             : event
         )
       }
-    }));
+    };
+    
+    setProgramEvents(updatedProgramEvents);
+    
+    // Note: Removed automatic status update - now manual submission required
   };
 
   const validateEvents = (programKey) => {
@@ -1069,16 +1197,21 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       alert(`Successfully saved ${program.totalCount} events for ${program.programInfo.program_type}!`);
       
       // Mark as completed
-      setProgramEvents(prev => ({
-        ...prev,
+      const updatedProgramEvents = {
+        ...programEvents,
         [programKey]: {
-          ...prev[programKey],
-          events: prev[programKey].events.map(event => ({
+          ...programEvents[programKey],
+          events: programEvents[programKey].events.map(event => ({
             ...event,
             status: 'completed'
           }))
         }
-      }));
+      };
+      
+      setProgramEvents(updatedProgramEvents);
+      
+      // Note: Removed automatic status update - now manual submission required
+      console.log('📊 Events saved successfully, ready for submission to Principal');
       
     } catch (error) {
       console.error("Error saving events:", error);
@@ -1097,6 +1230,85 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     const programKey = `${programType}_${subProgramType || 'default'}`;
     const events = programEvents[programKey]?.events || [];
     return events;
+  };
+
+  // Helper function to check event completion progress (removed auto-update)
+  const checkEventCompletionProgress = () => {
+    const programsWithApprovedCounts = mergedData.filter(program => (program.count || 0) > 0);
+    
+    if (programsWithApprovedCounts.length === 0) {
+      console.log('🔍 No programs with approved counts found');
+      return false;
+    }
+    
+    console.log('🔍 Checking', programsWithApprovedCounts.length, 'programs with approved counts');
+    
+    const allProgramsCompleted = programsWithApprovedCounts.every(program => {
+      const programKey = `${program.program_type}_${program.sub_program_type || 'default'}`;
+      const programEventData = programEvents[programKey];
+      
+      console.log(`🔍 Checking program: ${programKey}`, programEventData ? 'found' : 'NOT FOUND');
+      
+      if (!programEventData) {
+        console.log(`❌ No events found for program: ${programKey}`);
+        return false;
+      }
+      
+      const allEventsCompleted = programEventData.events.every((event, index) => {
+        const hasTitle = event.title && event.title.trim() !== '';
+        const hasDate = event.event_date && event.event_date !== '';
+        const hasBudget = event.budget_amount && parseFloat(event.budget_amount) > 0;
+        const isComplete = hasTitle && hasDate && hasBudget;
+        
+        console.log(`🔍 Event ${index + 1} of ${programKey}:`, {
+          title: hasTitle ? '✅' : '❌',
+          date: hasDate ? '✅' : '❌', 
+          budget: hasBudget ? '✅' : '❌',
+          complete: isComplete ? '✅' : '❌'
+        });
+        
+        return isComplete;
+      });
+      
+      console.log(`🔍 Program ${programKey} all events completed:`, allEventsCompleted ? '✅' : '❌');
+      return allEventsCompleted;
+    });
+    
+    console.log('🔍 All programs completed?', allProgramsCompleted ? '✅' : '❌');
+    return allProgramsCompleted;
+  };
+
+  // Helper function to calculate event completion progress
+  const getEventCompletionProgress = () => {
+    const programsWithApprovedCounts = mergedData.filter(program => (program.count || 0) > 0);
+    
+    if (programsWithApprovedCounts.length === 0) {
+      return { completed: 0, total: 0, percentage: 0 };
+    }
+    
+    let totalEvents = 0;
+    let completedEvents = 0;
+    
+    programsWithApprovedCounts.forEach(program => {
+      const programKey = `${program.program_type}_${program.sub_program_type || 'default'}`;
+      const programEventData = programEvents[programKey];
+      
+      if (programEventData) {
+        totalEvents += programEventData.events.length;
+        
+        const completed = programEventData.events.filter(event => {
+          return event.title && event.title.trim() !== '' &&
+                 event.event_date && event.event_date !== '' &&
+                 event.budget_amount && parseFloat(event.budget_amount) > 0;
+        }).length;
+        
+        completedEvents += completed;
+      }
+    });
+    
+    const percentage = totalEvents > 0 ? Math.round((completedEvents / totalEvents) * 100) : 0;
+    
+    return { completed: completedEvents, total: totalEvents, percentage };
   };
 
   const handleEnableSubmissionOverride = () => {
@@ -1224,17 +1436,17 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             <label className="form-label mb-0 text-nowrap">
               <strong><i className="fas fa-calendar-alt"></i> Submission Deadline:</strong>
             </label>
-            <div>
-              <div className="fw-semibold text-primary">{deadlineDisplay}</div>
+            <div className="fw-semibold text-primary">
+              {deadlineDisplay}
               {overrideInfo && overrideInfo.has_override && overrideInfo.expires_at && (
-                <small className="text-warning">
-                  <i className="fas fa-unlock"></i> Override Active {timeRemaining && `(${timeRemaining})`}
-                </small>
+                <span className="text-warning ms-2">
+                  <i className="fas fa-unlock"></i> Override Active{timeRemaining && `: ${timeRemaining}`}
+                </span>
               )}
               {overrideInfo && overrideInfo.expired && (
-                <small className="text-danger">
+                <span className="text-danger ms-2">
                   <i className="fas fa-clock"></i> Override Expired
-                </small>
+                </span>
               )}
             </div>
           </div>
@@ -1282,6 +1494,26 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                     <i className="fas fa-calendar"></i> Plan Individual Events
                   </button>
                 )}
+
+                {/* New: Submit Events for Principal Approval */}
+                {submissionStatus === 'approved' && userRole === 'hod' && Object.keys(programEvents).length > 0 && (
+                  <button 
+                    className="btn btn-success me-2 mb-2"
+                    onClick={handleSubmitEventsForApproval}
+                  >
+                    <i className="fas fa-paper-plane"></i> Submit Events for Approval
+                  </button>
+                )}
+
+                {/* New: Principal Approve Events */}
+                {submissionStatus === 'events_submitted' && userRole === 'principal' && (
+                  <button 
+                    className="btn btn-success me-2 mb-2"
+                    onClick={handlePrincipalEventApproval}
+                  >
+                    <i className="fas fa-check-circle"></i> Approve Events
+                  </button>
+                )}
               </div>
               
               <div className="col-md-4">
@@ -1315,9 +1547,28 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
               </div>
             )}
 
-            {submissionStatus === 'events_planned' && userRole === 'principal' && (
+            {submissionStatus === 'approved' && userRole === 'hod' && (
               <div className="alert alert-info mb-0">
-                <i className="fas fa-calendar-check"></i> Events have been planned by the department.
+                <i className="fas fa-calendar-plus"></i> Budget approved! Plan your events and submit them for Principal approval.
+              </div>
+            )}
+
+            {/* New: Events Submitted Status */}
+            {submissionStatus === 'events_submitted' && userRole === 'hod' && (
+              <div className="alert alert-warning mb-0">
+                <i className="fas fa-calendar-check"></i> Events submitted for Principal approval. Awaiting Principal approval of your event plans.
+              </div>
+            )}
+
+            {submissionStatus === 'events_submitted' && userRole === 'principal' && (
+              <div className="alert alert-info mb-0">
+                <i className="fas fa-calendar-check"></i> Department has submitted their event plans for your approval.
+              </div>
+            )}
+
+            {submissionStatus === 'events_planned' && userRole === 'principal' && (
+              <div className="alert alert-success mb-0">
+                <i className="fas fa-calendar-check"></i> Events have been approved! Department can now execute their planned events.
               </div>
             )}
 
@@ -1633,8 +1884,33 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                       {canEditEvents && (
                         <div>
                           <button 
-                            className="btn btn-outline-primary btn-sm"
-                          onClick={() => {
+                            className="btn btn-outline-danger btn-sm"
+                          onClick={async () => {
+                            // Show confirmation dialog first
+                            const confirmed = window.confirm(
+                              '⚠️ WARNING: This will delete ALL saved events from the database and create fresh forms.\n\n' +
+                              'This action cannot be undone. All your event planning progress will be permanently lost.\n\n' +
+                              'Are you sure you want to continue?'
+                            );
+                            
+                            if (!confirmed) return;
+                            
+                            try {
+                              console.log('🗑️ Clearing all saved events from database...');
+                              
+                              // Delete all events for this department and academic year from database
+                              await API.delete(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`);
+                              
+                              console.log('✅ Database events cleared, regenerating forms...');
+                              
+                              // Clear local state
+                              setProgramEvents({});
+                              
+                              // Add error handling
+                            } catch (error) {
+                              console.error('❌ Error clearing database events:', error);
+                              alert('❌ Error clearing events from database. The regeneration will still proceed with local forms only.');
+                            }
                             console.log('� Regenerating all events...');
                             setProgramEvents({});
                             
@@ -1679,17 +1955,125 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                               setProgramEvents(eventRows);
                               const programsWithCounts = Object.keys(eventRows).length;
                               console.log(`✅ Regenerated events for ${programsWithCounts} program types`);
-                              alert(`✅ Events regenerated! Now showing ${programsWithCounts} program types with events.`);
+                                alert(`✅ Events regenerated successfully!\n\n` +
+                                      `• Database cleared: All previous events deleted\n` +
+                                      `• Fresh forms created: ${programsWithCounts} program types\n` +
+                                      `• Ready for new event planning`);
                             }, 100);
                           }}
-                          title="Regenerate all event forms based on current program counts"
+                          title="⚠️ WARNING: This will clear all saved events from database and create fresh forms"
                         >
-                          <i className="fas fa-sync-alt"></i> Regenerate Events
+                          <i className="fas fa-trash-restore"></i> Clear & Regenerate Events
+                        </button>
+                        
+                        {/* Debug button for checking status update */}
+                        <button 
+                          className="btn btn-outline-info btn-sm ms-2"
+                          onClick={() => {
+                            console.log('🔍 Manual debug check triggered...');
+                            console.log('Current submission status:', submissionStatus);
+                            console.log('Program events:', programEvents);
+                            console.log('Merged data with counts:', mergedData.filter(p => (p.count || 0) > 0));
+                            
+                            // Show detailed incomplete events info
+                            const programsWithApprovedCounts = mergedData.filter(program => (program.count || 0) > 0);
+                            const incompleteDetails = [];
+                            
+                            programsWithApprovedCounts.forEach(program => {
+                              const programKey = `${program.program_type}_${program.sub_program_type || 'default'}`;
+                              const programEventData = programEvents[programKey];
+                              
+                              if (programEventData) {
+                                programEventData.events.forEach((event, index) => {
+                                  const hasTitle = event.title && event.title.trim() !== '';
+                                  const hasDate = event.event_date && event.event_date !== '';
+                                  const hasBudget = event.budget_amount && parseFloat(event.budget_amount) > 0;
+                                  
+                                  if (!hasTitle || !hasDate || !hasBudget) {
+                                    const missing = [];
+                                    if (!hasTitle) missing.push('Title');
+                                    if (!hasDate) missing.push('Date');
+                                    if (!hasBudget) missing.push('Budget');
+                                    
+                                    incompleteDetails.push({
+                                      program: `${program.program_type}${program.sub_program_type ? ' - ' + program.sub_program_type : ''}`,
+                                      event: `Event ${index + 1}`,
+                                      missing: missing.join(', ')
+                                    });
+                                  }
+                                });
+                              }
+                            });
+                            
+                            if (incompleteDetails.length > 0) {
+                              console.log('🔍 Incomplete Events Found:');
+                              incompleteDetails.forEach(detail => {
+                                console.log(`❌ ${detail.program} > ${detail.event}: Missing ${detail.missing}`);
+                              });
+                              alert('❌ Incomplete Events Found:\n\n' + 
+                                    incompleteDetails.map(d => `• ${d.program} > ${d.event}: Missing ${d.missing}`).join('\n') +
+                                    '\n\nComplete all required fields (Title, Date, Budget) to auto-update status to "Events Planned".');
+                            } else {
+                              console.log('✅ All events appear complete, ready for submission');
+                            }
+                            
+                            // Check completion but don't auto-update
+                            const allComplete = checkEventCompletionProgress();
+                            if (allComplete) {
+                              alert('✅ All Events Complete!\n\nAll required fields (Title, Date, Budget) are filled.\nYou can now submit events for Principal approval.');
+                            }
+                          }}
+                          title="Debug: Check if status should update to 'Events Planned'"
+                        >
+                          <i className="fas fa-bug"></i> Debug Status Check
                         </button>
                         </div>
                       )}
                     </div>
                   </div>
+
+                  {/* Automatic Completion Status Indicator */}
+                  {submissionStatus === 'approved' && userRole === 'hod' && Object.keys(programEvents).length > 0 && (() => {
+                    const progress = getEventCompletionProgress();
+                    const isComplete = progress.percentage === 100;
+                    
+                    return (
+                      <div className={`alert ${isComplete ? 'alert-success' : 'alert-info'} border-left-success`} 
+                           style={{ borderLeft: `4px solid ${isComplete ? '#28a745' : '#17a2b8'}` }}>
+                        <div className="d-flex align-items-center">
+                          <div className="me-3">
+                            <i className={`fas ${isComplete ? 'fa-check-circle' : 'fa-magic'} fa-lg ${isComplete ? 'text-success' : 'text-info'}`}></i>
+                          </div>
+                          <div className="flex-grow-1">
+                            <h6 className={`mb-2 ${isComplete ? 'text-success' : 'text-info'}`}>
+                              <i className="fas fa-hand-paper"></i> {isComplete ? 'Ready for Manual Submission!' : 'Event Planning Progress'}
+                            </h6>
+                            <p className="mb-2 small">
+                              {isComplete 
+                                ? 'All event details are complete! Click "Submit Events for Approval" to send your events to the Principal for approval.'
+                                : 'Fill in all required event details (title, date, and budget) to enable submission for Principal approval.'
+                              }
+                            </p>
+                            
+                            {/* Progress Bar */}
+                            <div className="d-flex align-items-center gap-2">
+                              <div className="flex-grow-1">
+                                <div className="progress" style={{ height: '8px' }}>
+                                  <div 
+                                    className={`progress-bar ${isComplete ? 'bg-success' : 'bg-info'}`}
+                                    style={{ width: `${progress.percentage}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                              <small className={`fw-bold ${isComplete ? 'text-success' : 'text-info'}`}>
+                                {progress.completed}/{progress.total} events ({progress.percentage}%)
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Program Event Tables */}
                   {Object.entries(programEvents).map(([programKey, program]) => (
@@ -1749,9 +2133,32 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                               </tr>
                             </thead>
                             <tbody>
-                              {program.events.map((event, eventIndex) => (
-                                <tr key={event.id} className={event.status === 'completed' ? 'table-success' : ''}>
-                                  <td className="text-center fw-bold">{event.eventNumber}</td>
+                              {program.events.map((event, eventIndex) => {
+                                // Check if this event is complete for visual indicator
+                                const isEventComplete = event.title && event.title.trim() !== '' &&
+                                                       event.event_date && event.event_date !== '' &&
+                                                       event.budget_amount && parseFloat(event.budget_amount) > 0;
+                                
+                                return (
+                                <tr key={event.id} className={
+                                  isEventComplete ? 'table-success' : 
+                                  event.status === 'completed' ? 'table-success' : 
+                                  (event.title || event.event_date || event.budget_amount) ? 'table-warning' : ''
+                                }>
+                                  <td className="text-center fw-bold">
+                                    <div className="d-flex align-items-center justify-content-center">
+                                      {event.eventNumber}
+                                      {isEventComplete ? (
+                                        <span className="badge bg-success ms-1" title="Event Complete">
+                                          <i className="fas fa-check"></i>
+                                        </span>
+                                      ) : (
+                                        <span className="badge bg-warning ms-1" title="Event Incomplete">
+                                          <i className="fas fa-exclamation"></i>
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
                                   
                                   {/* Event Title */}
                                   <td>
@@ -1832,7 +2239,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                     />
                                   </td>
                                 </tr>
-                              ))}
+                                );
+                              })}
                               
                               {/* Budget Summary Row */}
                               <tr className="table-warning">
