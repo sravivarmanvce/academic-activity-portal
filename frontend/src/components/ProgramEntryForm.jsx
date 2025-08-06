@@ -39,8 +39,14 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   // Real-time data sync states
   const [isPolling, setIsPolling] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false); // Disabled auto-refresh
   const [dataUpdatedNotification, setDataUpdatedNotification] = useState(false);
+  
+  // Unsaved changes tracking
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const printRef = useRef();
   const refreshDataRef = useRef();
@@ -579,24 +585,26 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     }
   }, [programEvents, submissionStatus]);
 
-  // Auto-refresh data every 30 seconds when viewing (not editing)
+  // Manual refresh only - auto-refresh disabled to prevent data loss
   useEffect(() => {
-    if (!autoRefreshEnabled || !departmentId || !selectedAcademicYearId) return;
-    
-    // Only auto-refresh for viewing users (Principal) or when not actively editing
-    const shouldAutoRefresh = userRole === 'principal' || (userRole === 'hod' && submissionStatus !== 'draft');
-    
-    if (shouldAutoRefresh) {
-      const interval = setInterval(() => {
-        // Use the ref to avoid dependency issues
-        if (refreshDataRef.current) {
-          refreshDataRef.current();
-        }
-      }, 30000); // Refresh every 30 seconds
-      
-      return () => clearInterval(interval);
-    }
+    // Auto-refresh is now disabled to prevent losing unsaved event planning data
+    // Users can manually refresh using the refresh button
+    return; // No auto-refresh
   }, [departmentId, selectedAcademicYearId, userRole, submissionStatus, autoRefreshEnabled]);
+
+  // Browser beforeunload warning for unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const handleChange = (index, field, value) => {
     setMergedData((prev) => {
@@ -607,6 +615,11 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       };
       return updated;
     });
+    
+    // Mark as having unsaved changes for budget modifications
+    if (field === "count" || field === "total_budget" || field === "remarks") {
+      setHasUnsavedChanges(true);
+    }
   };
 
   const handleSubmit = async () => {
@@ -665,6 +678,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       }
 
       setStatus("success");
+      setHasUnsavedChanges(false); // Clear unsaved changes after successful save
     } catch (error) {
       console.error("Submission failed", error);
       setStatus("error");
@@ -1065,6 +1079,87 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     }
   };
 
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedWarning(true);
+      setPendingNavigation('refresh');
+      return;
+    }
+    
+    setIsRefreshing(true);
+    try {
+      await refreshDataRef.current();
+      console.log('✅ Manual refresh completed');
+    } catch (error) {
+      console.error('❌ Manual refresh failed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Check for unsaved changes in events
+  const checkForUnsavedEventChanges = (currentEvents) => {
+    for (const programKey in currentEvents) {
+      const program = currentEvents[programKey];
+      if (program && program.events) {
+        for (const event of program.events) {
+          if (event.status === 'pending' && (
+            event.title.trim() || 
+            event.description.trim() || 
+            event.event_date || 
+            event.coordinator_name.trim() || 
+            event.coordinator_contact.trim()
+          )) {
+            return true; // Found unsaved changes
+          }
+        }
+      }
+    }
+    return false;
+  };
+
+  // Handle tab switching with unsaved changes warning
+  const handleTabSwitch = (newTab) => {
+    if (activeTab === 'events' && hasUnsavedChanges) {
+      setShowUnsavedWarning(true);
+      setPendingNavigation(newTab);
+      return;
+    }
+    setActiveTab(newTab);
+  };
+
+  // Handle navigation with unsaved changes
+  const handleNavigationWithWarning = (action) => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedWarning(true);
+      setPendingNavigation(action);
+      return false;
+    }
+    return true;
+  };
+
+  // Confirm navigation and lose changes
+  const confirmNavigationAndLoseChanges = () => {
+    setHasUnsavedChanges(false);
+    setShowUnsavedWarning(false);
+    
+    if (pendingNavigation === 'refresh') {
+      setIsRefreshing(true);
+      refreshDataRef.current().finally(() => setIsRefreshing(false));
+    } else if (pendingNavigation && pendingNavigation !== 'refresh') {
+      setActiveTab(pendingNavigation);
+    }
+    
+    setPendingNavigation(null);
+  };
+
+  // Cancel navigation and keep changes
+  const cancelNavigationKeepChanges = () => {
+    setShowUnsavedWarning(false);
+    setPendingNavigation(null);
+  };
+
   const handleEventChange = (programKey, eventIndex, field, value) => {
     const updatedProgramEvents = {
       ...programEvents,
@@ -1079,6 +1174,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     };
     
     setProgramEvents(updatedProgramEvents);
+    
+    // Check for unsaved changes after update
+    const hasUnsaved = checkForUnsavedEventChanges(updatedProgramEvents);
+    setHasUnsavedChanges(hasUnsaved);
     
     // Note: Removed automatic status update - now manual submission required
   };
@@ -1209,6 +1308,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       };
       
       setProgramEvents(updatedProgramEvents);
+      
+      // Clear unsaved changes after successful save
+      const hasUnsaved = checkForUnsavedEventChanges(updatedProgramEvents);
+      setHasUnsavedChanges(hasUnsaved);
       
       // Note: Removed automatic status update - now manual submission required
       console.log('📊 Events saved successfully, ready for submission to Principal');
@@ -1379,29 +1482,23 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           </p>
         </div>
         <div className="d-flex gap-2 align-items-center">
-          {/* Auto-refresh toggle */}
-          <div className="form-check form-switch me-3">
-            <input 
-              className="form-check-input" 
-              type="checkbox" 
-              id="autoRefreshSwitch"
-              checked={autoRefreshEnabled}
-              onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
-            />
-            <label className="form-check-label small" htmlFor="autoRefreshSwitch">
-              Auto-refresh
-            </label>
-          </div>
+          {/* Unsaved Changes Indicator */}
+          {hasUnsavedChanges && (
+            <span className="badge bg-warning text-dark d-flex align-items-center gap-1 me-2">
+              <i className="fas fa-exclamation-triangle"></i>
+              Unsaved Changes
+            </span>
+          )}
           
           {/* Manual refresh button */}
           <button 
             className="btn btn-outline-primary btn-sm me-2" 
-            onClick={refreshData}
-            disabled={isPolling}
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
             title="Refresh data to see latest updates"
           >
-            <i className={`fas fa-sync-alt ${isPolling ? 'fa-spin' : ''}`}></i> 
-            {isPolling ? ' Refreshing...' : ' Refresh'}
+            <i className={`fas fa-sync-alt ${isRefreshing ? 'fa-spin' : ''}`}></i> 
+            {isRefreshing ? ' Refreshing...' : ' Refresh'}
           </button>
           
           <button className="btn btn-outline-danger btn-sm" onClick={handleDownloadPDF}>
@@ -1623,7 +1720,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                 role="tab"
                 aria-controls="budget"
                 aria-selected={activeTab === 'budget'}
-                onClick={() => setActiveTab('budget')}
+                onClick={() => handleTabSwitch('budget')}
               >
                 <i className="fas fa-table"></i> Budget Proposals
               </button>
@@ -1642,7 +1739,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                 role="tab"
                 aria-controls="events"
                 aria-selected={activeTab === 'events'}
-                onClick={() => canPlanEvents && setActiveTab('events')}
+                onClick={() => canPlanEvents && handleTabSwitch('events')}
                 disabled={!canPlanEvents}
                 title={!canPlanEvents ? "Events planning available after budget approval" : (canEditEvents ? "Plan individual events" : "View individual events")}
               >
@@ -2511,6 +2608,59 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         </div>
       )}
       {showOverrideModal && <div className="modal-backdrop fade show"></div>}
+
+      {/* Unsaved Changes Warning Modal */}
+      {showUnsavedWarning && (
+        <>
+          <div className="modal show d-block" tabIndex="-1" role="dialog">
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header bg-warning text-dark">
+                  <h5 className="modal-title d-flex align-items-center gap-2">
+                    <i className="fas fa-exclamation-triangle"></i>
+                    Unsaved Changes Detected
+                  </h5>
+                </div>
+                <div className="modal-body">
+                  <p className="mb-3">
+                    <strong>You have unsaved changes that will be lost!</strong>
+                  </p>
+                  <p className="mb-3">
+                    {pendingNavigation === 'refresh' ? (
+                      <>Refreshing the data will overwrite any unsaved event planning information you've entered.</>
+                    ) : (
+                      <>Switching tabs will lose any unsaved event planning information you've entered.</>
+                    )}
+                  </p>
+                  <div className="alert alert-info d-flex align-items-center gap-2">
+                    <i className="fas fa-info-circle"></i>
+                    <span>
+                      <strong>Tip:</strong> Save your events first using the "Save Events" button, then try again.
+                    </span>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-secondary"
+                    onClick={cancelNavigationKeepChanges}
+                  >
+                    <i className="fas fa-arrow-left"></i> Keep Changes
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-warning"
+                    onClick={confirmNavigationAndLoseChanges}
+                  >
+                    <i className="fas fa-trash-alt"></i> Discard Changes & Continue
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
+      )}
     </div>
   );
 }
