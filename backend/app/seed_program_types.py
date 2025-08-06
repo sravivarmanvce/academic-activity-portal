@@ -189,9 +189,9 @@ try:
     for item in program_types_data:
         db.add(ProgramType(**item))
     db.commit()
-    print("✅ Program types seeded successfully.")
+
 except Exception as e:
     db.rollback()
-    print("❌ Error while seeding:", e)
+
 finally:
     db.close()

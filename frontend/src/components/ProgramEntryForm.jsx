@@ -133,7 +133,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         
         // Load and organize saved events from database
         const savedEvents = eventsRes.data || [];
-        console.log('📥 Loaded saved events:', savedEvents);
         
         // Group events by program type and populate programEvents
         const eventsByProgram = {};
@@ -191,13 +190,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
               totalBudget: totalBudget,
               events: events
             };
-            
-            console.log(`📊 ${program.program_type}: Loaded ${programEvents.length}/${count} events from database`);
           }
         });
         
         setProgramEvents(eventsByProgram);
-        console.log('✅ Event loading complete, events:', Object.keys(eventsByProgram));
 
         // 🔁 Academic year name
         const yearObj = yearsRes.data.find((y) => y.id === selectedAcademicYearId);
@@ -353,8 +349,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     
     setIsPolling(true);
     try {
-      console.log('🔄 Refreshing data...');
-      
       const [
         countsRes,
         principalRes,
@@ -480,8 +474,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       // Update events if any exist
       const savedEvents = eventsRes.data || [];
       if (savedEvents.length > 0) {
-        console.log('📥 Updated events from server:', savedEvents.length);
-        
         // Update existing program events with fresh data from server
         const eventsByProgram = {};
         
@@ -554,8 +546,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         setTimeout(() => setDataUpdatedNotification(false), 5000); // Hide after 5 seconds
       }
       
-      console.log('✅ Data refresh complete');
-      
     } catch (error) {
       console.error('❌ Error refreshing data:', error);
     } finally {
@@ -581,7 +571,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   useEffect(() => {
     if (Object.keys(programEvents).length > 0 && submissionStatus === 'approved') {
       // Note: Removed automatic status update - now manual submission required
-      console.log('📊 Events loaded, ready for planning');
     }
   }, [programEvents, submissionStatus]);
 
@@ -890,27 +879,25 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                 <React.Fragment key={step.key}>
                   <div className="text-center" style={{ minWidth: '120px' }}>
                     <div className={`card ${bgClass} border-2 p-3 position-relative`} style={{ minHeight: '100px' }}>
-                      {/* Step Number Badge */}
-                      <div 
-                        className={`badge rounded-circle position-absolute ${badgeClass}`}
-                        style={{ 
-                          top: '-10px', 
-                          right: '-10px', 
-                          width: '25px', 
-                          height: '25px', 
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        {isCompleted ? (
+                      {/* Step Status Badge */}
+                      {(isCompleted || (isCurrentStep && status !== 'draft')) && (
+                        <div 
+                          className={`badge rounded-circle position-absolute bg-success text-white`}
+                          style={{ 
+                            top: '-10px', 
+                            right: '-10px', 
+                            width: '25px', 
+                            height: '25px', 
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold'
+                          }}
+                        >
                           <i className="fas fa-check" style={{ fontSize: '0.7rem' }}></i>
-                        ) : (
-                          index + 1
-                        )}
-                      </div>
+                        </div>
+                      )}
                       
                       {/* Status Icon */}
                       <div className="mb-2">
@@ -932,8 +919,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                       {isNextStep && (
                         <div className="position-absolute bottom-0 start-50 translate-middle-x mb-1">
                           <div className="badge bg-primary rounded-pill px-2 py-1" style={{ fontSize: '0.6rem' }}>
-                            <i className="fas fa-arrow-right me-1"></i>
-                            Next
+                            <i className="fas fa-sync-alt fa-spin me-1"></i>
+                            Current
                           </div>
                         </div>
                       )}
@@ -1090,7 +1077,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     setIsRefreshing(true);
     try {
       await refreshDataRef.current();
-      console.log('✅ Manual refresh completed');
     } catch (error) {
       console.error('❌ Manual refresh failed:', error);
     } finally {
@@ -1243,8 +1229,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         return;
       }
       
-      console.log(`🔧 Using program_type_id ${correctProgramTypeId} for "${program.programInfo.program_type}"`);
-      
       const eventsData = program.events.map(event => ({
         title: event.title,
         description: event.description,
@@ -1257,17 +1241,12 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         coordinator_contact: event.coordinator_contact
       }));
       
-      console.log('📤 Sending events data:', eventsData);
-      console.log('🏷️ Program info:', program.programInfo);
-      
       // Save all events for this program type - handle each individually to see which one fails
       const results = [];
       for (let i = 0; i < eventsData.length; i++) {
         try {
-          console.log(`💾 Saving event ${i + 1}:`, eventsData[i]);
           const result = await API.post("/events", eventsData[i]);
           results.push(result);
-          console.log(`✅ Event ${i + 1} saved successfully`);
         } catch (eventError) {
           console.error(`❌ Failed to save event ${i + 1}:`, eventError);
           console.error('📋 Event data that failed:', eventsData[i]);
@@ -1314,7 +1293,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       setHasUnsavedChanges(hasUnsaved);
       
       // Note: Removed automatic status update - now manual submission required
-      console.log('📊 Events saved successfully, ready for submission to Principal');
       
     } catch (error) {
       console.error("Error saving events:", error);
@@ -1340,20 +1318,20 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     const programsWithApprovedCounts = mergedData.filter(program => (program.count || 0) > 0);
     
     if (programsWithApprovedCounts.length === 0) {
-      console.log('🔍 No programs with approved counts found');
+      
       return false;
     }
     
-    console.log('🔍 Checking', programsWithApprovedCounts.length, 'programs with approved counts');
+    
     
     const allProgramsCompleted = programsWithApprovedCounts.every(program => {
       const programKey = `${program.program_type}_${program.sub_program_type || 'default'}`;
       const programEventData = programEvents[programKey];
       
-      console.log(`🔍 Checking program: ${programKey}`, programEventData ? 'found' : 'NOT FOUND');
+      
       
       if (!programEventData) {
-        console.log(`❌ No events found for program: ${programKey}`);
+        
         return false;
       }
       
@@ -1363,21 +1341,14 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         const hasBudget = event.budget_amount && parseFloat(event.budget_amount) > 0;
         const isComplete = hasTitle && hasDate && hasBudget;
         
-        console.log(`🔍 Event ${index + 1} of ${programKey}:`, {
-          title: hasTitle ? '✅' : '❌',
-          date: hasDate ? '✅' : '❌', 
-          budget: hasBudget ? '✅' : '❌',
-          complete: isComplete ? '✅' : '❌'
-        });
-        
         return isComplete;
       });
       
-      console.log(`🔍 Program ${programKey} all events completed:`, allEventsCompleted ? '✅' : '❌');
+      
       return allEventsCompleted;
     });
     
-    console.log('🔍 All programs completed?', allProgramsCompleted ? '✅' : '❌');
+    
     return allProgramsCompleted;
   };
 
@@ -1993,12 +1964,12 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                             if (!confirmed) return;
                             
                             try {
-                              console.log('🗑️ Clearing all saved events from database...');
+                              
                               
                               // Delete all events for this department and academic year from database
                               await API.delete(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`);
                               
-                              console.log('✅ Database events cleared, regenerating forms...');
+                              
                               
                               // Clear local state
                               setProgramEvents({});
@@ -2008,12 +1979,12 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                               console.error('❌ Error clearing database events:', error);
                               alert('❌ Error clearing events from database. The regeneration will still proceed with local forms only.');
                             }
-                            console.log('� Regenerating all events...');
+                            
                             setProgramEvents({});
                             
                             // Immediately regenerate events
                             setTimeout(() => {
-                              console.log('🔄 Regenerating events...');
+                              
                               const eventRows = {};
                               
                               mergedData.forEach(program => {
@@ -2051,7 +2022,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                               
                               setProgramEvents(eventRows);
                               const programsWithCounts = Object.keys(eventRows).length;
-                              console.log(`✅ Regenerated events for ${programsWithCounts} program types`);
+                              
                                 alert(`✅ Events regenerated successfully!\n\n` +
                                       `• Database cleared: All previous events deleted\n` +
                                       `• Fresh forms created: ${programsWithCounts} program types\n` +
@@ -2067,10 +2038,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                         <button 
                           className="btn btn-outline-info btn-sm ms-2"
                           onClick={() => {
-                            console.log('🔍 Manual debug check triggered...');
-                            console.log('Current submission status:', submissionStatus);
-                            console.log('Program events:', programEvents);
-                            console.log('Merged data with counts:', mergedData.filter(p => (p.count || 0) > 0));
+                            
+                            
+                            
+                            
                             
                             // Show detailed incomplete events info
                             const programsWithApprovedCounts = mergedData.filter(program => (program.count || 0) > 0);
@@ -2103,15 +2074,15 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                             });
                             
                             if (incompleteDetails.length > 0) {
-                              console.log('🔍 Incomplete Events Found:');
+                              
                               incompleteDetails.forEach(detail => {
-                                console.log(`❌ ${detail.program} > ${detail.event}: Missing ${detail.missing}`);
+                                
                               });
                               alert('❌ Incomplete Events Found:\n\n' + 
                                     incompleteDetails.map(d => `• ${d.program} > ${d.event}: Missing ${d.missing}`).join('\n') +
                                     '\n\nComplete all required fields (Title, Date, Budget) to auto-update status to "Events Planned".');
                             } else {
-                              console.log('✅ All events appear complete, ready for submission');
+                              
                             }
                             
                             // Check completion but don't auto-update
