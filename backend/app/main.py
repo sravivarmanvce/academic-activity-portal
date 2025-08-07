@@ -11,6 +11,10 @@ from app.api.endpoints import reminder
 from app.api.endpoints import workflow_status
 from app.api.endpoints import deadline_override
 from app.api.endpoints import events
+from app.api.endpoints import notifications
+from app.api.endpoints import notifications_inbox
+from app.api.endpoints import analytics
+from app.api.endpoints import documents
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -42,4 +46,8 @@ app.include_router(reminder.router, tags=["reminder"])
 app.include_router(workflow_status.router, tags=["workflow"])
 app.include_router(deadline_override.router, tags=["deadline_override"])
 app.include_router(events.router, tags=["events"])
+app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+app.include_router(notifications_inbox.router, prefix="/notifications", tags=["notifications"])
+app.include_router(analytics.router, prefix="/api", tags=["analytics"])
+app.include_router(documents.router, prefix="/api", tags=["documents"])
 

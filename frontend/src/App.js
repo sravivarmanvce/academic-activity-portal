@@ -6,6 +6,8 @@ import Login from "./Login";
 import ProgramEntrySummary from "./components/ProgramEntrySummary";
 import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
+import AnalyticsDashboard from "./components/AnalyticsDashboard";
+import DocumentManagement from "./components/DocumentManagement";
 import ProgramEntryForm from "./components/ProgramEntryForm";
 import ManageProgramTypes from "./components/ManageProgramTypes";
 import ManageUsers from "./components/ManageUsers";
@@ -108,6 +110,18 @@ function App() {
             <Route path="/dashboard" element={
               <ProtectedRoute user={user}>
                 <Dashboard role={user.role} />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/analytics" element={
+              <ProtectedRoute user={user} allowedRoles={["admin", "principal", "hod"]}>
+                <AnalyticsDashboard userRole={user.role} />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/documents" element={
+              <ProtectedRoute user={user}>
+                <DocumentManagement />
               </ProtectedRoute>
             } />
 

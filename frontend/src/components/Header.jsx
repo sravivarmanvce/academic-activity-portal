@@ -1,6 +1,7 @@
 // src/components/Header.jsx
 import React from "react";
 import { Link } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
 import "./Header.css";
 
 function Header({ userRole, userName, onLogout }) {
@@ -55,6 +56,7 @@ function Header({ userRole, userName, onLogout }) {
         </ul>
 
         <div className="d-flex align-items-center">
+          <NotificationBell />
           <span className="navbar-text me-3">
             👤 <strong className="text-white">{userName}</strong>
           </span>

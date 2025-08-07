@@ -82,9 +82,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
           API.get("/departments"),
           API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
-            .catch(() => ({ data: { remarks: "" } })),
+            .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
           API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
-            .catch(() => ({ data: { remarks: "" } })),
+            .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
           API.get("/academic-years"),
           API.get(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
             .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err)))
@@ -359,9 +359,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
         API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
-          .catch(() => ({ data: { remarks: "" } })),
+          .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
         API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
-          .catch(() => ({ data: { remarks: "" } })),
+          .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
         API.get(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
         API.get(`/workflow-status?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)

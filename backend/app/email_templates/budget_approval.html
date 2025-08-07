@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Approval Notification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header.approved {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        .header.revision {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .header {
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px;
+        }
+        .status-box.approved {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status-box.revision {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status-box {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .remarks-box {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header {% if approved %}approved{% else %}revision{% endif %}">
+            <h1>
+                {% if approved %}
+                    ✅ Budget Approved!
+                {% else %}
+                    📝 Budget Requires Revision
+                {% endif %}
+            </h1>
+        </div>
+        
+        <div class="content">
+            <p>Dear {{ hod_name }},</p>
+            
+            {% if approved %}
+            <div class="status-box approved">
+                <h3 style="margin: 0;">🎉 Congratulations! Your budget has been approved.</h3>
+                <p style="margin: 10px 0 0 0;">You can now proceed with planning individual events for your approved programs.</p>
+            </div>
+            {% else %}
+            <div class="status-box revision">
+                <h3 style="margin: 0;">📋 Your budget requires some revisions.</h3>
+                <p style="margin: 10px 0 0 0;">Please review the feedback and make necessary adjustments before resubmitting.</p>
+            </div>
+            {% endif %}
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Department:</strong><br>
+                    {{ department_name }}
+                </div>
+                <div class="info-item">
+                    <strong>Academic Year:</strong><br>
+                    {{ academic_year }}
+                </div>
+            </div>
+            
+            {% if remarks %}
+            <div class="remarks-box">
+                <h4 style="margin-top: 0; color: #667eea;">💬 Principal's Remarks:</h4>
+                <p style="font-style: italic; margin: 0;">"{{ remarks }}"</p>
+            </div>
+            {% endif %}
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ portal_url }}" class="button">
+                    {% if approved %}
+                        🚀 Start Event Planning
+                    {% else %}
+                        📝 Revise Budget
+                    {% endif %}
+                </a>
+            </div>
+            
+            {% if approved %}
+            <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; border: 1px solid #bee5eb;">
+                <strong>🎯 Next Steps:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Plan individual events for each program type</li>
+                    <li>Set event dates, coordinators, and detailed budgets</li>
+                    <li>Submit event plans for final approval</li>
+                </ul>
+            </div>
+            {% else %}
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeaa7;">
+                <strong>📋 Action Required:</strong>
+                <p style="margin: 10px 0 0 0;">Please address the feedback provided and resubmit your budget for approval.</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated notification from Academic Activity Portal.</p>
+            <p>© {{ year }} Academic Activity Portal. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

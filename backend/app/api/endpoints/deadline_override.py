@@ -3,8 +3,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import DeadlineOverride
+from app.models import DeadlineOverride, User, Department, AcademicYear
 from app.schemas import DeadlineOverrideCreate, DeadlineOverrideResponse
+from app.notification_service import notification_service
 from datetime import datetime, timedelta
 
 router = APIRouter()
@@ -50,6 +51,20 @@ def create_deadline_override(
         db.add(override)
         db.commit()
         db.refresh(override)
+        
+        # Send notification to HoD about deadline extension
+        try:
+            send_deadline_override_notification(
+                db=db,
+                department_id=override_data.department_id,
+                academic_year_id=override_data.academic_year_id,
+                module_name=override_data.module_name,
+                duration_hours=override_data.duration_hours,
+                reason=override_data.reason
+            )
+        except Exception as e:
+            print(f"Warning: Failed to send deadline override notification: {str(e)}")
+        
         return {"message": "Deadline override created", "override": override}
 
 @router.get("/deadline-override")
@@ -181,3 +196,33 @@ def remove_deadline_override(
         return {"message": "Deadline override removed"}
     else:
         raise HTTPException(status_code=404, detail="Override not found")
+
+def send_deadline_override_notification(
+    db: Session,
+    department_id: int,
+    academic_year_id: int,
+    module_name: str,
+    duration_hours: int,
+    reason: str
+):
+    """Send notification to HoD about deadline extension"""
+    
+    # Get department, academic year, and HoD info
+    department = db.query(Department).filter(Department.id == department_id).first()
+    academic_year = db.query(AcademicYear).filter(AcademicYear.id == academic_year_id).first()
+    hod = db.query(User).filter(
+        User.department_id == department_id,
+        User.role == 'hod'
+    ).first()
+    
+    if department and academic_year and hod:
+        # Calculate new deadline
+        hours_text = f"{duration_hours} hours" if duration_hours > 1 else "1 hour"
+        
+        notification_service.create_notification(
+            db=db,
+            user_id=hod.id,
+            title=f"Deadline Extended: {module_name} ⏰",
+            message=f"Good news! The Principal has granted a {hours_text} extension for {module_name} submission. Reason: {reason}",
+            notification_type="deadline_extension"
+        )

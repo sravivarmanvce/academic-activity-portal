@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import API from "../Api";
 import { exportSummaryToExcel } from "../utils/exportSummaryToExcel";
 import { exportSummaryToPDF } from "../utils/exportSummaryToPDF";
+import NotificationService from "../services/notificationService";
 
 function ProgramEntrySummary({ userRole }) {
   const [departments, setDepartments] = useState([]);
@@ -185,12 +186,9 @@ function ProgramEntrySummary({ userRole }) {
   const handleSendReminder = async (deptId) => {
     setSending((prev) => ({ ...prev, [deptId]: true }));
     try {
-      // Make sure this is a POST request
-      await API.post("/reminder/send", {
-        dept_id: deptId,
-        academic_year_id: selectedAcademicYearId,
-      });
-      alert("Reminder sent successfully!");
+      // Use the enhanced notification service
+      await NotificationService.sendReminderToHoD(deptId, selectedAcademicYearId);
+      alert("Enhanced reminder sent successfully!");
     } catch (error) {
       console.error("Failed to send reminder:", error);
       alert("Failed to send reminder.");
@@ -407,23 +405,16 @@ function ProgramEntrySummary({ userRole }) {
     }
 
     const deptNames = pendingDepartments.map(d => d.name).join(', ');
-    const confirmed = window.confirm(`Send reminder emails to ${pendingDepartments.length} departments?\n\nDepartments: ${deptNames}`);
+    const confirmed = window.confirm(`Send enhanced reminder emails to ${pendingDepartments.length} departments?\n\nDepartments: ${deptNames}`);
     
     if (!confirmed) return;
 
     try {
-      // Send reminders to all pending departments
-      const promises = pendingDepartments.map(dept => 
-        API.post("/reminder/send", {
-          dept_id: dept.id,
-          academic_year_id: selectedAcademicYearId,
-          bulk_action: true
-        })
-      );
-
-      await Promise.all(promises);
+      // Use the enhanced bulk reminder service
+      const deptIds = pendingDepartments.map(dept => dept.id);
+      await NotificationService.sendBulkReminders(deptIds, selectedAcademicYearId);
       
-      alert(`Successfully sent reminder emails to ${pendingDepartments.length} departments!`);
+      alert(`Successfully sent enhanced reminder emails to ${pendingDepartments.length} departments!`);
       
     } catch (error) {
       console.error('Error sending bulk reminders:', error);

@@ -6,6 +6,8 @@ import {
   FaCogs,
   FaUserShield,
   FaUniversity,
+  FaChartBar,
+  FaFileAlt,
 } from "react-icons/fa";
 import "./Dashboard.css"; // Optional for styling
 
@@ -53,8 +55,26 @@ const Dashboard = ({ role }) => {
           </>
         )}
 
-        {/* 2nd row: BPSA Entry Form, Status, Program Type Manager */}
+        {/* 2nd row: Analytics Dashboard, BPSA Entry Form, Status, Program Type Manager */}
         <div className="w-100"></div> {/* Force new row */}
+        {["hod", "principal", "admin"].includes(role) && (
+          <div className="col-sm-6 col-lg-4">
+            <div
+              className="card text-white bg-gradient-primary h-100 shadow dashboard-tile clickable-tile"
+              style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+              }}
+              onClick={() => navigate("/analytics")}
+            >
+              <div className="card-body text-center">
+                <FaChartBar size={36} className="mb-2" />
+                <h5 className="card-title">📊 Analytics Dashboard</h5>
+                <p className="card-text">Visual insights, charts and performance metrics</p>
+                <button className="btn btn-light mt-2">View Analytics</button>
+              </div>
+            </div>
+          </div>
+        )}
         {["hod", "principal", "admin"].includes(role) && (
           <div className="col-sm-6 col-lg-4">
             <div
@@ -100,6 +120,24 @@ const Dashboard = ({ role }) => {
             </div>
           </div>
         )}
+
+        {/* Document Management Tile */}
+        <div className="col-sm-6 col-lg-4">
+          <div
+            className="card text-white bg-gradient-warning h-100 shadow dashboard-tile clickable-tile"
+            style={{
+              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+            }}
+            onClick={() => navigate("/documents")}
+          >
+            <div className="card-body text-center">
+              <FaFileAlt size={36} className="mb-2" />
+              <h5 className="card-title">📄 Document Management</h5>
+              <p className="card-text">Upload, organize and manage documents</p>
+              <button className="btn btn-light mt-2">Manage Documents</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

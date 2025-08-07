@@ -23,7 +23,7 @@ class UserOut(UserBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 # Department Schemas
@@ -38,7 +38,7 @@ class DepartmentOut(DepartmentBase):
     full_name: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 # Academic Year Schemas
@@ -51,7 +51,7 @@ class AcademicYearOut(AcademicYearBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class AcademicYearCreate(BaseModel):
     year: str
@@ -63,7 +63,7 @@ class AcademicYearOut(BaseModel):
     is_enabled: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 # Module Deadline Schemas
@@ -79,7 +79,7 @@ class ModuleDeadlineCreate(ModuleDeadlineBase):
 class ModuleDeadlineOut(ModuleDeadlineBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # -------------------------------
@@ -107,7 +107,7 @@ class ProgramTypeOut(ProgramTypeBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 # Program Count Schemas
@@ -135,7 +135,7 @@ class ProgramCountOut(ProgramCountBase):
     principal_remarks: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 # Principal Remarks Schemas
@@ -153,7 +153,7 @@ class PrincipalRemarkOut(PrincipalRemarkBase):
     remarks: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class PrincipalRemarksInput(BaseModel):
     department_id: int
@@ -175,7 +175,7 @@ class HodRemarksOut(HodRemarksBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 class AcademicYearOut(BaseModel):
@@ -201,7 +201,7 @@ class ModuleDeadlineOut(BaseModel):
     deadline: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 # Workflow Status Schemas   
@@ -219,7 +219,7 @@ class WorkflowStatusResponse(BaseModel):
     updated_at: Optional[datetime]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 # Deadline Override Schemas   
@@ -244,7 +244,7 @@ class DeadlineOverrideResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # -------------------------------
 # Event Schemas   
@@ -282,4 +282,27 @@ class EventResponse(EventBase):
     updated_by: Optional[int]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+# -------------------------------
+# Notification Schemas
+# -------------------------------
+class NotificationBase(BaseModel):
+    title: str
+    message: str
+    type: str
+
+class NotificationCreate(NotificationBase):
+    user_id: int
+
+class NotificationOut(NotificationBase):
+    id: int
+    user_id: int
+    read: bool  # Match your table column name
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class NotificationUpdate(BaseModel):
+    read: bool
