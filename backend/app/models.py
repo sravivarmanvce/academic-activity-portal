@@ -1,6 +1,6 @@
 # app/models.py
 
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, Boolean, DateTime, BigInteger
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy.ext.declarative import declarative_base
@@ -215,8 +215,8 @@ class Document(Base):
     filename = Column(String(255), nullable=False)
     original_filename = Column(String(255), nullable=False)
     file_path = Column(String(500), nullable=False)
-    file_size = Column(Integer, nullable=False)  # in bytes
-    mime_type = Column(String(100), nullable=False)
+    file_size = Column(BigInteger, nullable=False)  # Changed to BigInteger for large files
+    mime_type = Column(String(100), nullable=True)  # Made nullable to match DB
     
     # Classification
     document_type = Column(String(50), nullable=False)  # DocumentType enum
@@ -230,7 +230,6 @@ class Document(Base):
     
     # Status and Approval
     status = Column(String(20), nullable=False, default="pending")
-    is_public = Column(Boolean, default=False)  # Can other departments see this?
     
     # Audit Fields
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -238,13 +237,18 @@ class Document(Base):
     approved_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     approved_at = Column(DateTime, nullable=True)
     
-    # Version Control
-    version = Column(Integer, default=1)
-    parent_document_id = Column(Integer, ForeignKey("documents.id"), nullable=True)  # For versioning
+    # Rejection workflow fields
+    rejection_reason = Column(Text, nullable=True)
+    rejected_at = Column(DateTime, nullable=True)
     
-    # Metadata
-    tags = Column(Text, nullable=True)  # JSON string of tags
-    expiry_date = Column(DateTime, nullable=True)  # For certificates, approvals, etc.
+    # Version Control
+    version = Column(Integer, default=1, nullable=False)
+    parent_document_id = Column(Integer, ForeignKey("documents.id"), nullable=True)  # For versioning
+    is_latest_version = Column(Boolean, nullable=False, default=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
+    updated_at = Column(DateTime, nullable=False, default=datetime.now)
     
     # Relationships
     department = relationship("Department")
@@ -253,6 +257,23 @@ class Document(Base):
     uploader = relationship("User", foreign_keys=[uploaded_by])
     approver = relationship("User", foreign_keys=[approved_by])
     parent_document = relationship("Document", remote_side=[id])
+    
+    @property
+    def doc_type(self):
+        """Compatibility property for frontend - maps document_type to doc_type"""
+        type_mapping = {
+            'complete_report': 'report',
+            'supporting_documents': 'zip'
+        }
+        return type_mapping.get(self.document_type, self.document_type)
+    
+    @property
+    def is_event_document(self):
+        """Check if this document is linked to an event"""
+        return self.event_id is not None
+    
+    def __repr__(self):
+        return f"<Document(id={self.id}, filename='{self.filename}', type='{self.document_type}', status='{self.status}')>"
 
 class DocumentAccess(Base):
     __tablename__ = "document_access"

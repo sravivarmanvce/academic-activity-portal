@@ -76,8 +76,7 @@ def get_events(
     academic_year_id: Optional[int] = None,
     program_type_id: Optional[int] = None,
     status: Optional[str] = None,
-    db: Session = Depends(get_db),
-    current_user_role: str = Depends(get_current_user_role)
+    db: Session = Depends(get_db)
 ):
     """Get events with optional filters"""
     

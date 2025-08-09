@@ -10,12 +10,75 @@ const EventPlanningInterface = ({
   onSave 
 }) => {
   const [events, setEvents] = useState([]);
+  const [eventDocuments, setEventDocuments] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Initialize events based on approved program counts
-    initializeEvents();
-  }, [mergedData]);
+    // Load actual events first, then documents
+    const loadData = async () => {
+      console.log('EventPlanningInterface useEffect triggered');
+      console.log('Department ID:', departmentId, 'Academic Year ID:', academicYearId);
+      
+      if (departmentId && academicYearId) {
+        console.log('Loading events first...');
+        await loadActualEvents();
+        
+        console.log('Loading documents after events...');
+        await loadEventDocuments();
+      }
+    };
+    
+    loadData();
+  }, [departmentId, academicYearId]);
+
+  const loadActualEvents = async () => {
+    try {
+      console.log('Loading actual events for department:', departmentId, 'academic year:', academicYearId);
+      let url = '/events';
+      const params = new URLSearchParams();
+      
+      if (academicYearId) {
+        params.append('academic_year_id', academicYearId);
+      }
+      
+      if (departmentId) {
+        params.append('department_id', departmentId);
+      }
+      
+      if (params.toString()) {
+        url += '?' + params.toString();
+      }
+      
+      console.log('Fetching events from:', url);
+      const response = await API.get(url);
+      const actualEvents = response.data;
+      console.log('Raw events received:', actualEvents);
+      
+      // Convert to the format expected by the interface
+      const eventsList = actualEvents.map(event => ({
+        id: event.id, // Use real database ID
+        program_type: event.program_type?.name || 'Unknown',
+        sub_program_type: event.program_type?.sub_type || '',
+        activity_category: event.program_type?.activity_category || '',
+        budget_per_event: event.budget_amount || 0,
+        allocated_budget: event.budget_amount || 0,
+        
+        // Event details from database
+        title: event.title || '',
+        date: event.event_date ? event.event_date.split('T')[0] : '', // Format date for input
+        actual_budget: event.budget_amount || 0,
+        status: 'completed' // These are saved events
+      }));
+      
+      console.log('Mapped events:', eventsList);
+      setEvents(eventsList);
+      console.log('Events state updated with:', eventsList.length, 'events');
+    } catch (error) {
+      console.error('Error loading actual events:', error);
+      // Fallback to mergedData if API fails
+      initializeEvents();
+    }
+  };
 
   const initializeEvents = () => {
     const eventsList = [];
@@ -41,7 +104,6 @@ const EventPlanningInterface = ({
             actual_budget: program.budget_mode === 'Fixed' 
               ? program.budget_per_event 
               : Math.round(program.total_budget / count),
-            description: '',
             status: 'planned' // 'planned', 'ongoing', 'completed'
           });
         }
@@ -49,6 +111,64 @@ const EventPlanningInterface = ({
     });
     
     setEvents(eventsList);
+  };
+
+  const loadEventDocuments = async () => {
+    try {
+      console.log('Loading event documents...');
+      const response = await API.get('/documents/list');
+      const documents = response.data;
+      console.log('Raw documents from API:', documents);
+      
+      // Group documents by event_id using actual database IDs
+      const docsByEvent = {};
+      documents.forEach(doc => {
+        if (!docsByEvent[doc.event_id]) {
+          docsByEvent[doc.event_id] = {};
+        }
+        // Use the doc_type field from the API response (already mapped by backend)
+        docsByEvent[doc.event_id][doc.doc_type] = doc;
+        console.log(`Mapped document: Event ${doc.event_id}, Type: ${doc.doc_type}, Status: ${doc.status}`);
+      });
+      
+      console.log('Final grouped event documents:', docsByEvent);
+      setEventDocuments(docsByEvent);
+      console.log('EventDocuments state updated with keys:', Object.keys(docsByEvent));
+    } catch (error) {
+      console.error('Error loading event documents:', error);
+    }
+  };
+
+  const handleDownloadDocument = async (documentId, filename, docType) => {
+    try {
+      const response = await API.get(`/documents/download/${documentId}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Error downloading document');
+    }
+  };
+
+  const checkAllEventsHaveApprovedDocuments = () => {
+    const savedEvents = events.filter(event => event.title && event.date);
+    if (savedEvents.length === 0) return false;
+    
+    return savedEvents.every(event => {
+      const docs = eventDocuments[event.id];
+      return docs && 
+             docs.report && docs.report.status === 'approved' &&
+             docs.zipfile && docs.zipfile.status === 'approved';
+    });
   };
 
   const handleEventChange = (eventId, field, value) => {
@@ -82,14 +202,21 @@ const EventPlanningInterface = ({
 
       await API.post('/event-details', payload);
       
-      // Update workflow status to 'events_planned'
+      // Check if all events have approved documents to set status as completed
+      const allApproved = checkAllEventsHaveApprovedDocuments();
+      const workflowStatus = allApproved ? 'completed' : 'events_planned';
+      
+      // Update workflow status
       await API.put('/workflow-status', {
         department_id: departmentId,
         academic_year_id: academicYearId,
-        status: 'events_planned'
+        status: workflowStatus
       });
 
-      alert('Events saved successfully!');
+      const message = allApproved 
+        ? 'Events saved successfully! All documents approved - workflow completed!'
+        : 'Events saved successfully!';
+      alert(message);
       onSave();
     } catch (error) {
       console.error('Error saving events:', error);
@@ -113,10 +240,21 @@ const EventPlanningInterface = ({
     <div className="container-fluid">
       <div className="row mb-3">
         <div className="col">
-          <h6 className="text-primary mb-0">📅 Plan Individual Events</h6>
-          <small className="text-muted">
-            Create detailed plans for each approved activity
-          </small>
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 className="text-primary mb-0">📅 Plan Individual Events</h6>
+              <small className="text-muted">
+                Create detailed plans for each approved activity
+              </small>
+            </div>
+            <div className="text-end">
+              {checkAllEventsHaveApprovedDocuments() && (
+                <span className="badge bg-success">
+                  ✅ All Documents Approved - Workflow Complete
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -169,14 +307,55 @@ const EventPlanningInterface = ({
                       </div>
                       <div className="row mt-2">
                         <div className="col">
-                          <label className="form-label">Description</label>
-                          <textarea
-                            className="form-control form-control-sm"
-                            rows="2"
-                            value={event.description}
-                            onChange={(e) => handleEventChange(event.id, 'description', e.target.value)}
-                            placeholder="Brief description of the event"
-                          />
+                          <label className="form-label">Event Documents</label>
+                          <div className="d-flex gap-2">
+                            {(() => {
+                              console.log(`Checking documents for event ${event.id}:`, eventDocuments[event.id]);
+                              console.log('All eventDocuments:', eventDocuments);
+                              return null;
+                            })()}
+                            {eventDocuments[event.id]?.report?.status === 'approved' ? (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={() => handleDownloadDocument(
+                                  eventDocuments[event.id].report.id, 
+                                  eventDocuments[event.id].report.filename, 
+                                  'report'
+                                )}
+                              >
+                                📄 Download Report
+                              </button>
+                            ) : (
+                              <span className="text-muted small">
+                                Report: {eventDocuments[event.id]?.report ? 
+                                  `Status: ${eventDocuments[event.id].report.status}` : 
+                                  'Not uploaded/approved'
+                                }
+                              </span>
+                            )}
+                            
+                            {eventDocuments[event.id]?.zipfile?.status === 'approved' ? (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-success"
+                                onClick={() => handleDownloadDocument(
+                                  eventDocuments[event.id].zipfile.id, 
+                                  eventDocuments[event.id].zipfile.filename, 
+                                  'zipfile'
+                                )}
+                              >
+                                📦 Download ZIP
+                              </button>
+                            ) : (
+                              <span className="text-muted small">
+                                ZIP: {eventDocuments[event.id]?.zipfile ? 
+                                  `Status: ${eventDocuments[event.id].zipfile.status}` : 
+                                  'Not uploaded/approved'
+                                }
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

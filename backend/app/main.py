@@ -49,5 +49,5 @@ app.include_router(events.router, tags=["events"])
 app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 app.include_router(notifications_inbox.router, prefix="/notifications", tags=["notifications"])
 app.include_router(analytics.router, prefix="/api", tags=["analytics"])
-app.include_router(documents.router, prefix="/api", tags=["documents"])
+app.include_router(documents.router, prefix="/documents", tags=["documents"])
 

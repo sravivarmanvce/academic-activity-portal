@@ -11,6 +11,8 @@ function EventPlanningModal({
   approvedProgramData = [] // New prop for approved program counts
 }) {
   const [programEvents, setProgramEvents] = useState({});
+  const [documents, setDocuments] = useState([]);
+  const [actualEvents, setActualEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -20,6 +22,72 @@ function EventPlanningModal({
       generateEventRows();
     }
   }, [show, approvedProgramData]);
+
+  // Load documents when modal is shown
+  useEffect(() => {
+    if (show && departmentId && academicYearId) {
+      loadDocuments();
+      loadActualEvents();
+    }
+  }, [show, departmentId, academicYearId]);
+
+  const loadActualEvents = async () => {
+    try {
+      console.log('Loading actual events for modal, dept:', departmentId, 'year:', academicYearId);
+      const response = await API.get('/events', {
+        params: {
+          department_id: departmentId,
+          academic_year_id: academicYearId
+        }
+      });
+      console.log('Modal actual events loaded:', response.data);
+      setActualEvents(response.data || []);
+    } catch (error) {
+      console.error('Error loading actual events for modal:', error);
+      setActualEvents([]);
+    }
+  };
+
+  const loadDocuments = async () => {
+    try {
+      console.log('Loading documents for modal, dept:', departmentId, 'year:', academicYearId);
+      const response = await API.get('/documents/list', {
+        params: {
+          department_id: departmentId,
+          academic_year_id: academicYearId
+        }
+      });
+      console.log('Modal documents loaded:', response.data);
+      setDocuments(response.data || []);
+    } catch (error) {
+      console.error('Error loading documents for modal:', error);
+      setDocuments([]);
+    }
+  };
+
+  // Function to get document status for an event - check by event title match since IDs are different
+  const getDocumentStatus = (eventTitle) => {
+    if (!eventTitle || !documents.length || !actualEvents.length) {
+      return { report: false, files: false };
+    }
+    
+    // Find the actual event by title match
+    const actualEvent = actualEvents.find(event => 
+      event.title && event.title.toLowerCase().trim() === eventTitle.toLowerCase().trim()
+    );
+    
+    if (!actualEvent) {
+      return { report: false, files: false };
+    }
+    
+    const eventDocs = documents.filter(doc => doc.event_id === actualEvent.id);
+    const hasReport = eventDocs.some(doc => doc.doc_type === 'report');
+    const hasFiles = eventDocs.some(doc => doc.doc_type === 'files');
+    
+    console.log(`Document status for event "${eventTitle}" (ID: ${actualEvent.id}):`, { hasReport, hasFiles, eventDocs });
+    
+    return { report: hasReport, files: hasFiles };
+  };
 
   const generateEventRows = () => {
     const eventRows = {};
@@ -42,7 +110,6 @@ function EventPlanningModal({
             id: `${programKey}_${i}`,
             eventNumber: i + 1,
             title: '',
-            description: '',
             event_date: '',
             coordinator_name: '',
             coordinator_contact: '',
@@ -110,7 +177,6 @@ function EventPlanningModal({
       const program = programEvents[programKey];
       const eventsData = program.events.map(event => ({
         name: event.title,
-        description: event.description,
         program_type_id: program.programInfo.id, // You'll need to map this properly
         department_id: departmentId,
         academic_year_id: academicYearId,
@@ -248,7 +314,7 @@ function EventPlanningModal({
                             <th style={{ width: '150px' }}>Budget (₹) *</th>
                             <th style={{ width: '180px' }}>Coordinator</th>
                             <th style={{ width: '150px' }}>Contact</th>
-                            <th>Description</th>
+                            <th style={{ width: '200px' }}>Documents</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -317,16 +383,22 @@ function EventPlanningModal({
                                 />
                               </td>
                               
-                              {/* Description */}
+                              {/* Documents */}
                               <td>
-                                <textarea
-                                  className="form-control form-control-sm"
-                                  rows="2"
-                                  value={event.description}
-                                  onChange={(e) => handleEventChange(programKey, eventIndex, 'description', e.target.value)}
-                                  placeholder="Brief description"
-                                  disabled={event.status === 'completed'}
-                                />
+                                {(() => {
+                                  const docStatus = getDocumentStatus(event.title);
+                                  return (
+                                    <div className="d-flex gap-1 flex-wrap">
+                                      <span className={`small ${docStatus.report ? 'text-success' : 'text-muted'}`}>
+                                        Report: {docStatus.report ? 'Available' : 'Not available'}
+                                      </span>
+                                      <br />
+                                      <span className={`small ${docStatus.files ? 'text-success' : 'text-muted'}`}>
+                                        ZIP: {docStatus.files ? 'Available' : 'Not available'}
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
                               </td>
                             </tr>
                           ))}

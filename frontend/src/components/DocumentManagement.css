@@ -121,7 +121,8 @@
   border-radius: 6px;
   background: white;
   font-size: 14px;
-  min-width: 150px;
+  min-width: 140px;
+  flex-shrink: 0;
 }
 
 .checkbox-label {
@@ -330,6 +331,11 @@
 .status-rejected {
   background: #f8d7da;
   color: #721c24;
+}
+
+.status-deleted {
+  background: #ffeaa7;
+  color: #d63031;
 }
 
 .upload-info {
@@ -598,5 +604,267 @@
 
   .modal-header {
     padding: 16px 16px 0 16px;
+  }
+}
+
+/* Enhanced Table Layout - Optimized for Multiple Departments */
+.enhanced-documents-table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.enhanced-documents-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.enhanced-documents-table th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.enhanced-documents-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
+}
+
+.document-row:hover {
+  background: #f8f9fa;
+}
+
+/* Status-based row styling */
+.document-row.status-pending {
+  border-left: 4px solid #ffc107;
+}
+
+.document-row.status-approved {
+  border-left: 4px solid #28a745;
+}
+
+.document-row.status-rejected {
+  border-left: 4px solid #dc3545;
+}
+
+.document-row.status-deleted {
+  border-left: 4px solid #6c757d;
+  opacity: 0.7;
+}
+
+/* Department & Event Cell */
+.department-event-cell {
+  min-width: 200px;
+}
+
+.department-event-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.event-date-small {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+/* Academic Year Cell */
+.academic-year-cell {
+  min-width: 120px;
+  text-align: center;
+}
+
+.academic-year-name {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  background: #e3f2fd;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+/* Document Cell */
+.document-cell {
+  min-width: 250px;
+}
+
+.document-header-compact {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.doc-icon {
+  font-size: 1.2rem;
+  margin-top: 2px;
+}
+
+.doc-info-compact {
+  flex: 1;
+}
+
+.doc-filename {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+
+.doc-type-label {
+  color: #666;
+  font-size: 0.75rem;
+}
+
+.inline-rejection-reason {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #c53030;
+}
+
+.inline-deletion-notice {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+/* Status Cell */
+.status-cell {
+  width: 100px;
+  text-align: center;
+}
+
+/* Date Cell */
+.date-cell {
+  width: 120px;
+}
+
+.upload-date-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+/* Actions Cell */
+.actions-cell {
+  width: 140px;
+}
+
+.action-buttons-compact {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.action-btn-compact {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-width: 32px;
+  height: 32px;
+}
+
+.action-btn-compact:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn-compact.download {
+  color: #2196f3;
+  border-color: #2196f3;
+}
+
+.action-btn-compact.download:hover {
+  background: #2196f3;
+  color: white;
+}
+
+.action-btn-compact.approve {
+  color: #4caf50;
+  border-color: #4caf50;
+}
+
+.action-btn-compact.approve:hover {
+  background: #4caf50;
+  color: white;
+}
+
+.action-btn-compact.reject {
+  color: #f44336;
+  border-color: #f44336;
+}
+
+.action-btn-compact.reject:hover {
+  background: #f44336;
+  color: white;
+}
+
+.action-btn-compact.delete {
+  color: #ff9800;
+  border-color: #ff9800;
+}
+
+.action-btn-compact.delete:hover {
+  background: #ff9800;
+  color: white;
+}
+
+.action-btn-compact.reupload {
+  color: #9c27b0;
+  border-color: #9c27b0;
+}
+
+.action-btn-compact.reupload:hover {
+  background: #9c27b0;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .enhanced-documents-table {
+    overflow-x: auto;
+  }
+  
+  .enhanced-documents-table table {
+    min-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .enhanced-documents-table table {
+    min-width: 700px;
+  }
+  
+  .department-event-cell {
+    min-width: 160px;
+  }
+  
+  .document-cell {
+    min-width: 200px;
   }
 }

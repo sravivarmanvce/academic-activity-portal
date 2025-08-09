@@ -161,7 +161,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   id: `${programKey}_${i + 1}`,
                   eventNumber: i + 1,
                   title: existingEvent.title || '',
-                  description: existingEvent.description || '',
                   event_date: existingEvent.event_date || '',
                   budget_amount: existingEvent.budget_amount || (program.budget_mode === 'Fixed' ? program.budget_per_event : Math.round(totalBudget / count)),
                   coordinator_name: existingEvent.coordinator_name || '',
@@ -174,7 +173,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   id: `${programKey}_${i + 1}`,
                   eventNumber: i + 1,
                   title: '',
-                  description: '',
                   event_date: '',
                   budget_amount: program.budget_mode === 'Fixed' ? program.budget_per_event : Math.round(totalBudget / count),
                   coordinator_name: '',
@@ -502,7 +500,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   id: `${programKey}_${i + 1}`,
                   eventNumber: i + 1,
                   title: existingEvent.title || '',
-                  description: existingEvent.description || '',
                   event_date: existingEvent.event_date || '',
                   budget_amount: existingEvent.budget_amount || (program.budget_mode === 'Fixed' ? program.budget_per_event : Math.round((countsRes.data.find(c => c.program_type === program.program_type)?.total_budget || 0) / count)),
                   coordinator_name: existingEvent.coordinator_name || '',
@@ -516,7 +513,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   id: `${programKey}_${i + 1}`,
                   eventNumber: i + 1,
                   title: '',
-                  description: '',
                   event_date: '',
                   budget_amount: program.budget_mode === 'Fixed' ? program.budget_per_event : Math.round(totalBudget / count),
                   coordinator_name: '',
@@ -1092,7 +1088,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         for (const event of program.events) {
           if (event.status === 'pending' && (
             event.title.trim() || 
-            event.description.trim() || 
             event.event_date || 
             event.coordinator_name.trim() || 
             event.coordinator_contact.trim()
@@ -1231,7 +1226,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       
       const eventsData = program.events.map(event => ({
         title: event.title,
-        description: event.description,
+        description: '', // Empty description since we removed the field
         program_type_id: correctProgramTypeId,
         department_id: departmentId,
         academic_year_id: selectedAcademicYearId,
@@ -2002,7 +1997,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                       id: `${programKey}_${i}`,
                                       eventNumber: i + 1,
                                       title: `Event ${i + 1}`,
-                                      description: '',
                                       event_date: '',
                                       coordinator_name: '',
                                       coordinator_contact: '',
@@ -2197,7 +2191,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                 <th style={{ width: '150px' }}>Budget (₹) *</th>
                                 <th style={{ width: '180px' }}>Coordinator</th>
                                 <th style={{ width: '150px' }}>Contact</th>
-                                <th>Description</th>
+                                <th style={{ width: '200px' }}>Documents</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -2294,17 +2288,13 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                     />
                                   </td>
                                   
-                                  {/* Description */}
+                                  {/* Documents */}
                                   <td>
-                                    <textarea
-                                      className="form-control form-control-sm"
-                                      rows="2"
-                                      value={event.description}
-                                      onChange={(e) => handleEventChange(programKey, eventIndex, 'description', e.target.value)}
-                                      placeholder="Brief description"
-                                      disabled={!canEditEvents || event.status === 'completed'}
-                                      readOnly={!canEditEvents}
-                                    />
+                                    <div className="d-flex gap-1 flex-wrap">
+                                      <span className="text-muted small">Report: Not available</span>
+                                      <br />
+                                      <span className="text-muted small">ZIP: Not available</span>
+                                    </div>
                                   </td>
                                 </tr>
                                 );
