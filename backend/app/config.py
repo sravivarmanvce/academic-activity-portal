@@ -8,7 +8,7 @@ UPLOAD_DIRECTORY = Path(os.getenv("UPLOAD_DIRECTORY", "uploads"))
 MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 10 * 1024 * 1024))  # 10MB default
 ALLOWED_EXTENSIONS = {
     'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
-    'jpg', 'jpeg', 'png', 'gif', 'txt', 'rtf'
+    'jpg', 'jpeg', 'png', 'gif', 'txt', 'zip'
 }
 
 # Ensure upload directory exists

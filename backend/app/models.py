@@ -181,7 +181,7 @@ class Notification(Base):
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
     type = Column(String(50), nullable=False)  # 'budget_submission', 'approval', 'deadline', 'reminder', etc.
-    read = Column(Boolean, default=False)  # Match your column name 'read' instead of 'is_read'
+    read = Column(Boolean, default=False) 
     created_at = Column(DateTime, nullable=False, default=datetime.now)
     
     # Relationships

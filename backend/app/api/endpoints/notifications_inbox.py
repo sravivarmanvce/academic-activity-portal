@@ -86,23 +86,3 @@ async def delete_notification(
         raise HTTPException(status_code=404, detail="Notification not found")
     
     return {"message": "Notification deleted"}
-
-# Admin endpoints for creating notifications (for testing)
-# Commented out for production - uncomment if needed for development
-# @router.post("/notifications/create-test")
-# async def create_test_notification(
-#     db: Session = Depends(get_db),
-#     current_user_role: str = Depends(get_current_user_role),
-#     current_user_id: int = Depends(get_current_user_id)
-# ):
-#     """Create a test notification (for development/testing)"""
-#     
-#     notification = notification_service.create_notification(
-#         db=db,
-#         user_id=current_user_id,
-#         title="Test Notification",
-#         message=f"This is a test notification created by {current_user_role} to verify the system is working correctly.",
-#         notification_type="test"
-#     )
-#     
-#     return {"message": "Test notification created", "notification_id": notification.id}

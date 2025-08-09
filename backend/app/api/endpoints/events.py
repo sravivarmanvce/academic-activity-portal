@@ -178,8 +178,8 @@ def update_event_status(
 ):
     """Update event status - HoDs and Principals can update status"""
     
-    # Only HoDs and Principals can update event status
-    if current_user_role not in ["hod", "principal"]:
+    # Only Admin, HoDs and Principals can update event status
+    if current_user_role not in ["admin", "hod", "principal"]:
         raise HTTPException(status_code=403, detail="Only HoDs and Principals can update event status")
     
     valid_statuses = ['planned', 'ongoing', 'completed', 'cancelled']
