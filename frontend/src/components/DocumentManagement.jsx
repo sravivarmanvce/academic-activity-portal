@@ -4,7 +4,6 @@ import {
   Upload, 
   FileText, 
   Download, 
-  Calendar,
   CheckCircle,
   XCircle,
   AlertCircle
@@ -19,7 +18,6 @@ const DocumentManagement = () => {
   const [academicYears, setAcademicYears] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showUploadModal, setShowUploadModal] = useState(false);
   const [filters, setFilters] = useState({
     academic_year_id: '',
     department_id: '',
@@ -27,15 +25,6 @@ const DocumentManagement = () => {
   });
 
   // Upload form state
-  const [uploadForm, setUploadForm] = useState({
-    event_id: '',
-    reportFile: null,
-    zipFile: null
-  });
-
-  // Separate upload states
-  const [showReportUploadModal, setShowReportUploadModal] = useState(false);
-  const [showZipUploadModal, setShowZipUploadModal] = useState(false);
   const [reportUploadForm, setReportUploadForm] = useState({
     event_id: '',
     reportFile: null
@@ -44,6 +33,10 @@ const DocumentManagement = () => {
     event_id: '',
     zipFile: null
   });
+
+  // Separate upload modal states
+  const [showReportUploadModal, setShowReportUploadModal] = useState(false);
+  const [showZipUploadModal, setShowZipUploadModal] = useState(false);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user?.role;
@@ -55,31 +48,17 @@ const DocumentManagement = () => {
       const response = await Api.get('/documents/list');
       let docs = response.data;
 
-      // Filter documents based on loaded events (this ensures academic year consistency)
-      if (events.length > 0) {
-        const eventIds = events.map(event => event.id);
-        docs = docs.filter(doc => eventIds.includes(doc.event_id));
-      }
-
-      // Additional filtering for HoDs (their department only)
-      if (userRole === 'hod' && userDepartmentId && events.length > 0) {
-        const departmentEventIds = events
-          .filter(event => event.department_id == userDepartmentId)
-          .map(event => event.id);
+      // For HoDs: filter by their department only
+      if (userRole === 'hod' && userDepartmentId) {
+        // Get department events from all events (not just filtered ones)
+        const allEventsResponse = await Api.get('/events');
+        const departmentEvents = allEventsResponse.data.filter(event => 
+          event.department_id === userDepartmentId
+        );
+        const departmentEventIds = departmentEvents.map(event => event.id);
         docs = docs.filter(doc => departmentEventIds.includes(doc.event_id));
       }
-      // Additional filtering for Principal by selected department
-      else if (filters.department_id && events.length > 0) {
-        const departmentEventIds = events
-          .filter(event => event.department_id == filters.department_id)
-          .map(event => event.id);
-        docs = docs.filter(doc => departmentEventIds.includes(doc.event_id));
-      }
-
-      // Filter by specific event if selected
-      if (filters.event_id) {
-        docs = docs.filter(doc => doc.event_id === filters.event_id);
-      }
+      // For Principal: keep all documents, filtering will be done in the render logic
 
       setDocuments(docs);
     } catch (error) {
@@ -88,7 +67,7 @@ const DocumentManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters.event_id, filters.department_id, events, userRole, userDepartmentId]);
+  }, [userRole, userDepartmentId]);
 
   const loadEvents = useCallback(async () => {
     try {
@@ -129,11 +108,9 @@ const DocumentManagement = () => {
   }, [loadEvents]);
 
   useEffect(() => {
-    // Load documents whenever events change or filters change
-    if (events.length > 0 || (!filters.department_id && !filters.event_id && !filters.academic_year_id)) {
-      loadDocuments();
-    }
-  }, [loadDocuments, events, filters.academic_year_id]);
+    // Load documents once when component mounts
+    loadDocuments();
+  }, [loadDocuments]);
 
   const loadDepartments = async () => {
     try {
@@ -150,40 +127,6 @@ const DocumentManagement = () => {
       setAcademicYears(response.data);
     } catch (error) {
       console.error('Error loading academic years:', error);
-    }
-  };
-
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!uploadForm.reportFile || !uploadForm.zipFile) {
-      setError('Please select both event report and ZIP file');
-      return;
-    }
-
-    if (!uploadForm.event_id) {
-      setError('Please select an event');
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append('report', uploadForm.reportFile);
-      formData.append('zipfile', uploadForm.zipFile);
-
-      await Api.post(`/documents/upload/${uploadForm.event_id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      setShowUploadModal(false);
-      setUploadForm({
-        event_id: '',
-        reportFile: null,
-        zipFile: null
-      });
-      loadDocuments();
-    } catch (error) {
-      console.error('Error uploading documents:', error);
-      setError('Failed to upload documents');
     }
   };
 
@@ -361,27 +304,6 @@ const DocumentManagement = () => {
       console.error('Error deleting document:', error);
       setError('Failed to delete document');
     }
-  };
-
-  const getStatusBadge = (status) => {
-    const badges = {
-      pending: { class: 'status-pending', icon: <AlertCircle size={16} />, text: 'Pending Review' },
-      approved: { class: 'status-approved', icon: <CheckCircle size={16} />, text: 'Approved' },
-      rejected: { class: 'status-rejected', icon: <XCircle size={16} />, text: 'Rejected' },
-      deleted: { class: 'status-deleted', icon: <XCircle size={16} />, text: 'Deleted by HoD' }
-    };
-    
-    const badge = badges[status] || badges.pending;
-    return (
-      <span className={`status-badge ${badge.class}`}>
-        {badge.icon} {badge.text}
-      </span>
-    );
-  };
-
-  const getEventTitle = (eventId) => {
-    const event = events.find(e => e.id === eventId);
-    return event ? event : null;
   };
 
   const getDepartmentName = (departmentId) => {
