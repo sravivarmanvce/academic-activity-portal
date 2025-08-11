@@ -501,6 +501,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                 // Use saved event data
                 events.push({
                   id: `${programKey}_${i + 1}`,
+                  database_id: existingEvent.id, // Store database ID for document fetching
                   eventNumber: i + 1,
                   title: existingEvent.title || '',
                   event_date: existingEvent.event_date || '',
@@ -514,6 +515,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                 const totalBudget = countsRes.data.find(c => c.program_type === program.program_type)?.total_budget || 0;
                 events.push({
                   id: `${programKey}_${i + 1}`,
+                  database_id: null, // No database ID yet for new events
                   eventNumber: i + 1,
                   title: '',
                   event_date: '',
@@ -1447,6 +1449,28 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       report: reportDoc ? `${reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}` : 'Not available',
       zipfile: zipDoc ? `${zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}` : 'Not available'
     };
+  };
+
+  // Function to handle document downloads
+  const handleDownloadDocument = async (documentId, originalFilename) => {
+    try {
+      const response = await API.get(`/documents/download/${documentId}`, {
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', originalFilename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Failed to download document. Please try again.');
+    }
   };
 
   // Helper function to calculate event completion progress
@@ -2394,21 +2418,53 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                   <td>
                                     {(() => {
                                       const docStatus = getEventDocumentStatus(event.database_id);
+                                      const documents = eventsDocuments[event.database_id] || [];
+                                      const reportDoc = documents.find(doc => doc.doc_type === 'report');
+                                      const zipDoc = documents.find(doc => doc.doc_type === 'zipfile');
+                                      
                                       return (
-                                        <div className="d-flex gap-1 flex-wrap">
-                                          <span className={`small ${docStatus.report === 'Not available' ? 'text-muted' : 
-                                            docStatus.report === 'Approved' ? 'text-success fw-bold' : 
-                                            docStatus.report === 'Pending' ? 'text-warning fw-bold' : 
-                                            docStatus.report === 'Rejected' ? 'text-danger fw-bold' : 'text-info fw-bold'}`}>
-                                            Report: {docStatus.report}
-                                          </span>
+                                        <div className="d-flex gap-1 flex-wrap align-items-center">
+                                          <div className="d-flex align-items-center gap-1">
+                                            <small className="text-muted">Report:</small>
+                                            {reportDoc && reportDoc.status === 'approved' ? (
+                                              <button
+                                                className="btn btn-outline-success btn-sm px-2 py-0"
+                                                style={{ fontSize: '0.75rem', lineHeight: '1.2' }}
+                                                onClick={() => handleDownloadDocument(reportDoc.id, reportDoc.filename)}
+                                                title={`Download ${reportDoc.filename}`}
+                                              >
+                                                <i className="fas fa-download me-1"></i>
+                                                PDF
+                                              </button>
+                                            ) : (
+                                              <span className={`small ${docStatus.report === 'Not available' ? 'text-muted' : 
+                                                docStatus.report === 'Pending' ? 'text-warning fw-bold' : 
+                                                docStatus.report === 'Rejected' ? 'text-danger fw-bold' : 'text-info fw-bold'}`}>
+                                                {docStatus.report}
+                                              </span>
+                                            )}
+                                          </div>
                                           <br />
-                                          <span className={`small ${docStatus.zipfile === 'Not available' ? 'text-muted' : 
-                                            docStatus.zipfile === 'Approved' ? 'text-success fw-bold' : 
-                                            docStatus.zipfile === 'Pending' ? 'text-warning fw-bold' : 
-                                            docStatus.zipfile === 'Rejected' ? 'text-danger fw-bold' : 'text-info fw-bold'}`}>
-                                            ZIP: {docStatus.zipfile}
-                                          </span>
+                                          <div className="d-flex align-items-center gap-1">
+                                            <small className="text-muted">ZIP:</small>
+                                            {zipDoc && zipDoc.status === 'approved' ? (
+                                              <button
+                                                className="btn btn-outline-primary btn-sm px-2 py-0"
+                                                style={{ fontSize: '0.75rem', lineHeight: '1.2' }}
+                                                onClick={() => handleDownloadDocument(zipDoc.id, zipDoc.filename)}
+                                                title={`Download ${zipDoc.filename}`}
+                                              >
+                                                <i className="fas fa-download me-1"></i>
+                                                ZIP
+                                              </button>
+                                            ) : (
+                                              <span className={`small ${docStatus.zipfile === 'Not available' ? 'text-muted' : 
+                                                docStatus.zipfile === 'Pending' ? 'text-warning fw-bold' : 
+                                                docStatus.zipfile === 'Rejected' ? 'text-danger fw-bold' : 'text-info fw-bold'}`}>
+                                                {docStatus.zipfile}
+                                              </span>
+                                            )}
+                                          </div>
                                         </div>
                                       );
                                     })()}
