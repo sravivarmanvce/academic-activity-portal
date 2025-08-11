@@ -905,32 +905,34 @@
 
 .document-status-cell {
   padding: 12px;
-  min-width: 250px;
+  min-width: 180px;
+  max-width: 200px;
 }
 
 .document-status-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .doc-status-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 6px;
+  font-size: 12px;
 }
 
 .doc-icon {
-  font-size: 16px;
-  width: 20px;
+  font-size: 14px;
+  width: 18px;
   text-align: center;
 }
 
 .doc-label {
   font-weight: 500;
   color: #555;
-  min-width: 40px;
+  min-width: 35px;
+  font-size: 11px;
 }
 
 .status-info {
@@ -943,10 +945,10 @@
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 10px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -976,30 +978,37 @@
 }
 
 .rejection-reason-inline {
-  font-size: 10px;
+  font-size: 9px;
   color: #dc3545;
-  margin-top: 2px;
+  margin-top: 1px;
+}
+
+.actions-cell {
+  padding: 8px;
+  min-width: 200px;
 }
 
 .action-buttons-compact {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 3px;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .action-btn-compact {
   background: none;
   border: 1px solid #dee2e6;
-  border-radius: 4px;
-  padding: 6px 8px;
+  border-radius: 3px;
+  padding: 4px 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  font-size: 12px;
+  font-size: 11px;
   transition: all 0.2s;
   white-space: nowrap;
+  min-height: 24px;
 }
 
 .action-btn-compact:hover {

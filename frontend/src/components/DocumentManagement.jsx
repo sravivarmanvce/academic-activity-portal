@@ -33,6 +33,18 @@ const DocumentManagement = () => {
     zipFile: null
   });
 
+  // Separate upload states
+  const [showReportUploadModal, setShowReportUploadModal] = useState(false);
+  const [showZipUploadModal, setShowZipUploadModal] = useState(false);
+  const [reportUploadForm, setReportUploadForm] = useState({
+    event_id: '',
+    reportFile: null
+  });
+  const [zipUploadForm, setZipUploadForm] = useState({
+    event_id: '',
+    zipFile: null
+  });
+
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userRole = user?.role;
   const userDepartmentId = user?.department_id; // Assuming HoD has department_id in user data
@@ -172,6 +184,78 @@ const DocumentManagement = () => {
     } catch (error) {
       console.error('Error uploading documents:', error);
       setError('Failed to upload documents');
+    }
+  };
+
+  const handleReportUpload = async (e) => {
+    e.preventDefault();
+    if (!reportUploadForm.reportFile) {
+      setError('Please select a report file');
+      return;
+    }
+
+    if (!reportUploadForm.event_id) {
+      setError('Event ID is required');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('report', reportUploadForm.reportFile);
+      // Add a dummy ZIP file to satisfy the backend requirement
+      const dummyZip = new File([''], 'dummy.zip', { type: 'application/zip' });
+      formData.append('zipfile', dummyZip);
+
+      await Api.post(`/documents/upload/${reportUploadForm.event_id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      setShowReportUploadModal(false);
+      setReportUploadForm({
+        event_id: '',
+        reportFile: null
+      });
+      loadDocuments();
+      setError('');
+    } catch (error) {
+      console.error('Error uploading report:', error);
+      setError('Failed to upload report');
+    }
+  };
+
+  const handleZipUpload = async (e) => {
+    e.preventDefault();
+    if (!zipUploadForm.zipFile) {
+      setError('Please select a ZIP file');
+      return;
+    }
+
+    if (!zipUploadForm.event_id) {
+      setError('Event ID is required');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      // Add a dummy report file to satisfy the backend requirement
+      const dummyReport = new File([''], 'dummy.pdf', { type: 'application/pdf' });
+      formData.append('report', dummyReport);
+      formData.append('zipfile', zipUploadForm.zipFile);
+
+      await Api.post(`/documents/upload/${zipUploadForm.event_id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      setShowZipUploadModal(false);
+      setZipUploadForm({
+        event_id: '',
+        zipFile: null
+      });
+      loadDocuments();
+      setError('');
+    } catch (error) {
+      console.error('Error uploading ZIP:', error);
+      setError('Failed to upload ZIP file');
     }
   };
 
@@ -453,17 +537,31 @@ const DocumentManagement = () => {
                           {/* HoD Actions */}
                           {userRole === 'hod' && (
                             <>
-                              {/* Upload button - show if no documents or documents were rejected */}
-                              {(!reportDoc || !zipDoc || reportDoc.status === 'rejected' || zipDoc.status === 'rejected') && (
+                              {/* Upload Report button */}
+                              {(!reportDoc || reportDoc.status === 'rejected') && (
                                 <button
                                   className="action-btn-compact upload"
                                   onClick={() => {
-                                    setUploadForm({...uploadForm, event_id: event.id});
-                                    setShowUploadModal(true);
+                                    setReportUploadForm({...reportUploadForm, event_id: event.id});
+                                    setShowReportUploadModal(true);
                                   }}
-                                  title="Upload Event Documents"
+                                  title="Upload Report"
                                 >
-                                  <Upload size={16} />
+                                  <Upload size={14} />📄
+                                </button>
+                              )}
+                              
+                              {/* Upload ZIP button */}
+                              {(!zipDoc || zipDoc.status === 'rejected') && (
+                                <button
+                                  className="action-btn-compact upload"
+                                  onClick={() => {
+                                    setZipUploadForm({...zipUploadForm, event_id: event.id});
+                                    setShowZipUploadModal(true);
+                                  }}
+                                  title="Upload ZIP"
+                                >
+                                  <Upload size={14} />📦
                                 </button>
                               )}
                               
@@ -494,18 +592,18 @@ const DocumentManagement = () => {
                             <button
                               className="action-btn-compact download"
                               onClick={() => handleDownload(reportDoc.id, reportDoc.filename, reportDoc.event_id, reportDoc.doc_type)}
-                              title={`Download Report: ${reportDoc.filename}`}
+                              title={`Download: ${reportDoc.filename}`}
                             >
-                              <Download size={16} />📄
+                              <Download size={14} />📄
                             </button>
                           )}
                           {zipDoc && zipDoc.status !== 'deleted' && (
                             <button
                               className="action-btn-compact download"
                               onClick={() => handleDownload(zipDoc.id, zipDoc.filename, zipDoc.event_id, zipDoc.doc_type)}
-                              title={`Download ZIP: ${zipDoc.filename}`}
+                              title={`Download: ${zipDoc.filename}`}
                             >
-                              <Download size={16} />📦
+                              <Download size={14} />📦
                             </button>
                           )}
                           
@@ -519,14 +617,14 @@ const DocumentManagement = () => {
                                     onClick={() => handleApprove(reportDoc.id)}
                                     title="Approve Report"
                                   >
-                                    <CheckCircle size={16} />�
+                                    <CheckCircle size={14} />�
                                   </button>
                                   <button
                                     className="action-btn-compact reject"
                                     onClick={() => handleReject(reportDoc.id)}
                                     title="Reject Report"
                                   >
-                                    <XCircle size={16} />📄
+                                    <XCircle size={14} />📄
                                   </button>
                                 </>
                               )}
@@ -537,14 +635,14 @@ const DocumentManagement = () => {
                                     onClick={() => handleApprove(zipDoc.id)}
                                     title="Approve ZIP"
                                   >
-                                    <CheckCircle size={16} />📦
+                                    <CheckCircle size={14} />📦
                                   </button>
                                   <button
                                     className="action-btn-compact reject"
                                     onClick={() => handleReject(zipDoc.id)}
                                     title="Reject ZIP"
                                   >
-                                    <XCircle size={16} />📦
+                                    <XCircle size={14} />📦
                                   </button>
                                 </>
                               )}
@@ -723,6 +821,236 @@ const DocumentManagement = () => {
                   }}
                 >
                   Upload Documents
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Report Upload Modal */}
+      {showReportUploadModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowReportUploadModal(false);
+          }}
+        >
+          <div 
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              maxWidth: '400px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '20px 20px 10px 20px',
+              borderBottom: '1px solid #eee'
+            }}>
+              <h3 style={{margin: 0, color: '#333'}}>📄 Upload Report</h3>
+              <button 
+                onClick={() => setShowReportUploadModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#999',
+                  padding: '0',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >×</button>
+            </div>
+            
+            <form onSubmit={handleReportUpload} style={{padding: '20px'}}>
+              <div style={{marginBottom: '20px'}}>
+                <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333'}}>
+                  Report File (PDF/DOC/DOCX) *
+                </label>
+                <input
+                  type="file"
+                  required
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => setReportUploadForm({...reportUploadForm, reportFile: e.target.files[0]})}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+                <small style={{color: '#666', fontSize: '12px', marginTop: '5px', display: 'block'}}>
+                  Upload the event report document
+                </small>
+              </div>
+
+              <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px'}}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowReportUploadModal(false)}
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  style={{
+                    padding: '10px 20px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Upload Report
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ZIP Upload Modal */}
+      {showZipUploadModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowZipUploadModal(false);
+          }}
+        >
+          <div 
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              maxWidth: '400px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '20px 20px 10px 20px',
+              borderBottom: '1px solid #eee'
+            }}>
+              <h3 style={{margin: 0, color: '#333'}}>📦 Upload ZIP File</h3>
+              <button 
+                onClick={() => setShowZipUploadModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#999',
+                  padding: '0',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >×</button>
+            </div>
+            
+            <form onSubmit={handleZipUpload} style={{padding: '20px'}}>
+              <div style={{marginBottom: '20px'}}>
+                <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333'}}>
+                  ZIP File *
+                </label>
+                <input
+                  type="file"
+                  required
+                  accept=".zip"
+                  onChange={(e) => setZipUploadForm({...zipUploadForm, zipFile: e.target.files[0]})}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+                <small style={{color: '#666', fontSize: '12px', marginTop: '5px', display: 'block'}}>
+                  Upload supporting documents as ZIP file
+                </small>
+              </div>
+
+              <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px'}}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowZipUploadModal(false)}
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  style={{
+                    padding: '10px 20px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Upload ZIP
                 </button>
               </div>
             </form>
