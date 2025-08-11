@@ -291,17 +291,6 @@ const DocumentManagement = () => {
     <div className="document-management">
       <div className="document-header">
         <h2>📄 Event Document Management</h2>
-        <div className="header-actions">
-          {/* Only show upload button for HoDs */}
-          {userRole === 'hod' && (
-            <button 
-              className="btn btn-primary"
-              onClick={() => setShowUploadModal(true)}
-            >
-              <Upload size={16} /> Upload Event Documents
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Info Banner */}
@@ -314,7 +303,7 @@ const DocumentManagement = () => {
         fontSize: '14px',
         color: '#1565c0'
       }}>
-        💡 <strong>HoD:</strong> Upload one event report (PDF/DOC/DOCX) and one ZIP file for each completed event. 
+        💡 <strong>HoD:</strong> Upload one event report (PDF/DOC/DOCX) and one ZIP file for each completed event using the upload button in the Actions column.
         <br />
         📋 <strong>Principal:</strong> Review and approve/reject uploaded documents. Rejected documents must be re-uploaded.
       </div>
@@ -370,143 +359,194 @@ const DocumentManagement = () => {
         </div>
       </div>
 
-      {/* Documents Section */}
+      {/* Events Section */}
       <div className="documents-section">
-        <h3>📋 Event Documents ({documents.length})</h3>
+        <h3>📋 Events & Documents ({events.length} events)</h3>
         
-        {documents.length === 0 ? (
+        {events.length === 0 ? (
           <div className="no-documents">
             <FileText size={48} />
-            <h4>No documents found</h4>
-            <p>Upload event documents to get started.</p>
+            <h4>No events found</h4>
+            <p>No events available for the selected criteria.</p>
           </div>
         ) : (
           <div className="enhanced-documents-table">
             <table>
               <thead>
                 <tr>
-                  <th>Department & Event</th>
+                  <th>Event Details</th>
                   <th>Academic Year</th>
-                  <th>Document</th>
-                  <th>Status</th>
-                  <th>Date</th>
+                  <th>Document Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {documents.map(doc => {
-                  const event = getEventTitle(doc.event_id);
-                  const departmentName = event ? getDepartmentName(event.department_id) : 'Unknown';
+                {events.map(event => {
+                  const departmentName = getDepartmentName(event.department_id);
+                  const eventDocuments = documents.filter(doc => doc.event_id === event.id);
+                  const reportDoc = eventDocuments.find(doc => doc.doc_type === 'report');
+                  const zipDoc = eventDocuments.find(doc => doc.doc_type === 'zipfile');
                   
                   return (
-                    <tr key={doc.id} className={`document-row status-${doc.status}`}>
-                      <td className="department-event-cell">
-                        <div className="department-event-name">🏢 {departmentName} - {event ? event.title : 'Unknown Event'}</div>
-                        <div className="event-date-small">📅 {event ? new Date(event.event_date).toLocaleDateString() : 'No Date'}</div>
+                    <tr key={event.id} className="event-row">
+                      <td className="event-details-cell">
+                        <div className="event-name">� {event.title}</div>
+                        <div className="event-meta">
+                          <div>🏢 {departmentName}</div>
+                          <div>📅 {new Date(event.event_date).toLocaleDateString()}</div>
+                          <div>💰 ₹{event.budget_amount?.toLocaleString()}</div>
+                        </div>
                       </td>
                       
                       <td className="academic-year-cell">
                         <div className="academic-year-name">
-                          🎓 {event ? getAcademicYearName(event.academic_year_id) : 'Unknown Year'}
+                          🎓 {getAcademicYearName(event.academic_year_id)}
                         </div>
                       </td>
                       
-                      <td className="document-cell">
-                        <div className="document-header-compact">
-                          <span className="doc-icon">
-                            {doc.doc_type === 'report' ? '📄' : '📦'}
-                          </span>
-                          <div className="doc-info-compact">
-                            <div className="doc-filename">{doc.filename}</div>
-                            <div className="doc-type-label">
-                              {doc.doc_type === 'report' ? 'Event Report' : 'ZIP Files'}
-                            </div>
+                      <td className="document-status-cell">
+                        <div className="document-status-grid">
+                          <div className="doc-status-item">
+                            <span className="doc-icon">📄</span>
+                            <span className="doc-label">Report:</span>
+                            {reportDoc ? (
+                              <div className="status-info">
+                                <span className={`status-badge status-${reportDoc.status}`}>
+                                  {reportDoc.status === 'pending' && <AlertCircle size={14} />}
+                                  {reportDoc.status === 'approved' && <CheckCircle size={14} />}
+                                  {reportDoc.status === 'rejected' && <XCircle size={14} />}
+                                  {reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}
+                                </span>
+                                {reportDoc.status === 'rejected' && reportDoc.rejection_reason && (
+                                  <div className="rejection-reason-inline">❌ {reportDoc.rejection_reason}</div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="status-badge status-not-uploaded">Not uploaded</span>
+                            )}
                           </div>
-                        </div>
-                        
-                        {/* Show rejection reason or deletion notice */}
-                        {doc.status === 'rejected' && doc.rejection_reason && (
-                          <div className="inline-rejection-reason">
-                            ❌ Rejected: {doc.rejection_reason}
+                          
+                          <div className="doc-status-item">
+                            <span className="doc-icon">📦</span>
+                            <span className="doc-label">ZIP:</span>
+                            {zipDoc ? (
+                              <div className="status-info">
+                                <span className={`status-badge status-${zipDoc.status}`}>
+                                  {zipDoc.status === 'pending' && <AlertCircle size={14} />}
+                                  {zipDoc.status === 'approved' && <CheckCircle size={14} />}
+                                  {zipDoc.status === 'rejected' && <XCircle size={14} />}
+                                  {zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}
+                                </span>
+                                {zipDoc.status === 'rejected' && zipDoc.rejection_reason && (
+                                  <div className="rejection-reason-inline">❌ {zipDoc.rejection_reason}</div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="status-badge status-not-uploaded">Not uploaded</span>
+                            )}
                           </div>
-                        )}
-                        {doc.status === 'deleted' && (
-                          <div className="inline-deletion-notice">
-                            🗑️ Deleted by HoD
-                          </div>
-                        )}
-                      </td>
-                      
-                      <td className="status-cell">
-                        {getStatusBadge(doc.status)}
-                      </td>
-                      
-                      <td className="date-cell">
-                        <div className="upload-date-compact">
-                          <Calendar size={14} />
-                          {new Date(doc.uploaded_at).toLocaleDateString()}
                         </div>
                       </td>
                       
                       <td className="actions-cell">
                         <div className="action-buttons-compact">
-                          {/* Download button - available for all roles if not deleted */}
-                          {doc.status !== 'deleted' && (
+                          {/* HoD Actions */}
+                          {userRole === 'hod' && (
+                            <>
+                              {/* Upload button - show if no documents or documents were rejected */}
+                              {(!reportDoc || !zipDoc || reportDoc.status === 'rejected' || zipDoc.status === 'rejected') && (
+                                <button
+                                  className="action-btn-compact upload"
+                                  onClick={() => {
+                                    setUploadForm({...uploadForm, event_id: event.id});
+                                    setShowUploadModal(true);
+                                  }}
+                                  title="Upload Event Documents"
+                                >
+                                  <Upload size={16} />
+                                </button>
+                              )}
+                              
+                              {/* Delete buttons for pending documents */}
+                              {reportDoc && reportDoc.status === 'pending' && (
+                                <button
+                                  className="action-btn-compact delete"
+                                  onClick={() => handleDelete(reportDoc.id)}
+                                  title="Delete Report"
+                                >
+                                  🗑️📄
+                                </button>
+                              )}
+                              {zipDoc && zipDoc.status === 'pending' && (
+                                <button
+                                  className="action-btn-compact delete"
+                                  onClick={() => handleDelete(zipDoc.id)}
+                                  title="Delete ZIP"
+                                >
+                                  🗑️📦
+                                </button>
+                              )}
+                            </>
+                          )}
+                          
+                          {/* Download buttons - available for all roles if documents exist and not deleted */}
+                          {reportDoc && reportDoc.status !== 'deleted' && (
                             <button
                               className="action-btn-compact download"
-                              onClick={() => handleDownload(doc.id, doc.filename, doc.event_id, doc.doc_type)}
-                              title="Download Document"
+                              onClick={() => handleDownload(reportDoc.id, reportDoc.filename, reportDoc.event_id, reportDoc.doc_type)}
+                              title={`Download Report: ${reportDoc.filename}`}
                             >
-                              <Download size={16} />
+                              <Download size={16} />📄
+                            </button>
+                          )}
+                          {zipDoc && zipDoc.status !== 'deleted' && (
+                            <button
+                              className="action-btn-compact download"
+                              onClick={() => handleDownload(zipDoc.id, zipDoc.filename, zipDoc.event_id, zipDoc.doc_type)}
+                              title={`Download ZIP: ${zipDoc.filename}`}
+                            >
+                              <Download size={16} />📦
                             </button>
                           )}
                           
                           {/* Principal Actions - Approve/Reject for pending documents */}
-                          {userRole === 'principal' && doc.status === 'pending' && (
+                          {userRole === 'principal' && (
                             <>
-                              <button
-                                className="action-btn-compact approve"
-                                onClick={() => handleApprove(doc.id)}
-                                title="Approve Document"
-                              >
-                                <CheckCircle size={16} />
-                              </button>
-                              <button
-                                className="action-btn-compact reject"
-                                onClick={() => handleReject(doc.id)}
-                                title="Reject Document"
-                              >
-                                <XCircle size={16} />
-                              </button>
-                            </>
-                          )}
-                          
-                          {/* HoD Actions - Delete/Re-upload */}
-                          {userRole === 'hod' && (
-                            <>
-                              {/* Delete option for pending documents */}
-                              {doc.status === 'pending' && (
-                                <button
-                                  className="action-btn-compact delete"
-                                  onClick={() => handleDelete(doc.id)}
-                                  title="Delete Document"
-                                >
-                                  🗑️
-                                </button>
+                              {reportDoc && reportDoc.status === 'pending' && (
+                                <>
+                                  <button
+                                    className="action-btn-compact approve"
+                                    onClick={() => handleApprove(reportDoc.id)}
+                                    title="Approve Report"
+                                  >
+                                    <CheckCircle size={16} />�
+                                  </button>
+                                  <button
+                                    className="action-btn-compact reject"
+                                    onClick={() => handleReject(reportDoc.id)}
+                                    title="Reject Report"
+                                  >
+                                    <XCircle size={16} />📄
+                                  </button>
+                                </>
                               )}
-                              
-                              {/* Re-upload for rejected documents */}
-                              {doc.status === 'rejected' && (
-                                <button
-                                  className="action-btn-compact reupload"
-                                  onClick={() => {
-                                    setUploadForm({...uploadForm, event_id: doc.event_id});
-                                    setShowUploadModal(true);
-                                  }}
-                                  title="Re-upload Document"
-                                >
-                                  <Upload size={16} />
-                                </button>
+                              {zipDoc && zipDoc.status === 'pending' && (
+                                <>
+                                  <button
+                                    className="action-btn-compact approve"
+                                    onClick={() => handleApprove(zipDoc.id)}
+                                    title="Approve ZIP"
+                                  >
+                                    <CheckCircle size={16} />📦
+                                  </button>
+                                  <button
+                                    className="action-btn-compact reject"
+                                    onClick={() => handleReject(zipDoc.id)}
+                                    title="Reject ZIP"
+                                  >
+                                    <XCircle size={16} />📦
+                                  </button>
+                                </>
                               )}
                             </>
                           )}
