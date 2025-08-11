@@ -607,6 +607,69 @@
   }
 }
 
+/* Merged Documents & Actions Column */
+.documents-actions-cell {
+  padding: 8px;
+  max-width: 400px;
+}
+
+.doc-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  margin: 2px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.doc-action-row:last-child {
+  border-bottom: none;
+}
+
+.doc-status-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-actions-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.doc-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.doc-label {
+  font-weight: 500;
+  font-size: 13px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.rejection-reason-inline {
+  font-size: 11px;
+  color: #dc3545;
+  margin-top: 2px;
+  font-style: italic;
+}
+
 /* Enhanced Table Layout - Optimized for Multiple Departments */
 .enhanced-documents-table {
   background: white;

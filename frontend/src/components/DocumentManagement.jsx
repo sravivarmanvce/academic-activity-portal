@@ -460,8 +460,7 @@ const DocumentManagement = () => {
                 <tr>
                   <th>Event Details</th>
                   <th>Academic Year</th>
-                  <th>Document Status</th>
-                  <th>Actions</th>
+                  <th>Documents & Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -488,116 +487,180 @@ const DocumentManagement = () => {
                         </div>
                       </td>
                       
-                      <td className="document-status-cell">
-                        <div className="document-status-grid">
-                          <div className="doc-status-item">
+                      <td className="documents-actions-cell">
+                        {/* Report Document */}
+                        <div className="doc-action-row">
+                          <div className="doc-status-inline">
                             <span className="doc-icon">📄</span>
                             <span className="doc-label">Report:</span>
                             {reportDoc ? (
-                              <div className="status-info">
-                                <span className={`status-badge status-${reportDoc.status}`}>
-                                  {reportDoc.status === 'pending' && <AlertCircle size={14} />}
-                                  {reportDoc.status === 'approved' && <CheckCircle size={14} />}
-                                  {reportDoc.status === 'rejected' && <XCircle size={14} />}
-                                  {reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}
-                                </span>
-                                {reportDoc.status === 'rejected' && reportDoc.rejection_reason && (
-                                  <div className="rejection-reason-inline">❌ {reportDoc.rejection_reason}</div>
-                                )}
-                              </div>
+                              <span className={`status-badge status-${reportDoc.status}`}>
+                                {reportDoc.status === 'pending' && <AlertCircle size={12} />}
+                                {reportDoc.status === 'approved' && <CheckCircle size={12} />}
+                                {reportDoc.status === 'rejected' && <XCircle size={12} />}
+                                {reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}
+                              </span>
                             ) : (
                               <span className="status-badge status-not-uploaded">Not uploaded</span>
                             )}
+                            {reportDoc && reportDoc.status === 'rejected' && reportDoc.rejection_reason && (
+                              <div className="rejection-reason-inline">❌ {reportDoc.rejection_reason}</div>
+                            )}
                           </div>
                           
-                          <div className="doc-status-item">
+                          {/* Report Actions */}
+                          <div className="doc-actions-inline">
+                            {/* HoD Upload Report button */}
+                            {userRole === 'hod' && (!reportDoc || reportDoc.status === 'rejected') && (
+                              <button
+                                className="action-btn-compact upload"
+                                onClick={() => {
+                                  setReportUploadForm({...reportUploadForm, event_id: event.id});
+                                  setShowReportUploadModal(true);
+                                }}
+                                title="Upload Report"
+                              >
+                                <Upload size={12} />
+                              </button>
+                            )}
+                            
+                            {/* HoD Delete button for pending reports */}
+                            {userRole === 'hod' && reportDoc && reportDoc.status === 'pending' && (
+                              <button
+                                className="action-btn-compact delete"
+                                onClick={() => handleDelete(reportDoc.id)}
+                                title="Delete Report"
+                              >
+                                �️
+                              </button>
+                            )}
+                            
+                            {/* Download button for all roles */}
+                            {reportDoc && reportDoc.status !== 'deleted' && (
+                              <button
+                                className="action-btn-compact download"
+                                onClick={() => handleDownload(reportDoc.id, reportDoc.filename, reportDoc.event_id, reportDoc.doc_type)}
+                                title={`Download: ${reportDoc.filename}`}
+                              >
+                                <Download size={12} />
+                              </button>
+                            )}
+                            
+                            {/* Principal Actions for pending reports */}
+                            {userRole === 'principal' && reportDoc && reportDoc.status === 'pending' && (
+                              <>
+                                <button
+                                  className="action-btn-compact approve"
+                                  onClick={() => handleApprove(reportDoc.id)}
+                                  title="Approve Report"
+                                >
+                                  <CheckCircle size={12} />
+                                </button>
+                                <button
+                                  className="action-btn-compact reject"
+                                  onClick={() => handleReject(reportDoc.id)}
+                                  title="Reject Report"
+                                >
+                                  <XCircle size={12} />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* ZIP Document */}
+                        <div className="doc-action-row">
+                          <div className="doc-status-inline">
                             <span className="doc-icon">📦</span>
                             <span className="doc-label">ZIP:</span>
                             {zipDoc ? (
-                              <div className="status-info">
-                                <span className={`status-badge status-${zipDoc.status}`}>
-                                  {zipDoc.status === 'pending' && <AlertCircle size={14} />}
-                                  {zipDoc.status === 'approved' && <CheckCircle size={14} />}
-                                  {zipDoc.status === 'rejected' && <XCircle size={14} />}
-                                  {zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}
-                                </span>
-                                {zipDoc.status === 'rejected' && zipDoc.rejection_reason && (
-                                  <div className="rejection-reason-inline">❌ {zipDoc.rejection_reason}</div>
-                                )}
-                              </div>
+                              <span className={`status-badge status-${zipDoc.status}`}>
+                                {zipDoc.status === 'pending' && <AlertCircle size={12} />}
+                                {zipDoc.status === 'approved' && <CheckCircle size={12} />}
+                                {zipDoc.status === 'rejected' && <XCircle size={12} />}
+                                {zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}
+                              </span>
                             ) : (
                               <span className="status-badge status-not-uploaded">Not uploaded</span>
+                            )}
+                            {zipDoc && zipDoc.status === 'rejected' && zipDoc.rejection_reason && (
+                              <div className="rejection-reason-inline">❌ {zipDoc.rejection_reason}</div>
+                            )}
+                          </div>
+                          
+                          {/* ZIP Actions */}
+                          <div className="doc-actions-inline">
+                            {/* HoD Upload ZIP button */}
+                            {userRole === 'hod' && (!zipDoc || zipDoc.status === 'rejected') && (
+                              <button
+                                className="action-btn-compact upload"
+                                onClick={() => {
+                                  setZipUploadForm({...zipUploadForm, event_id: event.id});
+                                  setShowZipUploadModal(true);
+                                }}
+                                title="Upload ZIP"
+                              >
+                                <Upload size={12} />
+                              </button>
+                            )}
+                            
+                            {/* HoD Delete button for pending ZIP files */}
+                            {userRole === 'hod' && zipDoc && zipDoc.status === 'pending' && (
+                              <button
+                                className="action-btn-compact delete"
+                                onClick={() => handleDelete(zipDoc.id)}
+                                title="Delete ZIP"
+                              >
+                                🗑️
+                              </button>
+                            )}
+                            
+                            {/* Download button for all roles */}
+                            {zipDoc && zipDoc.status !== 'deleted' && (
+                              <button
+                                className="action-btn-compact download"
+                                onClick={() => handleDownload(zipDoc.id, zipDoc.filename, zipDoc.event_id, zipDoc.doc_type)}
+                                title={`Download: ${zipDoc.filename}`}
+                              >
+                                <Download size={12} />
+                              </button>
+                            )}
+                            
+                            {/* Principal Actions for pending ZIP files */}
+                            {userRole === 'principal' && zipDoc && zipDoc.status === 'pending' && (
+                              <>
+                                <button
+                                  className="action-btn-compact approve"
+                                  onClick={() => handleApprove(zipDoc.id)}
+                                  title="Approve ZIP"
+                                >
+                                  <CheckCircle size={12} />
+                                </button>
+                                <button
+                                  className="action-btn-compact reject"
+                                  onClick={() => handleReject(zipDoc.id)}
+                                  title="Reject ZIP"
+                                >
+                                  <XCircle size={12} />
+                                </button>
+                              </>
                             )}
                           </div>
                         </div>
                       </td>
-                      
-                      <td className="actions-cell">
-                        <div className="action-buttons-compact">
-                          {/* HoD Actions */}
-                          {userRole === 'hod' && (
-                            <>
-                              {/* Upload Report button */}
-                              {(!reportDoc || reportDoc.status === 'rejected') && (
-                                <button
-                                  className="action-btn-compact upload"
-                                  onClick={() => {
-                                    setReportUploadForm({...reportUploadForm, event_id: event.id});
-                                    setShowReportUploadModal(true);
-                                  }}
-                                  title="Upload Report"
-                                >
-                                  <Upload size={14} />📄
-                                </button>
-                              )}
-                              
-                              {/* Upload ZIP button */}
-                              {(!zipDoc || zipDoc.status === 'rejected') && (
-                                <button
-                                  className="action-btn-compact upload"
-                                  onClick={() => {
-                                    setZipUploadForm({...zipUploadForm, event_id: event.id});
-                                    setShowZipUploadModal(true);
-                                  }}
-                                  title="Upload ZIP"
-                                >
-                                  <Upload size={14} />📦
-                                </button>
-                              )}
-                              
-                              {/* Delete buttons for pending documents */}
-                              {reportDoc && reportDoc.status === 'pending' && (
-                                <button
-                                  className="action-btn-compact delete"
-                                  onClick={() => handleDelete(reportDoc.id)}
-                                  title="Delete Report"
-                                >
-                                  🗑️📄
-                                </button>
-                              )}
-                              {zipDoc && zipDoc.status === 'pending' && (
-                                <button
-                                  className="action-btn-compact delete"
-                                  onClick={() => handleDelete(zipDoc.id)}
-                                  title="Delete ZIP"
-                                >
-                                  🗑️📦
-                                </button>
-                              )}
-                            </>
-                          )}
-                          
-                          {/* Download buttons - available for all roles if documents exist and not deleted */}
-                          {reportDoc && reportDoc.status !== 'deleted' && (
-                            <button
-                              className="action-btn-compact download"
-                              onClick={() => handleDownload(reportDoc.id, reportDoc.filename, reportDoc.event_id, reportDoc.doc_type)}
-                              title={`Download: ${reportDoc.filename}`}
-                            >
-                              <Download size={14} />📄
-                            </button>
-                          )}
-                          {zipDoc && zipDoc.status !== 'deleted' && (
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="modal-overlay" onClick={() => setShowUploadModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <button
                               className="action-btn-compact download"
                               onClick={() => handleDownload(zipDoc.id, zipDoc.filename, zipDoc.event_id, zipDoc.doc_type)}
