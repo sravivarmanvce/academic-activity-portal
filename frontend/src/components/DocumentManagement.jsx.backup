@@ -1,4 +1,4 @@
-﻿// src/components/DocumentManagement.jsx
+// src/components/DocumentManagement.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Upload, 
@@ -374,7 +374,7 @@ const DocumentManagement = () => {
   return (
     <div className="document-management">
       <div className="document-header">
-        <h2>ðŸ“„ Event Document Management</h2>
+        <h2>📄 Event Document Management</h2>
       </div>
 
       {/* Info Banner */}
@@ -387,15 +387,15 @@ const DocumentManagement = () => {
         fontSize: '14px',
         color: '#1565c0'
       }}>
-        ðŸ’¡ <strong>HoD:</strong> Upload one event report (PDF/DOC/DOCX) and one ZIP file for each completed event using the upload button in the Actions column.
+        💡 <strong>HoD:</strong> Upload one event report (PDF/DOC/DOCX) and one ZIP file for each completed event using the upload button in the Actions column.
         <br />
-        ðŸ“‹ <strong>Principal:</strong> Review and approve/reject uploaded documents. Rejected documents must be re-uploaded.
+        📋 <strong>Principal:</strong> Review and approve/reject uploaded documents. Rejected documents must be re-uploaded.
       </div>
 
       {error && (
         <div className="error-message">
           {error}
-          <button onClick={() => setError('')}>Ã—</button>
+          <button onClick={() => setError('')}>×</button>
         </div>
       )}
 
@@ -445,7 +445,7 @@ const DocumentManagement = () => {
 
       {/* Events Section */}
       <div className="documents-section">
-        <h3>ðŸ“‹ Events & Documents ({events.length} events)</h3>
+        <h3>📋 Events & Documents ({events.length} events)</h3>
         
         {events.length === 0 ? (
           <div className="no-documents">
@@ -473,17 +473,17 @@ const DocumentManagement = () => {
                   return (
                     <tr key={event.id} className="event-row">
                       <td className="event-details-cell">
-                        <div className="event-name">ï¿½ {event.title}</div>
+                        <div className="event-name">� {event.title}</div>
                         <div className="event-meta">
-                          <div>ðŸ¢ {departmentName}</div>
-                          <div>ðŸ“… {new Date(event.event_date).toLocaleDateString()}</div>
-                          <div>ðŸ’° â‚¹{event.budget_amount?.toLocaleString()}</div>
+                          <div>🏢 {departmentName}</div>
+                          <div>📅 {new Date(event.event_date).toLocaleDateString()}</div>
+                          <div>💰 ₹{event.budget_amount?.toLocaleString()}</div>
                         </div>
                       </td>
                       
                       <td className="academic-year-cell">
                         <div className="academic-year-name">
-                          ðŸŽ“ {getAcademicYearName(event.academic_year_id)}
+                          🎓 {getAcademicYearName(event.academic_year_id)}
                         </div>
                       </td>
                       
@@ -491,7 +491,7 @@ const DocumentManagement = () => {
                         {/* Report Document */}
                         <div className="doc-action-row">
                           <div className="doc-status-inline">
-                            <span className="doc-icon">ðŸ“„</span>
+                            <span className="doc-icon">📄</span>
                             <span className="doc-label">Report:</span>
                             {reportDoc ? (
                               <span className={`status-badge status-${reportDoc.status}`}>
@@ -504,7 +504,7 @@ const DocumentManagement = () => {
                               <span className="status-badge status-not-uploaded">Not uploaded</span>
                             )}
                             {reportDoc && reportDoc.status === 'rejected' && reportDoc.rejection_reason && (
-                              <div className="rejection-reason-inline">âŒ {reportDoc.rejection_reason}</div>
+                              <div className="rejection-reason-inline">❌ {reportDoc.rejection_reason}</div>
                             )}
                           </div>
                           
@@ -531,7 +531,7 @@ const DocumentManagement = () => {
                                 onClick={() => handleDelete(reportDoc.id)}
                                 title="Delete Report"
                               >
-                                ï¿½ï¸
+                                �️
                               </button>
                             )}
                             
@@ -571,7 +571,7 @@ const DocumentManagement = () => {
                         {/* ZIP Document */}
                         <div className="doc-action-row">
                           <div className="doc-status-inline">
-                            <span className="doc-icon">ðŸ“¦</span>
+                            <span className="doc-icon">📦</span>
                             <span className="doc-label">ZIP:</span>
                             {zipDoc ? (
                               <span className={`status-badge status-${zipDoc.status}`}>
@@ -584,7 +584,7 @@ const DocumentManagement = () => {
                               <span className="status-badge status-not-uploaded">Not uploaded</span>
                             )}
                             {zipDoc && zipDoc.status === 'rejected' && zipDoc.rejection_reason && (
-                              <div className="rejection-reason-inline">âŒ {zipDoc.rejection_reason}</div>
+                              <div className="rejection-reason-inline">❌ {zipDoc.rejection_reason}</div>
                             )}
                           </div>
                           
@@ -611,7 +611,7 @@ const DocumentManagement = () => {
                                 onClick={() => handleDelete(zipDoc.id)}
                                 title="Delete ZIP"
                               >
-                                ðŸ—‘ï¸
+                                🗑️
                               </button>
                             )}
                             
@@ -668,7 +668,7 @@ const DocumentManagement = () => {
                 onClick={() => setShowUploadModal(false)}
                 type="button"
               >
-                Ã—
+                ×
               </button>
             </div>
             
@@ -729,6 +729,203 @@ const DocumentManagement = () => {
         <div 
           style={{
             position: 'fixed',
+                                    title="Approve Report"
+                                  >
+                                    <CheckCircle size={14} />�
+                                  </button>
+                                  <button
+                                    className="action-btn-compact reject"
+                                    onClick={() => handleReject(reportDoc.id)}
+                                    title="Reject Report"
+                                  >
+                                    <XCircle size={14} />📄
+                                  </button>
+                                </>
+                              )}
+                              {zipDoc && zipDoc.status === 'pending' && (
+                                <>
+                                  <button
+                                    className="action-btn-compact approve"
+                                    onClick={() => handleApprove(zipDoc.id)}
+                                    title="Approve ZIP"
+                                  >
+                                    <CheckCircle size={14} />📦
+                                  </button>
+                                  <button
+
+      {showUploadModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowUploadModal(false);
+          }}
+        >
+          <div 
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '20px 20px 10px 20px',
+              borderBottom: '1px solid #eee'
+            }}>
+              <h3 style={{margin: 0, color: '#333'}}>Upload Event Documents</h3>
+              <button 
+                onClick={() => setShowUploadModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#999',
+                  padding: '0',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >×</button>
+            </div>
+            
+            <form onSubmit={handleUpload} style={{padding: '20px'}}>
+              <div style={{marginBottom: '20px'}}>
+                <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333'}}>
+                  Select Event *
+                </label>
+                <select
+                  required
+                  value={uploadForm.event_id}
+                  onChange={(e) => setUploadForm({...uploadForm, event_id: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                >
+                  <option value="">-- Select Event --</option>
+                  {events.map(event => (
+                    <option key={event.id} value={event.id}>
+                      {event.title} - {new Date(event.event_date).toLocaleDateString()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{marginBottom: '20px'}}>
+                <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333'}}>
+                  Event Report *
+                </label>
+                <input
+                  type="file"
+                  required
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => setUploadForm({...uploadForm, reportFile: e.target.files[0]})}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+                <small style={{color: '#666', fontSize: '12px', marginTop: '5px', display: 'block'}}>
+                  Upload the event report (PDF, DOC, or DOCX format)
+                </small>
+              </div>
+
+              <div style={{marginBottom: '20px'}}>
+                <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333'}}>
+                  ZIP File *
+                </label>
+                <input
+                  type="file"
+                  required
+                  accept=".zip"
+                  onChange={(e) => setUploadForm({...uploadForm, zipFile: e.target.files[0]})}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+                <small style={{color: '#666', fontSize: '12px', marginTop: '5px', display: 'block'}}>
+                  Upload supporting documents as a ZIP file
+                </small>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px',
+                paddingTop: '20px',
+                borderTop: '1px solid #eee'
+              }}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowUploadModal(false)}
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  style={{
+                    padding: '10px 20px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Upload Documents
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Report Upload Modal */}
+      {showReportUploadModal && (
+        <div 
+          style={{
+            position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
@@ -763,7 +960,7 @@ const DocumentManagement = () => {
               padding: '20px 20px 10px 20px',
               borderBottom: '1px solid #eee'
             }}>
-              <h3 style={{margin: 0, color: '#333'}}>ðŸ“„ Upload Report</h3>
+              <h3 style={{margin: 0, color: '#333'}}>📄 Upload Report</h3>
               <button 
                 onClick={() => setShowReportUploadModal(false)}
                 style={{
@@ -779,7 +976,7 @@ const DocumentManagement = () => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
-              >Ã—</button>
+              >×</button>
             </div>
             
             <form onSubmit={handleReportUpload} style={{padding: '20px'}}>
@@ -878,7 +1075,7 @@ const DocumentManagement = () => {
               padding: '20px 20px 10px 20px',
               borderBottom: '1px solid #eee'
             }}>
-              <h3 style={{margin: 0, color: '#333'}}>ðŸ“¦ Upload ZIP File</h3>
+              <h3 style={{margin: 0, color: '#333'}}>📦 Upload ZIP File</h3>
               <button 
                 onClick={() => setShowZipUploadModal(false)}
                 style={{
@@ -894,7 +1091,7 @@ const DocumentManagement = () => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
-              >Ã—</button>
+              >×</button>
             </div>
             
             <form onSubmit={handleZipUpload} style={{padding: '20px'}}>
