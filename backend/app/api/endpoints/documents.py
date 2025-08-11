@@ -19,7 +19,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 class EventDocumentResponse(BaseModel):
     id: int
     event_id: int
-    doc_type: str
+    doc_type: str  # This will be mapped from document_type
     filename: str
     file_path: str
     uploaded_at: datetime
