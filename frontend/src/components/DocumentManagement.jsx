@@ -202,9 +202,21 @@ const DocumentManagement = () => {
     try {
       const formData = new FormData();
       formData.append('report', reportUploadForm.reportFile);
-      // Add a dummy ZIP file to satisfy the backend requirement
-      const dummyZip = new File([''], 'dummy.zip', { type: 'application/zip' });
-      formData.append('zipfile', dummyZip);
+      
+      // Check if ZIP file already exists for this event
+      const eventDocs = documents.filter(doc => doc.event_id === reportUploadForm.event_id);
+      const existingZipDoc = eventDocs.find(doc => doc.doc_type === 'zipfile' && doc.status !== 'deleted');
+      
+      if (existingZipDoc) {
+        // Use existing ZIP file - create a reference/dummy that won't be processed
+        const dummyZip = new File(['existing'], 'existing.zip', { type: 'application/zip' });
+        formData.append('zipfile', dummyZip);
+        formData.append('preserve_existing_zip', 'true'); // Signal to backend
+      } else {
+        // Add a minimal dummy ZIP file with clear name
+        const dummyZip = new File(['placeholder'], 'no-zip-uploaded.zip', { type: 'application/zip' });
+        formData.append('zipfile', dummyZip);
+      }
 
       await Api.post(`/documents/upload/${reportUploadForm.event_id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -237,9 +249,22 @@ const DocumentManagement = () => {
 
     try {
       const formData = new FormData();
-      // Add a dummy report file to satisfy the backend requirement
-      const dummyReport = new File([''], 'dummy.pdf', { type: 'application/pdf' });
-      formData.append('report', dummyReport);
+      
+      // Check if Report file already exists for this event
+      const eventDocs = documents.filter(doc => doc.event_id === zipUploadForm.event_id);
+      const existingReportDoc = eventDocs.find(doc => doc.doc_type === 'report' && doc.status !== 'deleted');
+      
+      if (existingReportDoc) {
+        // Use existing Report file - create a reference/dummy that won't be processed
+        const dummyReport = new File(['existing'], 'existing.pdf', { type: 'application/pdf' });
+        formData.append('report', dummyReport);
+        formData.append('preserve_existing_report', 'true'); // Signal to backend
+      } else {
+        // Add a minimal dummy report file with clear name
+        const dummyReport = new File(['placeholder'], 'no-report-uploaded.pdf', { type: 'application/pdf' });
+        formData.append('report', dummyReport);
+      }
+      
       formData.append('zipfile', zipUploadForm.zipFile);
 
       await Api.post(`/documents/upload/${zipUploadForm.event_id}`, formData, {
@@ -511,7 +536,7 @@ const DocumentManagement = () => {
                           {/* Report Actions */}
                           <div className="doc-actions-inline">
                             {/* HoD Upload Report button */}
-                            {userRole === 'hod' && (!reportDoc || reportDoc.status === 'rejected') && (
+                            {userRole === 'hod' && (!reportDoc || reportDoc.status === 'rejected' || reportDoc.status === 'deleted') && (
                               <button
                                 className="action-btn-compact upload"
                                 onClick={() => {
@@ -677,7 +702,7 @@ const DocumentManagement = () => {
                           {/* ZIP Actions */}
                           <div className="doc-actions-inline">
                             {/* HoD Upload ZIP button */}
-                            {userRole === 'hod' && (!zipDoc || zipDoc.status === 'rejected') && (
+                            {userRole === 'hod' && (!zipDoc || zipDoc.status === 'rejected' || zipDoc.status === 'deleted') && (
                               <button
                                 className="action-btn-compact upload"
                                 onClick={() => {

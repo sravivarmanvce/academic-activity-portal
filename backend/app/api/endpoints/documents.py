@@ -33,71 +33,102 @@ def upload_event_documents(
     event_id: int, 
     report: UploadFile = File(...), 
     zipfile: UploadFile = File(...), 
+    preserve_existing_report: str = Form(None),
+    preserve_existing_zip: str = Form(None),
     db: Session = Depends(get_db),
     current_user_id: int = Depends(get_current_user_id)
 ):
-    """Upload both report (PDF/DOC/DOCX) and zip file for an event"""
+    """Upload report and/or zip file for an event (can be individual uploads)"""
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Validate report file type
-    allowed_report_types = ['.pdf', '.doc', '.docx']
-    report_extension = os.path.splitext(report.filename.lower())[1] if report.filename else ''
-    if report_extension not in allowed_report_types:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Invalid report file type. Allowed: PDF, DOC, DOCX. Got: {report_extension}"
-        )
+    result = {"message": "Documents uploaded successfully"}
     
-    # Validate ZIP file type
-    zip_extension = os.path.splitext(zipfile.filename.lower())[1] if zipfile.filename else ''
-    if zip_extension != '.zip':
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid archive file type. Only ZIP files are allowed. Got: {zip_extension}"
-        )
+    # Check if report is a real file (not placeholder)
+    is_real_report = not (report.filename and ('dummy' in report.filename.lower() or 'placeholder' in report.filename.lower() or 'no-report-uploaded' in report.filename.lower() or 'existing' in report.filename.lower()))
+    
+    # Check if zip is a real file (not placeholder)  
+    is_real_zip = not (zipfile.filename and ('dummy' in zipfile.filename.lower() or 'placeholder' in zipfile.filename.lower() or 'no-zip-uploaded' in zipfile.filename.lower() or 'existing' in zipfile.filename.lower()))
+    
+    if is_real_report:
+        # Validate report file type
+        allowed_report_types = ['.pdf', '.doc', '.docx']
+        report_extension = os.path.splitext(report.filename.lower())[1] if report.filename else ''
+        if report_extension not in allowed_report_types:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid report file type. Allowed: PDF, DOC, DOCX. Got: {report_extension}"
+            )
+    
+    if is_real_zip:
+        # Validate ZIP file type
+        zip_extension = os.path.splitext(zipfile.filename.lower())[1] if zipfile.filename else ''
+        if zip_extension != '.zip':
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid archive file type. Only ZIP files are allowed. Got: {zip_extension}"
+            )
     
     try:
-        # Save report (PDF, DOC, or DOCX)
-        report_filename = f"event_{event_id}_report_{report.filename}"
-        report_path = os.path.join(UPLOAD_DIR, report_filename)
-        with open(report_path, "wb") as f:
-            f.write(report.file.read())
+        uploaded_files = []
         
-        report_doc = save_event_document(
-            db=db, 
-            event_id=event_id, 
-            doc_type="report", 
-            filename=report_filename, 
-            file_path=report_path,
-            file_size=report.size or 0,
-            mime_type=report.content_type,
-            uploaded_by=current_user_id
-        )
+        # Only process real report files
+        if is_real_report:
+            # Save report (PDF, DOC, or DOCX)
+            report_filename = f"event_{event_id}_report_{report.filename}"
+            report_path = os.path.join(UPLOAD_DIR, report_filename)
+            with open(report_path, "wb") as f:
+                f.write(report.file.read())
+            
+            report_doc = save_event_document(
+                db=db, 
+                event_id=event_id, 
+                doc_type="report", 
+                filename=report_filename, 
+                file_path=report_path,
+                file_size=report.size or 0,
+                mime_type=report.content_type,
+                uploaded_by=current_user_id
+            )
+            uploaded_files.append({
+                "type": "report",
+                "document_id": report_doc.id,
+                "filename": report_filename
+            })
         
-        # Save zip file
-        zip_filename = f"event_{event_id}_files_{zipfile.filename}"
-        zip_path = os.path.join(UPLOAD_DIR, zip_filename)
-        with open(zip_path, "wb") as f:
-            f.write(zipfile.file.read())
+        # Only process real zip files
+        if is_real_zip:
+            # Save zip file
+            zip_filename = f"event_{event_id}_files_{zipfile.filename}"
+            zip_path = os.path.join(UPLOAD_DIR, zip_filename)
+            with open(zip_path, "wb") as f:
+                f.write(zipfile.file.read())
+            
+            zip_doc = save_event_document(
+                db=db,
+                event_id=event_id,
+                doc_type="zip",
+                filename=zip_filename,
+                file_path=zip_path,
+                file_size=zipfile.size or 0,
+                mime_type=zipfile.content_type,
+                uploaded_by=current_user_id
+            )
+            uploaded_files.append({
+                "type": "zip",
+                "document_id": zip_doc.id,
+                "filename": zip_filename
+            })
         
-        zip_doc = save_event_document(
-            db=db,
-            event_id=event_id,
-            doc_type="zip",
-            filename=zip_filename,
-            file_path=zip_path,
-            file_size=zipfile.size or 0,
-            mime_type=zipfile.content_type,
-            uploaded_by=current_user_id
-        )
+        if not uploaded_files:
+            raise HTTPException(status_code=400, detail="No valid files to upload")
         
         return {
-            "message": "Documents uploaded successfully",
-            "report_document_id": report_doc.id,
-            "zip_document_id": zip_doc.id,
-            "report_type": report_extension.upper()
+            "message": f"Successfully uploaded {len(uploaded_files)} document(s)",
+            "uploaded_files": uploaded_files,
+            "report_uploaded": is_real_report,
+            "zip_uploaded": is_real_zip
         }
         
     except Exception as e:
