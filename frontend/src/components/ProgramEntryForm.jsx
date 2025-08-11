@@ -35,7 +35,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   // Event planning states
   const [programEvents, setProgramEvents] = useState({});
   const [eventsSaving, setEventsSaving] = useState({}); // Changed to object to track saving state per program
-  const [eventsDocuments, setEventsDocuments] = useState({}); // Store document information by event database ID
   
   // Real-time data sync states
   const [isPolling, setIsPolling] = useState(false);
@@ -48,6 +47,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Documents state
+  const [eventDocuments, setEventDocuments] = useState([]);
 
   const printRef = useRef();
   const refreshDataRef = useRef();
@@ -166,8 +168,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   budget_amount: existingEvent.budget_amount || (program.budget_mode === 'Fixed' ? program.budget_per_event : Math.round(totalBudget / count)),
                   coordinator_name: existingEvent.coordinator_name || '',
                   coordinator_contact: existingEvent.coordinator_contact || '',
-                  status: 'completed', // Mark as completed since it's saved in DB
-                  database_id: existingEvent.id // Store database ID for document fetching
+                  status: 'completed' // Mark as completed since it's saved in DB
                 });
               } else {
                 // Create new empty event
@@ -179,8 +180,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   budget_amount: program.budget_mode === 'Fixed' ? program.budget_per_event : Math.round(totalBudget / count),
                   coordinator_name: '',
                   coordinator_contact: '',
-                  status: 'pending',
-                  database_id: null
+                  status: 'pending'
                 });
               }
             }
@@ -355,7 +355,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         principalRes,
         hodRes,
         eventsRes,
-        statusRes
+        statusRes,
+        documentsRes
       ] = await Promise.all([
         API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
@@ -366,7 +367,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         API.get(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
         API.get(`/workflow-status?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
-          .catch(() => ({ data: { status: 'draft' } }))
+          .catch(() => ({ data: { status: 'draft' } })),
+        API.get(`/documents/list`)
+          .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err)))
       ]);
 
       // Check for changes to show notification
@@ -500,8 +503,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
               if (existingEvent) {
                 // Use saved event data
                 events.push({
-                  id: `${programKey}_${i + 1}`,
-                  database_id: existingEvent.id, // Store database ID for document fetching
+                  id: existingEvent.id, // Use actual database ID
                   eventNumber: i + 1,
                   title: existingEvent.title || '',
                   event_date: existingEvent.event_date || '',
@@ -515,7 +517,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                 const totalBudget = countsRes.data.find(c => c.program_type === program.program_type)?.total_budget || 0;
                 events.push({
                   id: `${programKey}_${i + 1}`,
-                  database_id: null, // No database ID yet for new events
                   eventNumber: i + 1,
                   title: '',
                   event_date: '',
@@ -537,39 +538,11 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         });
         
         setProgramEvents(eventsByProgram);
-        
-        // Fetch documents for updated events
-        setTimeout(() => {
-          if (Object.keys(eventsByProgram).length > 0) {
-            // Use the new eventsByProgram data directly instead of relying on state update
-            const documentPromises = [];
-            Object.values(eventsByProgram).forEach(program => {
-              program.events.forEach(event => {
-                if (event.database_id) {
-                  documentPromises.push(
-                    API.get(`/documents/event/${event.database_id}`)
-                      .then(response => ({ eventId: event.database_id, documents: response.data }))
-                      .catch(error => {
-                        console.error(`Failed to fetch documents for event ${event.database_id}:`, error);
-                        return { eventId: event.database_id, documents: [] };
-                      })
-                  );
-                }
-              });
-            });
-            
-            if (documentPromises.length > 0) {
-              Promise.all(documentPromises).then(results => {
-                const documentsMap = {};
-                results.forEach(result => {
-                  documentsMap[result.eventId] = result.documents;
-                });
-                setEventsDocuments(documentsMap);
-              });
-            }
-          }
-        }, 500); // Small delay to ensure events are processed
       }
+
+      // Update documents
+      const documents = documentsRes.data || [];
+      setEventDocuments(Array.isArray(documents) ? documents : []);
 
       setLastUpdateTime(new Date());
       
@@ -627,51 +600,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
-
-  // Function to fetch documents for all events
-  const fetchEventsDocuments = useCallback(async () => {
-    if (Object.keys(programEvents).length === 0) return;
-    
-    try {
-      const documentPromises = [];
-      const eventIds = [];
-      
-      // Collect all database event IDs
-      Object.values(programEvents).forEach(program => {
-        program.events.forEach(event => {
-          if (event.database_id) {
-            eventIds.push(event.database_id);
-            documentPromises.push(
-              API.get(`/documents/event/${event.database_id}`)
-                .then(response => ({ eventId: event.database_id, documents: response.data }))
-                .catch(error => {
-                  console.error(`Failed to fetch documents for event ${event.database_id}:`, error);
-                  return { eventId: event.database_id, documents: [] };
-                })
-            );
-          }
-        });
-      });
-      
-      if (documentPromises.length > 0) {
-        const results = await Promise.all(documentPromises);
-        const documentsMap = {};
-        
-        results.forEach(result => {
-          documentsMap[result.eventId] = result.documents;
-        });
-        
-        setEventsDocuments(documentsMap);
-      }
-    } catch (error) {
-      console.error('Error fetching events documents:', error);
-    }
-  }, [programEvents]);
-
-  // Fetch documents when programEvents change
-  useEffect(() => {
-    fetchEventsDocuments();
-  }, [fetchEventsDocuments]);
 
   const handleChange = (index, field, value) => {
     setMergedData((prev) => {
@@ -1351,15 +1279,14 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       
       alert(`Successfully saved ${program.totalCount} events for ${program.programInfo.program_type}!`);
       
-      // Mark as completed and update with database IDs
+      // Mark as completed
       const updatedProgramEvents = {
         ...programEvents,
         [programKey]: {
           ...programEvents[programKey],
-          events: programEvents[programKey].events.map((event, index) => ({
+          events: programEvents[programKey].events.map(event => ({
             ...event,
-            status: 'completed',
-            database_id: results[index]?.data?.id || null // Store database ID for document fetching
+            status: 'completed'
           }))
         }
       };
@@ -1369,11 +1296,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       // Clear unsaved changes after successful save
       const hasUnsaved = checkForUnsavedEventChanges(updatedProgramEvents);
       setHasUnsavedChanges(hasUnsaved);
-      
-      // Refresh document information after successful save
-      setTimeout(() => {
-        fetchEventsDocuments();
-      }, 1000); // Small delay to ensure documents are processed
       
       // Note: Removed automatic status update - now manual submission required
       
@@ -1433,44 +1355,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     
     
     return allProgramsCompleted;
-  };
-
-  // Helper function to get document status for an event
-  const getEventDocumentStatus = (eventDatabaseId) => {
-    if (!eventDatabaseId || !eventsDocuments[eventDatabaseId]) {
-      return { report: 'Not available', zipfile: 'Not available' };
-    }
-    
-    const documents = eventsDocuments[eventDatabaseId];
-    const reportDoc = documents.find(doc => doc.doc_type === 'report');
-    const zipDoc = documents.find(doc => doc.doc_type === 'zipfile');
-    
-    return {
-      report: reportDoc ? `${reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}` : 'Not available',
-      zipfile: zipDoc ? `${zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}` : 'Not available'
-    };
-  };
-
-  // Function to handle document downloads
-  const handleDownloadDocument = async (documentId, originalFilename) => {
-    try {
-      const response = await API.get(`/documents/download/${documentId}`, {
-        responseType: 'blob'
-      });
-      
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', originalFilename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading document:', error);
-      alert('Failed to download document. Please try again.');
-    }
   };
 
   // Helper function to calculate event completion progress
@@ -2416,58 +2300,58 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                   
                                   {/* Documents */}
                                   <td>
-                                    {(() => {
-                                      const docStatus = getEventDocumentStatus(event.database_id);
-                                      const documents = eventsDocuments[event.database_id] || [];
-                                      const reportDoc = documents.find(doc => doc.doc_type === 'report');
-                                      const zipDoc = documents.find(doc => doc.doc_type === 'zipfile');
-                                      
-                                      return (
-                                        <div className="d-flex gap-1 flex-wrap align-items-center">
-                                          <div className="d-flex align-items-center gap-1">
-                                            <small className="text-muted">Report:</small>
-                                            {reportDoc && reportDoc.status === 'approved' ? (
-                                              <button
-                                                className="btn btn-outline-success btn-sm px-2 py-0"
-                                                style={{ fontSize: '0.75rem', lineHeight: '1.2' }}
-                                                onClick={() => handleDownloadDocument(reportDoc.id, reportDoc.filename)}
-                                                title={`Download ${reportDoc.filename}`}
-                                              >
-                                                <i className="fas fa-download me-1"></i>
-                                                PDF
-                                              </button>
-                                            ) : (
-                                              <span className={`small ${docStatus.report === 'Not available' ? 'text-muted' : 
-                                                docStatus.report === 'Pending' ? 'text-warning fw-bold' : 
-                                                docStatus.report === 'Rejected' ? 'text-danger fw-bold' : 'text-info fw-bold'}`}>
-                                                {docStatus.report}
-                                              </span>
-                                            )}
-                                          </div>
-                                          <br />
-                                          <div className="d-flex align-items-center gap-1">
-                                            <small className="text-muted">ZIP:</small>
-                                            {zipDoc && zipDoc.status === 'approved' ? (
-                                              <button
-                                                className="btn btn-outline-primary btn-sm px-2 py-0"
-                                                style={{ fontSize: '0.75rem', lineHeight: '1.2' }}
-                                                onClick={() => handleDownloadDocument(zipDoc.id, zipDoc.filename)}
-                                                title={`Download ${zipDoc.filename}`}
-                                              >
-                                                <i className="fas fa-download me-1"></i>
-                                                ZIP
-                                              </button>
-                                            ) : (
-                                              <span className={`small ${docStatus.zipfile === 'Not available' ? 'text-muted' : 
-                                                docStatus.zipfile === 'Pending' ? 'text-warning fw-bold' : 
-                                                docStatus.zipfile === 'Rejected' ? 'text-danger fw-bold' : 'text-info fw-bold'}`}>
-                                                {docStatus.zipfile}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      );
-                                    })()}
+                                    <div className="d-flex gap-1 flex-wrap">
+                                      {(() => {
+                                        // Ensure eventDocuments is always an array
+                                        if (!Array.isArray(eventDocuments)) {
+                                          return (
+                                            <>
+                                              <span className="text-muted small">Report: Not available</span>
+                                              <br />
+                                              <span className="text-muted small">ZIP: Not available</span>
+                                            </>
+                                          );
+                                        }
+
+                                        // Find documents for this event
+                                        const eventDocs = eventDocuments.filter(doc => 
+                                          doc.event_id && doc.event_id === event.id
+                                        );
+                                        
+                                        const reportDoc = eventDocs.find(doc => doc.doc_type === 'report');
+                                        const zipDoc = eventDocs.find(doc => doc.doc_type === 'zipfile');
+                                        
+                                        return (
+                                          <>
+                                            <span className="text-muted small">
+                                              Report: {reportDoc ? (
+                                                <a 
+                                                  href={`/api/documents/download/${reportDoc.id}`} 
+                                                  target="_blank" 
+                                                  rel="noopener noreferrer"
+                                                  className="text-primary"
+                                                >
+                                                  {reportDoc.original_filename || reportDoc.filename}
+                                                </a>
+                                              ) : 'Not available'}
+                                            </span>
+                                            <br />
+                                            <span className="text-muted small">
+                                              ZIP: {zipDoc ? (
+                                                <a 
+                                                  href={`/api/documents/download/${zipDoc.id}`} 
+                                                  target="_blank" 
+                                                  rel="noopener noreferrer"
+                                                  className="text-primary"
+                                                >
+                                                  {zipDoc.original_filename || zipDoc.filename}
+                                                </a>
+                                              ) : 'Not available'}
+                                            </span>
+                                          </>
+                                        );
+                                      })()}
+                                    </div>
                                   </td>
                                 </tr>
                                 );

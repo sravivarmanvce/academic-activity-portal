@@ -519,8 +519,25 @@ const DocumentManagement = () => {
                                   setShowReportUploadModal(true);
                                 }}
                                 title="Upload Report"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#28a745',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                               >
                                 <Upload size={12} />
+                                <span>Upload</span>
                               </button>
                             )}
                             
@@ -530,8 +547,25 @@ const DocumentManagement = () => {
                                 className="action-btn-compact delete"
                                 onClick={() => handleDelete(reportDoc.id)}
                                 title="Delete Report"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#dc3545',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                               >
                                 🗑️
+                                <span>Delete</span>
                               </button>
                             )}
                             
@@ -541,8 +575,25 @@ const DocumentManagement = () => {
                                 className="action-btn-compact download"
                                 onClick={() => handleDownload(reportDoc.id, reportDoc.filename, reportDoc.event_id, reportDoc.doc_type)}
                                 title={`Download: ${reportDoc.filename}`}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#007bff',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
                               >
                                 <Download size={12} />
+                                <span>Download</span>
                               </button>
                             )}
                             
@@ -553,15 +604,50 @@ const DocumentManagement = () => {
                                   className="action-btn-compact approve"
                                   onClick={() => handleApprove(reportDoc.id)}
                                   title="Approve Report"
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '6px 12px',
+                                    backgroundColor: '#28a745',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    marginRight: '4px'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                                 >
                                   <CheckCircle size={12} />
+                                  <span>Approve</span>
                                 </button>
                                 <button
                                   className="action-btn-compact reject"
                                   onClick={() => handleReject(reportDoc.id)}
                                   title="Reject Report"
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '6px 12px',
+                                    backgroundColor: '#dc3545',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                                 >
                                   <XCircle size={12} />
+                                  <span>Reject</span>
                                 </button>
                               </>
                             )}
@@ -599,8 +685,25 @@ const DocumentManagement = () => {
                                   setShowZipUploadModal(true);
                                 }}
                                 title="Upload ZIP"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#28a745',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                               >
                                 <Upload size={12} />
+                                <span>Upload</span>
                               </button>
                             )}
                             
@@ -610,8 +713,25 @@ const DocumentManagement = () => {
                                 className="action-btn-compact delete"
                                 onClick={() => handleDelete(zipDoc.id)}
                                 title="Delete ZIP"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#dc3545',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                               >
                                 🗑️
+                                <span>Delete</span>
                               </button>
                             )}
                             
@@ -621,8 +741,25 @@ const DocumentManagement = () => {
                                 className="action-btn-compact download"
                                 onClick={() => handleDownload(zipDoc.id, zipDoc.filename, zipDoc.event_id, zipDoc.doc_type)}
                                 title={`Download: ${zipDoc.filename}`}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#007bff',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
                               >
                                 <Download size={12} />
+                                <span>Download</span>
                               </button>
                             )}
                             
@@ -633,15 +770,50 @@ const DocumentManagement = () => {
                                   className="action-btn-compact approve"
                                   onClick={() => handleApprove(zipDoc.id)}
                                   title="Approve ZIP"
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '6px 12px',
+                                    backgroundColor: '#28a745',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    marginRight: '4px'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                                 >
                                   <CheckCircle size={12} />
+                                  <span>Approve</span>
                                 </button>
                                 <button
                                   className="action-btn-compact reject"
                                   onClick={() => handleReject(zipDoc.id)}
                                   title="Reject ZIP"
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '6px 12px',
+                                    backgroundColor: '#dc3545',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
+                                  onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                                 >
                                   <XCircle size={12} />
+                                  <span>Reject</span>
                                 </button>
                               </>
                             )}
