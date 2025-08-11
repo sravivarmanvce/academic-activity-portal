@@ -35,6 +35,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   // Event planning states
   const [programEvents, setProgramEvents] = useState({});
   const [eventsSaving, setEventsSaving] = useState({}); // Changed to object to track saving state per program
+  const [eventsDocuments, setEventsDocuments] = useState({}); // Store document information by event database ID
   
   // Real-time data sync states
   const [isPolling, setIsPolling] = useState(false);
@@ -165,7 +166,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   budget_amount: existingEvent.budget_amount || (program.budget_mode === 'Fixed' ? program.budget_per_event : Math.round(totalBudget / count)),
                   coordinator_name: existingEvent.coordinator_name || '',
                   coordinator_contact: existingEvent.coordinator_contact || '',
-                  status: 'completed' // Mark as completed since it's saved in DB
+                  status: 'completed', // Mark as completed since it's saved in DB
+                  database_id: existingEvent.id // Store database ID for document fetching
                 });
               } else {
                 // Create new empty event
@@ -177,7 +179,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                   budget_amount: program.budget_mode === 'Fixed' ? program.budget_per_event : Math.round(totalBudget / count),
                   coordinator_name: '',
                   coordinator_contact: '',
-                  status: 'pending'
+                  status: 'pending',
+                  database_id: null
                 });
               }
             }
@@ -532,6 +535,38 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         });
         
         setProgramEvents(eventsByProgram);
+        
+        // Fetch documents for updated events
+        setTimeout(() => {
+          if (Object.keys(eventsByProgram).length > 0) {
+            // Use the new eventsByProgram data directly instead of relying on state update
+            const documentPromises = [];
+            Object.values(eventsByProgram).forEach(program => {
+              program.events.forEach(event => {
+                if (event.database_id) {
+                  documentPromises.push(
+                    API.get(`/documents/event/${event.database_id}`)
+                      .then(response => ({ eventId: event.database_id, documents: response.data }))
+                      .catch(error => {
+                        console.error(`Failed to fetch documents for event ${event.database_id}:`, error);
+                        return { eventId: event.database_id, documents: [] };
+                      })
+                  );
+                }
+              });
+            });
+            
+            if (documentPromises.length > 0) {
+              Promise.all(documentPromises).then(results => {
+                const documentsMap = {};
+                results.forEach(result => {
+                  documentsMap[result.eventId] = result.documents;
+                });
+                setEventsDocuments(documentsMap);
+              });
+            }
+          }
+        }, 500); // Small delay to ensure events are processed
       }
 
       setLastUpdateTime(new Date());
@@ -590,6 +625,51 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
+
+  // Function to fetch documents for all events
+  const fetchEventsDocuments = useCallback(async () => {
+    if (Object.keys(programEvents).length === 0) return;
+    
+    try {
+      const documentPromises = [];
+      const eventIds = [];
+      
+      // Collect all database event IDs
+      Object.values(programEvents).forEach(program => {
+        program.events.forEach(event => {
+          if (event.database_id) {
+            eventIds.push(event.database_id);
+            documentPromises.push(
+              API.get(`/documents/event/${event.database_id}`)
+                .then(response => ({ eventId: event.database_id, documents: response.data }))
+                .catch(error => {
+                  console.error(`Failed to fetch documents for event ${event.database_id}:`, error);
+                  return { eventId: event.database_id, documents: [] };
+                })
+            );
+          }
+        });
+      });
+      
+      if (documentPromises.length > 0) {
+        const results = await Promise.all(documentPromises);
+        const documentsMap = {};
+        
+        results.forEach(result => {
+          documentsMap[result.eventId] = result.documents;
+        });
+        
+        setEventsDocuments(documentsMap);
+      }
+    } catch (error) {
+      console.error('Error fetching events documents:', error);
+    }
+  }, [programEvents]);
+
+  // Fetch documents when programEvents change
+  useEffect(() => {
+    fetchEventsDocuments();
+  }, [fetchEventsDocuments]);
 
   const handleChange = (index, field, value) => {
     setMergedData((prev) => {
@@ -1269,14 +1349,15 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       
       alert(`Successfully saved ${program.totalCount} events for ${program.programInfo.program_type}!`);
       
-      // Mark as completed
+      // Mark as completed and update with database IDs
       const updatedProgramEvents = {
         ...programEvents,
         [programKey]: {
           ...programEvents[programKey],
-          events: programEvents[programKey].events.map(event => ({
+          events: programEvents[programKey].events.map((event, index) => ({
             ...event,
-            status: 'completed'
+            status: 'completed',
+            database_id: results[index]?.data?.id || null // Store database ID for document fetching
           }))
         }
       };
@@ -1286,6 +1367,11 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       // Clear unsaved changes after successful save
       const hasUnsaved = checkForUnsavedEventChanges(updatedProgramEvents);
       setHasUnsavedChanges(hasUnsaved);
+      
+      // Refresh document information after successful save
+      setTimeout(() => {
+        fetchEventsDocuments();
+      }, 1000); // Small delay to ensure documents are processed
       
       // Note: Removed automatic status update - now manual submission required
       
@@ -1345,6 +1431,22 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     
     
     return allProgramsCompleted;
+  };
+
+  // Helper function to get document status for an event
+  const getEventDocumentStatus = (eventDatabaseId) => {
+    if (!eventDatabaseId || !eventsDocuments[eventDatabaseId]) {
+      return { report: 'Not available', zipfile: 'Not available' };
+    }
+    
+    const documents = eventsDocuments[eventDatabaseId];
+    const reportDoc = documents.find(doc => doc.doc_type === 'report');
+    const zipDoc = documents.find(doc => doc.doc_type === 'zipfile');
+    
+    return {
+      report: reportDoc ? `${reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}` : 'Not available',
+      zipfile: zipDoc ? `${zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}` : 'Not available'
+    };
   };
 
   // Helper function to calculate event completion progress
@@ -2290,11 +2392,26 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                   
                                   {/* Documents */}
                                   <td>
-                                    <div className="d-flex gap-1 flex-wrap">
-                                      <span className="text-muted small">Report: Not available</span>
-                                      <br />
-                                      <span className="text-muted small">ZIP: Not available</span>
-                                    </div>
+                                    {(() => {
+                                      const docStatus = getEventDocumentStatus(event.database_id);
+                                      return (
+                                        <div className="d-flex gap-1 flex-wrap">
+                                          <span className={`small ${docStatus.report === 'Not available' ? 'text-muted' : 
+                                            docStatus.report === 'Approved' ? 'text-success fw-bold' : 
+                                            docStatus.report === 'Pending' ? 'text-warning fw-bold' : 
+                                            docStatus.report === 'Rejected' ? 'text-danger fw-bold' : 'text-info fw-bold'}`}>
+                                            Report: {docStatus.report}
+                                          </span>
+                                          <br />
+                                          <span className={`small ${docStatus.zipfile === 'Not available' ? 'text-muted' : 
+                                            docStatus.zipfile === 'Approved' ? 'text-success fw-bold' : 
+                                            docStatus.zipfile === 'Pending' ? 'text-warning fw-bold' : 
+                                            docStatus.zipfile === 'Rejected' ? 'text-danger fw-bold' : 'text-info fw-bold'}`}>
+                                            ZIP: {docStatus.zipfile}
+                                          </span>
+                                        </div>
+                                      );
+                                    })()}
                                   </td>
                                 </tr>
                                 );

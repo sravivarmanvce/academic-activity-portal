@@ -134,6 +134,37 @@ def get_event_documents_list(db: Session = Depends(get_db)):
     
     return response_docs
 
+@router.get("/event/{event_id}")
+def get_documents_by_event(event_id: int, db: Session = Depends(get_db)):
+    """Get all documents for a specific event"""
+    documents = get_event_documents(db, event_id=event_id)
+    
+    # Convert to response format with doc_type mapping
+    response_docs = []
+    for doc in documents:
+        # Map document_type to doc_type for frontend compatibility
+        type_mapping = {
+            'complete_report': 'report',
+            'supporting_documents': 'zipfile'
+        }
+        doc_type = type_mapping.get(doc.document_type, doc.document_type)
+        
+        response_docs.append({
+            "id": doc.id,
+            "event_id": doc.event_id,
+            "doc_type": doc_type,
+            "document_type": doc.document_type,  # Include original field too
+            "filename": doc.filename,
+            "file_path": doc.file_path,
+            "uploaded_at": doc.uploaded_at,
+            "status": doc.status,
+            "approved_by": doc.approved_by,
+            "approved_at": doc.approved_at,
+            "rejection_reason": doc.rejection_reason
+        })
+    
+    return response_docs
+
 @router.post("/approve/{document_id}")
 def approve_event_document(
     document_id: int,
