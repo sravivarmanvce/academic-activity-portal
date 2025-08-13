@@ -268,7 +268,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             setCanEditEvents(true);
           } else if (userRole === 'principal') {
             // Principal can view events once approved, but cannot edit
-            if (status === 'approved' || status === 'events_submitted' || status === 'events_planned') {
+            if (status === 'approved' || status === 'events_submitted' || status === 'events_planned' || status === 'completed') {
               setCanPlanEvents(true);
               setCanEditEvents(false);
             }
@@ -279,7 +279,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
               setCanEditEvents(true);
               // Disable budget editing once approved
               setIsEditable(false);
-            } else if (status === 'events_submitted' || status === 'events_planned') {
+            } else if (status === 'events_submitted' || status === 'events_planned' || status === 'completed') {
               setCanPlanEvents(true);
               setCanEditEvents(false); // Read-only after submission
               setIsEditable(false); // Budget editing disabled
@@ -423,7 +423,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         setCanEditEvents(true);
         setIsEditable(true); // Admin can always edit
       } else if (userRole === 'principal') {
-        if (status === 'approved' || status === 'events_submitted' || status === 'events_planned') {
+        if (status === 'approved' || status === 'events_submitted' || status === 'events_planned' || status === 'completed') {
           setCanPlanEvents(true);
           setCanEditEvents(false);
         }
@@ -434,7 +434,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           setCanEditEvents(true);
           // Disable budget editing once approved
           setIsEditable(false);
-        } else if (status === 'events_submitted' || status === 'events_planned') {
+        } else if (status === 'events_submitted' || status === 'events_planned' || status === 'completed') {
           setCanPlanEvents(true);
           setCanEditEvents(false); // Read-only after submission
           setIsEditable(false); // Budget editing disabled
@@ -1318,41 +1318,30 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     return events;
   };
 
-  // Helper function to check event completion progress (removed auto-update)
+  // Helper function to check event completion progress (uses actual event status from backend)
   const checkEventCompletionProgress = () => {
     const programsWithApprovedCounts = mergedData.filter(program => (program.count || 0) > 0);
     
     if (programsWithApprovedCounts.length === 0) {
-      
       return false;
     }
     
-    
-    
+    // Check if all events across all programs are marked as 'completed' (meaning they have approved documents)
     const allProgramsCompleted = programsWithApprovedCounts.every(program => {
       const programKey = `${program.program_type}_${program.sub_program_type || 'default'}`;
       const programEventData = programEvents[programKey];
       
-      
-      
       if (!programEventData) {
-        
         return false;
       }
       
-      const allEventsCompleted = programEventData.events.every((event, index) => {
-        const hasTitle = event.title && event.title.trim() !== '';
-        const hasDate = event.event_date && event.event_date !== '';
-        const hasBudget = event.budget_amount && parseFloat(event.budget_amount) > 0;
-        const isComplete = hasTitle && hasDate && hasBudget;
-        
-        return isComplete;
+      // Check if all events in this program have status 'completed' (set by backend when documents are approved)
+      const allEventsCompleted = programEventData.events.every((event) => {
+        return event.status === 'completed';
       });
-      
       
       return allEventsCompleted;
     });
-    
     
     return allProgramsCompleted;
   };
@@ -1375,10 +1364,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       if (programEventData) {
         totalEvents += programEventData.events.length;
         
+        // Count events that have status 'completed' (set by backend when documents are approved)
         const completed = programEventData.events.filter(event => {
-          return event.title && event.title.trim() !== '' &&
-                 event.event_date && event.event_date !== '' &&
-                 event.budget_amount && parseFloat(event.budget_amount) > 0;
+          return event.status === 'completed';
         }).length;
         
         completedEvents += completed;
@@ -1717,7 +1705,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                 aria-selected={activeTab === 'events'}
                 onClick={() => canPlanEvents && handleTabSwitch('events')}
                 disabled={!canPlanEvents}
-                title={!canPlanEvents ? "Events planning available after budget approval" : (canEditEvents ? "Plan individual events" : "View individual events")}
+                title={!canPlanEvents ? "Events planning available after budget approval" : (canEditEvents ? "Plan individual events" : "View individual events (read-only)")}
               >
                 <i className="fas fa-calendar-plus"></i> {canEditEvents ? "Event Planning" : "Event Viewing"}
                 {!canPlanEvents && <small className="ms-1">(Locked)</small>}

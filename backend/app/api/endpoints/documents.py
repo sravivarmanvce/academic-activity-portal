@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
-from app.models import Event, Document
+from app.models import Event, Document, WorkflowStatus
 from app.services.document_service import save_event_document, get_event_documents, approve_document, reject_document
 from app.dependencies import get_current_user_role, get_current_user_id
 from pydantic import BaseModel
@@ -301,6 +301,32 @@ def delete_document(
     # Mark as deleted instead of actually deleting (for audit trail)
     document.status = 'deleted'
     document.updated_at = datetime.now()
+    
+    # If this document belongs to an event, revert all events in academic year to planned
+    if document.event_id:
+        event = db.query(Event).filter(Event.id == document.event_id).first()
+        if event and event.academic_year_id:
+            # Get all events in the same academic year that are completed
+            completed_events = db.query(Event).filter(
+                Event.academic_year_id == event.academic_year_id,
+                Event.event_status == 'completed'
+            ).all()
+            
+            # Revert all completed events to planned
+            for year_event in completed_events:
+                year_event.event_status = 'planned'
+                print(f"⚠️ Event {year_event.id} ({year_event.title}) status reverted to 'planned' - document deleted in academic year")
+            
+            # Also revert the workflow status if it was 'completed'
+            workflow_status = db.query(WorkflowStatus).filter(
+                WorkflowStatus.department_id == event.department_id,
+                WorkflowStatus.academic_year_id == event.academic_year_id
+            ).first()
+            
+            if workflow_status and workflow_status.status == 'completed':
+                workflow_status.status = 'events_planned'  # Revert to previous state
+                workflow_status.updated_at = datetime.now()
+                print(f"⚠️ Workflow status reverted to 'events_planned' for department {event.department_id}, academic year {event.academic_year_id} - document deleted")
     
     # Delete the actual file
     try:

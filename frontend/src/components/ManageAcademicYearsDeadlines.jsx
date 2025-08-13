@@ -75,17 +75,72 @@ const ManageAcademicYears = ({ userRole }) => {
     }
   };
 
+  const initializeDefaultDeadlines = async (yearId) => {
+    const defaultModules = [
+      "program_entry", // Budget Proposal for Student Activities
+      // Add other default modules here if needed
+    ];
+    
+    const defaultDeadline = moment().add(6, 'months').toISOString();
+    
+    for (const module of defaultModules) {
+      try {
+        await API.post("/module-deadlines", {
+          academic_year_id: yearId,
+          module: module,
+          deadline: defaultDeadline,
+        });
+        console.log(`Initialized default deadline for module: ${module} in year: ${yearId}`);
+      } catch (moduleErr) {
+        console.error(`Failed to initialize default deadline for module ${module}`, moduleErr);
+      }
+    }
+    
+    // Refresh deadlines for this year
+    fetchDeadlines(yearId);
+  };
+
   const addAcademicYear = async () => {
     if (!newYear.trim()) return;
     try {
-      await API.post("/academic-years", {
+      // Create the academic year
+      const response = await API.post("/academic-years", {
         year: newYear,
         is_enabled: true,
       });
+      
+      const newYearId = response.data.id;
+      console.log(`Created new academic year with ID: ${newYearId}`);
+      
+      // Create default module deadlines for the new academic year
+      const defaultModules = [
+        "program_entry", // Budget Proposal for Student Activities
+        // Add other default modules here if needed
+      ];
+      
+      // Create default deadline (e.g., end of the academic year)
+      const defaultDeadline = moment().add(6, 'months').toISOString(); // 6 months from now as default
+      
+      // Create module deadlines for each default module
+      for (const module of defaultModules) {
+        try {
+          console.log(`Creating default deadline for module: ${module}`);
+          await API.post("/module-deadlines", {
+            academic_year_id: newYearId,
+            module: module,
+            deadline: defaultDeadline,
+          });
+          console.log(`Successfully created deadline for module: ${module}`);
+        } catch (moduleErr) {
+          console.error(`Failed to create default deadline for module ${module}`, moduleErr);
+        }
+      }
+      
       setNewYear("");
-      fetchAcademicYears();
+      fetchAcademicYears(); // This will also fetch deadlines for all years including the new one
     } catch (err) {
       console.error("Failed to add academic year", err);
+      alert("Failed to add academic year. Please try again.");
     }
   };
 
@@ -196,76 +251,92 @@ const ManageAcademicYears = ({ userRole }) => {
           <Tab eventKey={year.id} title={year.year} key={year.id}>
 
             <div className="card p-3">
-              {(deadlines[year.id] || []).map((dl) => {
-                const deadlinePassed = isPast(dl.deadline);
-                const canEdit = userRole === "admin" || userRole === "principal";
+              {(deadlines[year.id] || []).length === 0 ? (
+                // Show message and initialize button when no deadlines exist
+                <div className="text-center py-4">
+                  <p className="text-muted mb-3">No module deadlines found for this academic year.</p>
+                  {(userRole === "admin" || userRole === "principal") && (
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={() => initializeDefaultDeadlines(year.id)}
+                    >
+                      Initialize Default Deadlines
+                    </button>
+                  )}
+                </div>
+              ) : (
+                // Show existing deadlines
+                (deadlines[year.id] || []).map((dl) => {
+                  const deadlinePassed = isPast(dl.deadline);
+                  const canEdit = userRole === "admin" || userRole === "principal";
 
-                const fieldKey = `${year.id}_${dl.module}`;
-                const isEditing = editingDeadlines[fieldKey] || false;
-                const tempDate = tempDeadlines[fieldKey] || moment(dl.deadline);
+                  const fieldKey = `${year.id}_${dl.module}`;
+                  const isEditing = editingDeadlines[fieldKey] || false;
+                  const tempDate = tempDeadlines[fieldKey] || moment(dl.deadline);
 
-                return (
-                  <div key={dl.module} className="mb-3 d-flex align-items-center gap-3 flex-wrap">
-                    <label className="mb-0 fw-semibold" style={{ minWidth: "160px" }}>
-                      {moduleDisplayNames[dl.module] || dl.module} Deadline:
-                    </label>
+                  return (
+                    <div key={dl.module} className="mb-3 d-flex align-items-center gap-3 flex-wrap">
+                      <label className="mb-0 fw-semibold" style={{ minWidth: "160px" }}>
+                        {moduleDisplayNames[dl.module] || dl.module} Deadline:
+                      </label>
 
-                    <div style={{ minWidth: "250px" }}>
-                      <Datetime
-                        value={tempDate}
-                        onChange={(date) => {
-                          if (isEditing) {
-                            setTempDeadlines((prev) => ({ ...prev, [fieldKey]: date }));
-                          }
-                        }}
-                        inputProps={{
-                          className: `form-control ${deadlinePassed ? "border-danger text-danger" : ""}`,
-                          disabled: !isEditing,
-                        }}
-                      />
-                    </div>
-
-                    {!isEditing && canEdit && (
-                      <button
-                        className="btn btn-outline-primary btn-sm"
-                        onClick={() => {
-                          setEditingDeadlines((prev) => ({ ...prev, [fieldKey]: true }));
-                          setTempDeadlines((prev) => ({ ...prev, [fieldKey]: moment(dl.deadline) }));
-                        }}
-                      >
-                        Edit
-                      </button>
-                    )}
-
-                    {isEditing && (
-                      <>
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={() => {
-                            updateDeadline(year.id, dl.module, tempDate.toISOString());
-                            setEditingDeadlines((prev) => ({ ...prev, [fieldKey]: false }));
+                      <div style={{ minWidth: "250px" }}>
+                        <Datetime
+                          value={tempDate}
+                          onChange={(date) => {
+                            if (isEditing) {
+                              setTempDeadlines((prev) => ({ ...prev, [fieldKey]: date }));
+                            }
                           }}
-                        >
-                          Save
-                        </button>
+                          inputProps={{
+                            className: `form-control ${deadlinePassed ? "border-danger text-danger" : ""}`,
+                            disabled: !isEditing,
+                          }}
+                        />
+                      </div>
+
+                      {!isEditing && canEdit && (
                         <button
-                          className="btn btn-secondary btn-sm"
+                          className="btn btn-outline-primary btn-sm"
                           onClick={() => {
-                            setEditingDeadlines((prev) => ({ ...prev, [fieldKey]: false }));
+                            setEditingDeadlines((prev) => ({ ...prev, [fieldKey]: true }));
                             setTempDeadlines((prev) => ({ ...prev, [fieldKey]: moment(dl.deadline) }));
                           }}
                         >
-                          Cancel
+                          Edit
                         </button>
-                      </>
-                    )}
+                      )}
 
-                    {!canEdit && deadlinePassed && (
-                      <small className="text-danger">Deadline has passed. Only Principal can extend.</small>
-                    )}
-                  </div>
-                );
-              })}
+                      {isEditing && (
+                        <>
+                          <button
+                            className="btn btn-success btn-sm"
+                            onClick={() => {
+                              updateDeadline(year.id, dl.module, tempDate.toISOString());
+                              setEditingDeadlines((prev) => ({ ...prev, [fieldKey]: false }));
+                            }}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => {
+                              setEditingDeadlines((prev) => ({ ...prev, [fieldKey]: false }));
+                              setTempDeadlines((prev) => ({ ...prev, [fieldKey]: moment(dl.deadline) }));
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      )}
+
+                      {!canEdit && deadlinePassed && (
+                        <small className="text-danger">Deadline has passed. Only Principal can extend.</small>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </Tab>
         ))}

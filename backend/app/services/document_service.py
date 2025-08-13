@@ -1,6 +1,6 @@
 # backend/app/services/document_service.py
 from sqlalchemy.orm import Session
-from app.models import Document, User, Event, Department, AcademicYear
+from app.models import Document, User, Event, Department, AcademicYear, WorkflowStatus
 from datetime import datetime
 import os
 
@@ -109,7 +109,7 @@ def get_event_documents(db: Session, event_id: int = None):
     return query.order_by(Document.uploaded_at.desc()).all()
 
 def approve_document(db: Session, document_id: int, approved_by: int):
-    """Approve a document"""
+    """Approve a document and update event status if all events in academic year have approved documents"""
     document = db.query(Document).filter(Document.id == document_id).first()
     if not document:
         raise ValueError(f"Document with ID {document_id} not found")
@@ -120,12 +120,79 @@ def approve_document(db: Session, document_id: int, approved_by: int):
     document.rejection_reason = None
     document.updated_at = datetime.now()
     
+    # Check if all events in the academic year have approved documents
+    if document.event_id:
+        event = db.query(Event).filter(Event.id == document.event_id).first()
+        if event and event.academic_year_id:
+            # Get all events in the same academic year
+            all_academic_year_events = db.query(Event).filter(
+                Event.academic_year_id == event.academic_year_id
+            ).all()
+            
+            all_events_completed = True
+            
+            for year_event in all_academic_year_events:
+                # Get all documents for this event (excluding deleted ones)
+                event_docs = db.query(Document).filter(
+                    Document.event_id == year_event.id,
+                    Document.status != 'deleted',
+                    Document.is_latest_version == True
+                ).all()
+                
+                # Check for required document types - BOTH are required for completion
+                required_types = ['complete_report', 'supporting_documents']
+                event_has_all_required = True
+                
+                # Each event MUST have both document types with approved status
+                for doc_type in required_types:
+                    type_docs = [doc for doc in event_docs if doc.document_type == doc_type]
+                    
+                    # Check if this document type exists AND is approved
+                    has_approved_doc_of_type = any(doc.status == 'approved' for doc in type_docs)
+                    
+                    if not has_approved_doc_of_type:
+                        event_has_all_required = False
+                        print(f"   ❌ Event {year_event.id} ({year_event.title}) missing approved {doc_type}")
+                        break
+                
+                if not event_has_all_required:
+                    all_events_completed = False
+                    break
+            
+            # Update all events in the academic year to 'completed' if all are ready
+            if all_events_completed:
+                for year_event in all_academic_year_events:
+                    if year_event.event_status != 'completed':
+                        year_event.event_status = 'completed'
+                        print(f"✅ Event {year_event.id} ({year_event.title}) status updated to 'completed' - all academic year events have approved documents")
+                
+                # Also update the workflow status to 'completed' for this department and academic year
+                workflow_status = db.query(WorkflowStatus).filter(
+                    WorkflowStatus.department_id == event.department_id,
+                    WorkflowStatus.academic_year_id == event.academic_year_id
+                ).first()
+                
+                if workflow_status and workflow_status.status != 'completed':
+                    workflow_status.status = 'completed'
+                    workflow_status.updated_at = datetime.now()
+                    print(f"🏆 Workflow status updated to 'completed' for department {event.department_id}, academic year {event.academic_year_id} - all events have approved documents")
+                elif not workflow_status:
+                    # Create workflow status if it doesn't exist
+                    workflow_status = WorkflowStatus(
+                        department_id=event.department_id,
+                        academic_year_id=event.academic_year_id,
+                        status='completed',
+                        updated_at=datetime.now()
+                    )
+                    db.add(workflow_status)
+                    print(f"🏆 Workflow status created as 'completed' for department {event.department_id}, academic year {event.academic_year_id} - all events have approved documents")
+    
     db.commit()
     db.refresh(document)
     return document
 
 def reject_document(db: Session, document_id: int, rejected_by: int, rejection_reason: str):
-    """Reject a document with reason"""
+    """Reject a document with reason and revert all events in academic year to planned if needed"""
     document = db.query(Document).filter(Document.id == document_id).first()
     if not document:
         raise ValueError(f"Document with ID {document_id} not found")
@@ -136,6 +203,32 @@ def reject_document(db: Session, document_id: int, rejected_by: int, rejection_r
     document.rejected_at = datetime.now()
     document.rejection_reason = rejection_reason
     document.updated_at = datetime.now()
+    
+    # If this document belongs to an event, revert all events in academic year to planned
+    if document.event_id:
+        event = db.query(Event).filter(Event.id == document.event_id).first()
+        if event and event.academic_year_id:
+            # Get all events in the same academic year that are completed
+            completed_events = db.query(Event).filter(
+                Event.academic_year_id == event.academic_year_id,
+                Event.event_status == 'completed'
+            ).all()
+            
+            # Revert all completed events to planned
+            for year_event in completed_events:
+                year_event.event_status = 'planned'
+                print(f"⚠️ Event {year_event.id} ({year_event.title}) status reverted to 'planned' - document rejected in academic year")
+            
+            # Also revert the workflow status if it was 'completed'
+            workflow_status = db.query(WorkflowStatus).filter(
+                WorkflowStatus.department_id == event.department_id,
+                WorkflowStatus.academic_year_id == event.academic_year_id
+            ).first()
+            
+            if workflow_status and workflow_status.status == 'completed':
+                workflow_status.status = 'events_planned'  # Revert to previous state
+                workflow_status.updated_at = datetime.now()
+                print(f"⚠️ Workflow status reverted to 'events_planned' for department {event.department_id}, academic year {event.academic_year_id} - document rejected")
     
     db.commit()
     db.refresh(document)
