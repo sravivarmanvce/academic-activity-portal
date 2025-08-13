@@ -538,11 +538,25 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         });
         
         setProgramEvents(eventsByProgram);
+        
+        // Update documents after events are loaded
+        const documents = documentsRes.data || [];
+        
+        // Filter documents for current department events
+        const currentEventIds = Object.values(eventsByProgram).flatMap(program => 
+          program.events.map(event => event.id).filter(id => id != null)
+        );
+        
+        const filteredDocuments = documents.filter(doc => 
+          doc.event_id && currentEventIds.includes(doc.event_id)
+        );
+        
+        setEventDocuments(filteredDocuments);
+      } else {
+        // No events loaded, use all documents
+        const documents = documentsRes.data || [];
+        setEventDocuments(documents);
       }
-
-      // Update documents
-      const documents = documentsRes.data || [];
-      setEventDocuments(Array.isArray(documents) ? documents : []);
 
       setLastUpdateTime(new Date());
       
@@ -831,6 +845,26 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       { key: 'completed', label: 'Completed', icon: 'fas fa-trophy', desc: 'All events executed' }
     ];
 
+    // Check if all events have BOTH documents approved (not just status completed)
+    const allEventsDocumentsApproved = Object.values(programEvents).every(program => 
+      program.events.every(event => {
+        if (!Array.isArray(eventDocuments)) return false;
+        
+        const eventDocs = eventDocuments.filter(doc => 
+          doc.event_id && doc.event_id === event.id
+        );
+        
+        const reportDoc = eventDocs.find(doc => doc.document_type === 'complete_report');
+        const zipDoc = eventDocs.find(doc => doc.document_type === 'supporting_documents');
+        
+        return reportDoc && reportDoc.status === 'approved' && 
+               zipDoc && zipDoc.status === 'approved';
+      })
+    );
+
+    // Override status if all events have approved documents
+    const displayStatus = allEventsDocumentsApproved && Object.keys(programEvents).length > 0 ? 'completed' : status;
+
     const getCurrentStepIndex = () => {
       // Map actual status to display status for visual flow
       const statusMapping = {
@@ -842,7 +876,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         'completed': 3        // Show all as completed (green)
       };
       
-      return statusMapping[status] !== undefined ? statusMapping[status] : -1;
+      return statusMapping[displayStatus] !== undefined ? statusMapping[displayStatus] : -1;
     };
 
     const currentIndex = getCurrentStepIndex();
@@ -2153,27 +2187,91 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                             </small>
                           </div>
                           <div>
-                            {program.events.every(e => e.status === 'completed') ? (
-                              <span className="badge bg-success">
-                                <i className="fas fa-check"></i> Events Planned
-                              </span>
-                            ) : canEditEvents ? (
-                              <button
-                                className="btn btn-success btn-sm"
-                                onClick={() => handleSaveProgramEvents(programKey)}
-                                disabled={eventsSaving[programKey]}
-                              >
-                                {eventsSaving[programKey] ? (
-                                  <><i className="fas fa-spinner fa-spin"></i> Saving...</>
-                                ) : (
-                                  <><i className="fas fa-save"></i> Save All Events</>
-                                )}
-                              </button>
-                            ) : (
-                              <span className="badge bg-info">
-                                <i className="fas fa-eye"></i> View Only
-                              </span>
-                            )}
+                            {(() => {
+                              // Check if ALL events in this program have BOTH documents approved
+                              const allEventsHaveApprovedDocuments = program.events.every(event => {
+                                if (!Array.isArray(eventDocuments)) return false;
+                                
+                                const eventDocs = eventDocuments.filter(doc => 
+                                  doc.event_id && doc.event_id === event.id
+                                );
+                                
+                                const reportDoc = eventDocs.find(doc => doc.document_type === 'complete_report');
+                                const zipDoc = eventDocs.find(doc => doc.document_type === 'supporting_documents');
+                                
+                                return reportDoc && reportDoc.status === 'approved' && 
+                                       zipDoc && zipDoc.status === 'approved';
+                              });
+
+                              if (allEventsHaveApprovedDocuments && program.events.length > 0) {
+                                return (
+                                  <div className="d-flex gap-2 align-items-center">
+                                    <span className="badge bg-success">
+                                      <i className="fas fa-trophy"></i> Events Completed
+                                    </span>
+                                    {/* Download buttons for completed events */}
+                                    <div className="btn-group" role="group">
+                                      <button
+                                        className="btn btn-sm btn-outline-primary"
+                                        onClick={() => {
+                                          // Download all reports for this program
+                                          program.events.forEach(event => {
+                                            const eventDocs = eventDocuments.filter(doc => 
+                                              doc.event_id && doc.event_id === event.id
+                                            );
+                                            const reportDoc = eventDocs.find(doc => doc.document_type === 'complete_report');
+                                            if (reportDoc && reportDoc.status === 'approved') {
+                                              window.open(`/api/documents/download/${reportDoc.id}`, '_blank');
+                                            }
+                                          });
+                                        }}
+                                        title="Download all reports for this program"
+                                      >
+                                        <i className="fas fa-file-alt"></i> Reports
+                                      </button>
+                                      <button
+                                        className="btn btn-sm btn-outline-success"
+                                        onClick={() => {
+                                          // Download all ZIP files for this program
+                                          program.events.forEach(event => {
+                                            const eventDocs = eventDocuments.filter(doc => 
+                                              doc.event_id && doc.event_id === event.id
+                                            );
+                                            const zipDoc = eventDocs.find(doc => doc.document_type === 'supporting_documents');
+                                            if (zipDoc && zipDoc.status === 'approved') {
+                                              window.open(`/api/documents/download/${zipDoc.id}`, '_blank');
+                                            }
+                                          });
+                                        }}
+                                        title="Download all supporting documents for this program"
+                                      >
+                                        <i className="fas fa-file-archive"></i> ZIP Files
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              } else if (canEditEvents) {
+                                return (
+                                  <button
+                                    className="btn btn-success btn-sm"
+                                    onClick={() => handleSaveProgramEvents(programKey)}
+                                    disabled={eventsSaving[programKey]}
+                                  >
+                                    {eventsSaving[programKey] ? (
+                                      <><i className="fas fa-spinner fa-spin"></i> Saving...</>
+                                    ) : (
+                                      <><i className="fas fa-save"></i> Save All Events</>
+                                    )}
+                                  </button>
+                                );
+                              } else {
+                                return (
+                                  <span className="badge bg-info">
+                                    <i className="fas fa-eye"></i> View Only
+                                  </span>
+                                );
+                              }
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -2294,9 +2392,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                         if (!Array.isArray(eventDocuments)) {
                                           return (
                                             <>
-                                              <span className="text-muted small">Report: Not available</span>
-                                              <br />
-                                              <span className="text-muted small">ZIP: Not available</span>
+                                              <div className="text-muted small">Report: <span className="text-warning">Not uploaded</span></div>
+                                              <div className="text-muted small">ZIP: <span className="text-warning">Not uploaded</span></div>
                                             </>
                                           );
                                         }
@@ -2306,36 +2403,54 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                           doc.event_id && doc.event_id === event.id
                                         );
                                         
-                                        const reportDoc = eventDocs.find(doc => doc.doc_type === 'report');
-                                        const zipDoc = eventDocs.find(doc => doc.doc_type === 'zipfile');
+                                        const reportDoc = eventDocs.find(doc => doc.document_type === 'complete_report');
+                                        const zipDoc = eventDocs.find(doc => doc.document_type === 'supporting_documents');
+                                        
+                                        const renderDocumentStatus = (doc, type) => {
+                                          if (!doc) {
+                                            return <span className="text-warning">Not uploaded</span>;
+                                          }
+                                          
+                                          switch (doc.status) {
+                                            case 'approved':
+                                              return (
+                                                <div className="d-flex align-items-center gap-2">
+                                                  <span className="text-success">✓ Approved</span>
+                                                  <a 
+                                                    href={`/api/documents/download/${doc.id}`} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="btn btn-sm btn-outline-primary"
+                                                    title={`Download ${doc.original_filename || doc.filename}`}
+                                                  >
+                                                    <i className="fas fa-download"></i> Download
+                                                  </a>
+                                                </div>
+                                              );
+                                            case 'pending':
+                                              return <span className="text-info">📋 Pending Review</span>;
+                                            case 'rejected':
+                                              return <span className="text-danger">❌ Rejected</span>;
+                                            default:
+                                              return <span className="text-muted">Unknown Status</span>;
+                                          }
+                                        };
                                         
                                         return (
                                           <>
-                                            <span className="text-muted small">
-                                              Report: {reportDoc ? (
-                                                <a 
-                                                  href={`/api/documents/download/${reportDoc.id}`} 
-                                                  target="_blank" 
-                                                  rel="noopener noreferrer"
-                                                  className="text-primary"
-                                                >
-                                                  {reportDoc.original_filename || reportDoc.filename}
-                                                </a>
-                                              ) : 'Not available'}
-                                            </span>
-                                            <br />
-                                            <span className="text-muted small">
-                                              ZIP: {zipDoc ? (
-                                                <a 
-                                                  href={`/api/documents/download/${zipDoc.id}`} 
-                                                  target="_blank" 
-                                                  rel="noopener noreferrer"
-                                                  className="text-primary"
-                                                >
-                                                  {zipDoc.original_filename || zipDoc.filename}
-                                                </a>
-                                              ) : 'Not available'}
-                                            </span>
+                                            <div className="text-muted small d-flex justify-content-between align-items-center mb-1">
+                                              <span>Report:</span>
+                                              {renderDocumentStatus(reportDoc, 'report')}
+                                            </div>
+                                            <div className="text-muted small d-flex justify-content-between align-items-center">
+                                              <span>ZIP:</span>
+                                              {renderDocumentStatus(zipDoc, 'zip')}
+                                            </div>
+                                            {!reportDoc && !zipDoc && (
+                                              <div className="text-info small mt-1">
+                                                <i className="fas fa-info-circle"></i> Upload & approve both files to complete event
+                                              </div>
+                                            )}
                                           </>
                                         );
                                       })()}
