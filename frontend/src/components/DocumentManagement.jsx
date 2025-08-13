@@ -445,7 +445,8 @@ const DocumentManagement = () => {
                                 {reportDoc.status === 'pending' && <AlertCircle size={12} />}
                                 {reportDoc.status === 'approved' && <CheckCircle size={12} />}
                                 {reportDoc.status === 'rejected' && <XCircle size={12} />}
-                                {reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}
+                                {reportDoc.status === 'deleted' && <XCircle size={12} />}
+                                {reportDoc.status === 'deleted' ? 'Deleted by HoD' : reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}
                               </span>
                             ) : (
                               <span className="status-badge status-not-uploaded">Not uploaded</span>
@@ -611,7 +612,8 @@ const DocumentManagement = () => {
                                 {zipDoc.status === 'pending' && <AlertCircle size={12} />}
                                 {zipDoc.status === 'approved' && <CheckCircle size={12} />}
                                 {zipDoc.status === 'rejected' && <XCircle size={12} />}
-                                {zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}
+                                {zipDoc.status === 'deleted' && <XCircle size={12} />}
+                                {zipDoc.status === 'deleted' ? 'Deleted by HoD' : zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}
                               </span>
                             ) : (
                               <span className="status-badge status-not-uploaded">Not uploaded</span>
