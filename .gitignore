@@ -1,4 +1,5 @@
 venv
+documents
 node_modules
 build
 dist
