@@ -47,7 +47,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   // Documents state
   const [eventDocuments, setEventDocuments] = useState([]);
 
@@ -586,6 +586,19 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   useEffect(() => {
     refreshDataRef.current = refreshData;
   }, [refreshData]);
+
+  // Call refreshData when academic year changes to load documents
+  useEffect(() => {
+    // Only call refreshData if we have the basic data loaded (after initial fetchAll)
+    if (departmentId && selectedAcademicYearId && mergedData.length > 0) {
+      // Small delay to ensure initial data is loaded first
+      const timer = setTimeout(() => {
+        refreshDataRef.current();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [selectedAcademicYearId, departmentId, mergedData.length]);
 
   // Check event completion status whenever programEvents changes
   useEffect(() => {
@@ -2209,45 +2222,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                     <span className="badge bg-success">
                                       <i className="fas fa-trophy"></i> Events Completed
                                     </span>
-                                    {/* Download buttons for completed events */}
-                                    <div className="btn-group" role="group">
-                                      <button
-                                        className="btn btn-sm btn-outline-primary"
-                                        onClick={() => {
-                                          // Download all reports for this program
-                                          program.events.forEach(event => {
-                                            const eventDocs = eventDocuments.filter(doc => 
-                                              doc.event_id && doc.event_id === event.id
-                                            );
-                                            const reportDoc = eventDocs.find(doc => doc.document_type === 'complete_report');
-                                            if (reportDoc && reportDoc.status === 'approved') {
-                                              window.open(`/api/documents/download/${reportDoc.id}`, '_blank');
-                                            }
-                                          });
-                                        }}
-                                        title="Download all reports for this program"
-                                      >
-                                        <i className="fas fa-file-alt"></i> Reports
-                                      </button>
-                                      <button
-                                        className="btn btn-sm btn-outline-success"
-                                        onClick={() => {
-                                          // Download all ZIP files for this program
-                                          program.events.forEach(event => {
-                                            const eventDocs = eventDocuments.filter(doc => 
-                                              doc.event_id && doc.event_id === event.id
-                                            );
-                                            const zipDoc = eventDocs.find(doc => doc.document_type === 'supporting_documents');
-                                            if (zipDoc && zipDoc.status === 'approved') {
-                                              window.open(`/api/documents/download/${zipDoc.id}`, '_blank');
-                                            }
-                                          });
-                                        }}
-                                        title="Download all supporting documents for this program"
-                                      >
-                                        <i className="fas fa-file-archive"></i> ZIP Files
-                                      </button>
-                                    </div>
                                   </div>
                                 );
                               } else if (canEditEvents) {
@@ -2392,8 +2366,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                         if (!Array.isArray(eventDocuments)) {
                                           return (
                                             <>
-                                              <div className="text-muted small">Report: <span className="text-warning">Not uploaded</span></div>
-                                              <div className="text-muted small">ZIP: <span className="text-warning">Not uploaded</span></div>
+                                              <div className="text-muted small">Report: <span className="text-danger">Not uploaded</span></div>
+                                              <div className="text-muted small">ZIP: <span className="text-danger">Not uploaded</span></div>
                                             </>
                                           );
                                         }
@@ -2406,31 +2380,49 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                         const reportDoc = eventDocs.find(doc => doc.document_type === 'complete_report');
                                         const zipDoc = eventDocs.find(doc => doc.document_type === 'supporting_documents');
                                         
+                                        const handleDocumentDownload = async (documentId, filename) => {
+                                          try {
+                                            const response = await API.get(`/documents/download/${documentId}`, {
+                                              responseType: 'blob'
+                                            });
+                                            
+                                            const url = window.URL.createObjectURL(new Blob([response.data]));
+                                            const link = document.createElement('a');
+                                            link.href = url;
+                                            link.setAttribute('download', filename);
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            link.remove();
+                                            window.URL.revokeObjectURL(url);
+                                          } catch (error) {
+                                            console.error('Error downloading document:', error);
+                                            alert('Failed to download document');
+                                          }
+                                        };
+                                        
                                         const renderDocumentStatus = (doc, type) => {
                                           if (!doc) {
-                                            return <span className="text-warning">Not uploaded</span>;
+                                            return <span className="text-danger">Not uploaded</span>;
                                           }
                                           
                                           switch (doc.status) {
                                             case 'approved':
                                               return (
                                                 <div className="d-flex align-items-center gap-2">
-                                                  <span className="text-success">✓ Approved</span>
-                                                  <a 
-                                                    href={`/api/documents/download/${doc.id}`} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer"
+                                                  <span className="text-success">Approved</span>
+                                                  <button
+                                                    onClick={() => handleDocumentDownload(doc.id, doc.original_filename || doc.filename)}
                                                     className="btn btn-sm btn-outline-primary"
                                                     title={`Download ${doc.original_filename || doc.filename}`}
                                                   >
-                                                    <i className="fas fa-download"></i> Download
-                                                  </a>
+                                                    <i className="fas fa-download"></i> DL
+                                                  </button>
                                                 </div>
                                               );
                                             case 'pending':
-                                              return <span className="text-info">📋 Pending Review</span>;
+                                              return <span className="text-info">Pending Review</span>;
                                             case 'rejected':
-                                              return <span className="text-danger">❌ Rejected</span>;
+                                              return <span className="text-danger">Rejected</span>;
                                             default:
                                               return <span className="text-muted">Unknown Status</span>;
                                           }
@@ -2439,18 +2431,13 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                         return (
                                           <>
                                             <div className="text-muted small d-flex justify-content-between align-items-center mb-1">
-                                              <span>Report:</span>
+                                              <span>Report:&nbsp;</span>
                                               {renderDocumentStatus(reportDoc, 'report')}
                                             </div>
                                             <div className="text-muted small d-flex justify-content-between align-items-center">
-                                              <span>ZIP:</span>
+                                              <span>ZIP:&nbsp;</span>
                                               {renderDocumentStatus(zipDoc, 'zip')}
                                             </div>
-                                            {!reportDoc && !zipDoc && (
-                                              <div className="text-info small mt-1">
-                                                <i className="fas fa-info-circle"></i> Upload & approve both files to complete event
-                                              </div>
-                                            )}
                                           </>
                                         );
                                       })()}
