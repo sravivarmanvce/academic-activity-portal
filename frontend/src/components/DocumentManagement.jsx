@@ -52,6 +52,34 @@ const DocumentManagement = () => {
   const userRole = user?.role;
   const userDepartmentId = user?.department_id; // Assuming HoD has department_id in user data
 
+  // Helper function to format document status with timestamp
+  const formatDocumentStatus = (doc) => {
+    const formatTimestamp = (timestamp) => {
+      if (!timestamp) return '';
+      return ' ' + new Date(timestamp).toLocaleString('en-IN', {
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    };
+
+    switch (doc.status) {
+      case 'pending':
+        return `Pending from${formatTimestamp(doc.uploaded_at)}`;
+      case 'approved':
+        return `Approved on${formatTimestamp(doc.approved_at)}`;
+      case 'rejected':
+        return `Rejected on${formatTimestamp(doc.rejected_at)}`;
+      case 'deleted':
+        return `Deleted on${formatTimestamp(doc.updated_at)}`;
+      default:
+        return doc.status.charAt(0).toUpperCase() + doc.status.slice(1);
+    }
+  };
+
   // Common button style for uniform width
   const uniformButtonStyle = {
     display: 'flex',
@@ -784,7 +812,7 @@ const DocumentManagement = () => {
                                 {reportDoc.status === 'approved' && <CheckCircle size={12} />}
                                 {reportDoc.status === 'rejected' && <XCircle size={12} />}
                                 {reportDoc.status === 'deleted' && <XCircle size={12} />}
-                                {reportDoc.status === 'deleted' ? 'Deleted by HoD' : reportDoc.status.charAt(0).toUpperCase() + reportDoc.status.slice(1)}
+                                {formatDocumentStatus(reportDoc)}
                               </span>
                             ) : (
                               <span className="status-badge status-not-uploaded">Not uploaded</span>
@@ -818,12 +846,13 @@ const DocumentManagement = () => {
                               </button>
                             )}
                             
-                            {/* HoD Delete button for pending reports */}
-                            {userRole === 'hod' && reportDoc && reportDoc.status === 'pending' && (
+                            {/* HoD Delete button for pending reports, Admin can delete any status */}
+                            {((userRole === 'hod' && reportDoc && reportDoc.status === 'pending') || 
+                              (userRole === 'admin' && reportDoc && reportDoc.status !== 'deleted')) && (
                               <button
                                 className="action-btn-compact delete"
                                 onClick={() => handleDelete(reportDoc.id)}
-                                title="Delete Report"
+                                title={userRole === 'admin' ? "Delete Report (Admin)" : "Delete Report"}
                                 style={{
                                   ...uniformButtonStyle,
                                   backgroundColor: '#dc3545',
@@ -906,7 +935,7 @@ const DocumentManagement = () => {
                                 {zipDoc.status === 'approved' && <CheckCircle size={12} />}
                                 {zipDoc.status === 'rejected' && <XCircle size={12} />}
                                 {zipDoc.status === 'deleted' && <XCircle size={12} />}
-                                {zipDoc.status === 'deleted' ? 'Deleted by HoD' : zipDoc.status.charAt(0).toUpperCase() + zipDoc.status.slice(1)}
+                                {formatDocumentStatus(zipDoc)}
                               </span>
                             ) : (
                               <span className="status-badge status-not-uploaded">Not uploaded</span>
@@ -940,12 +969,13 @@ const DocumentManagement = () => {
                               </button>
                             )}
                             
-                            {/* HoD Delete button for pending ZIP files */}
-                            {userRole === 'hod' && zipDoc && zipDoc.status === 'pending' && (
+                            {/* HoD Delete button for pending ZIP files, Admin can delete any status */}
+                            {((userRole === 'hod' && zipDoc && zipDoc.status === 'pending') || 
+                              (userRole === 'admin' && zipDoc && zipDoc.status !== 'deleted')) && (
                               <button
                                 className="action-btn-compact delete"
                                 onClick={() => handleDelete(zipDoc.id)}
-                                title="Delete ZIP"
+                                title={userRole === 'admin' ? "Delete ZIP (Admin)" : "Delete ZIP"}
                                 style={{
                                   ...uniformButtonStyle,
                                   backgroundColor: '#dc3545',

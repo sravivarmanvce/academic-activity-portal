@@ -118,11 +118,11 @@ def update_event(
     db: Session = Depends(get_db),
     current_user_role: str = Depends(get_current_user_role)
 ):
-    """Update an existing event - Only HoDs can update events"""
+    """Update an existing event - Only HoDs and Admins can update events"""
     
-    # Only HoDs can update events
-    if current_user_role != "hod":
-        raise HTTPException(status_code=403, detail="Only HoDs can update events")
+    # Only HoDs and Admins can update events
+    if current_user_role not in ["hod", "admin"]:
+        raise HTTPException(status_code=403, detail="Only HoDs and Admins can update events")
     
     db_event = db.query(Event).filter(Event.id == event_id).first()
     if not db_event:
@@ -150,11 +150,11 @@ def delete_event(
     db: Session = Depends(get_db),
     current_user_role: str = Depends(get_current_user_role)
 ):
-    """Delete an event - Only HoDs can delete events"""
+    """Delete an event - Only HoDs and Admins can delete events"""
     
-    # Only HoDs can delete events
-    if current_user_role != "hod":
-        raise HTTPException(status_code=403, detail="Only HoDs can delete events")
+    # Only HoDs and Admins can delete events
+    if current_user_role not in ["hod", "admin"]:
+        raise HTTPException(status_code=403, detail="Only HoDs and Admins can delete events")
     
     db_event = db.query(Event).filter(Event.id == event_id).first()
     if not db_event:

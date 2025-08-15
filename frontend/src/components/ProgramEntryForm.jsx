@@ -48,6 +48,17 @@ function ProgramEntryForm({ academicYearId, userRole }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
+  
+  // Edit event modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [editEventData, setEditEventData] = useState({
+    title: '',
+    event_date: '',
+    budget_amount: '',
+    coordinator_name: '',
+    coordinator_contact: ''
+  });
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Documents state
@@ -1420,6 +1431,83 @@ function ProgramEntryForm({ academicYearId, userRole }) {
     }
   };
 
+  // Handle admin edit event
+  const handleAdminEditEvent = (programKey, eventIndex, event) => {
+    setEditingEvent({ programKey, eventIndex, eventId: event.id });
+    setEditEventData({
+      title: event.title || '',
+      event_date: event.event_date || '',
+      budget_amount: event.budget_amount || '',
+      coordinator_name: event.coordinator_name || '',
+      coordinator_contact: event.coordinator_contact || ''
+    });
+    setShowEditModal(true);
+  };
+
+  // Save edited event
+  const handleSaveEditedEvent = async () => {
+    if (!editingEvent) return;
+
+    try {
+      const { programKey, eventIndex, eventId } = editingEvent;
+
+      // Get the program info to extract required IDs
+      const program = programEvents[programKey];
+      if (!program) {
+        alert('Program information not found. Please try again.');
+        return;
+      }
+
+      // Prepare the event data with all required fields
+      const eventPayload = {
+        ...editEventData,
+        description: '', // Optional field - empty string as default
+        department_id: selectedDepartmentId,
+        academic_year_id: selectedAcademicYearId,
+        program_type_id: program.programInfo.id // Get from the program info
+      };
+
+      // Update event in backend if it has an ID
+      if (eventId) {
+        await API.put(`/events/${eventId}`, eventPayload);
+      }
+
+      // Update local state
+      setProgramEvents(prevEvents => {
+        const updatedEvents = { ...prevEvents };
+        const updatedProgram = { ...updatedEvents[programKey] };
+        const updatedEventList = [...updatedProgram.events];
+        
+        updatedEventList[eventIndex] = {
+          ...updatedEventList[eventIndex],
+          ...editEventData
+        };
+        
+        updatedProgram.events = updatedEventList;
+        updatedEvents[programKey] = updatedProgram;
+        return updatedEvents;
+      });
+
+      setShowEditModal(false);
+      setEditingEvent(null);
+      setEditEventData({
+        title: '',
+        event_date: '',
+        budget_amount: '',
+        coordinator_name: '',
+        coordinator_contact: ''
+      });
+
+      // Refresh data to sync with backend
+      await refreshDataRef.current();
+      
+      alert('Event updated successfully!');
+    } catch (error) {
+      console.error('Error updating event:', error);
+      alert('Failed to update event. Please try again.');
+    }
+  };
+
   const handleAdminDeleteDocument = async (documentId, documentType, eventId) => {
     if (!window.confirm(`Are you sure you want to delete this ${documentType} document? This action cannot be undone.`)) {
       return;
@@ -2604,11 +2692,11 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                                   {userRole === 'admin' && (
                                     <td className="text-center">
                                       <button
-                                        onClick={() => handleAdminDeleteEvent(event.id, programKey, eventIndex)}
-                                        className="btn btn-sm btn-outline-danger"
-                                        title="Delete Event (Admin)"
+                                        onClick={() => handleAdminEditEvent(programKey, eventIndex, event)}
+                                        className="btn btn-sm btn-outline-primary"
+                                        title="Edit Event (Admin)"
                                       >
-                                        <i className="fas fa-trash"></i>
+                                        <i className="fas fa-edit"></i>
                                       </button>
                                     </td>
                                   )}
@@ -2930,6 +3018,101 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                     onClick={confirmNavigationAndLoseChanges}
                   >
                     <i className="fas fa-trash-alt"></i> Discard Changes & Continue
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
+      )}
+
+      {/* Edit Event Modal */}
+      {showEditModal && (
+        <>
+          <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-lg">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    <i className="fas fa-edit me-2"></i>
+                    Edit Event
+                  </h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => setShowEditModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Event Title *</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editEventData.title}
+                        onChange={(e) => setEditEventData({...editEventData, title: e.target.value})}
+                        placeholder="Enter event title"
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Event Date *</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={editEventData.event_date}
+                        onChange={(e) => setEditEventData({...editEventData, event_date: e.target.value})}
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Budget Amount *</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={editEventData.budget_amount}
+                        onChange={(e) => setEditEventData({...editEventData, budget_amount: e.target.value})}
+                        placeholder="Enter budget amount"
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Coordinator Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editEventData.coordinator_name}
+                        onChange={(e) => setEditEventData({...editEventData, coordinator_name: e.target.value})}
+                        placeholder="Enter coordinator name (optional)"
+                      />
+                    </div>
+                    <div className="col-md-12 mb-3">
+                      <label className="form-label">Coordinator Contact</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editEventData.coordinator_contact}
+                        onChange={(e) => setEditEventData({...editEventData, coordinator_contact: e.target.value})}
+                        placeholder="Enter coordinator contact - phone/email (optional)"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-secondary"
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={handleSaveEditedEvent}
+                    disabled={!editEventData.title || !editEventData.event_date || !editEventData.budget_amount}
+                  >
+                    <i className="fas fa-save me-2"></i>
+                    Save Changes
                   </button>
                 </div>
               </div>

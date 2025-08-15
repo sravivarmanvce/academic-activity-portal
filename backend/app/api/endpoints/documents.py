@@ -23,9 +23,11 @@ class EventDocumentResponse(BaseModel):
     filename: str
     file_path: str
     uploaded_at: datetime
+    updated_at: datetime
     status: str
     approved_by: Optional[int]
     approved_at: Optional[datetime]
+    rejected_at: Optional[datetime]
     rejection_reason: Optional[str]
 
 @router.post("/upload/{event_id}")
@@ -157,9 +159,11 @@ def get_event_documents_list(db: Session = Depends(get_db)):
             "filename": doc.filename,
             "file_path": doc.file_path,
             "uploaded_at": doc.uploaded_at,
+            "updated_at": doc.updated_at,  # Add updated_at field
             "status": doc.status,
             "approved_by": doc.approved_by,
             "approved_at": doc.approved_at,
+            "rejected_at": doc.rejected_at,  # Add rejected_at field
             "rejection_reason": doc.rejection_reason
         })
     
@@ -286,17 +290,18 @@ def delete_document(
     current_user_role: str = Depends(get_current_user_role),
     current_user_id: int = Depends(get_current_user_id)
 ):
-    """Delete a document (HoD only, and only for pending documents)"""
-    if current_user_role != 'hod':
-        raise HTTPException(status_code=403, detail="Only HoDs can delete documents")
+    """Delete a document (HoD and Admin, with different permissions)"""
+    if current_user_role not in ['hod', 'admin']:
+        raise HTTPException(status_code=403, detail="Only HoDs and Admins can delete documents")
     
     document = db.query(Document).filter(Document.id == document_id).first()
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Only allow deletion of pending documents
-    if document.status != 'pending':
-        raise HTTPException(status_code=400, detail="Only pending documents can be deleted")
+    # HoDs can only delete pending documents, Admins can delete any status
+    if current_user_role == 'hod' and document.status != 'pending':
+        raise HTTPException(status_code=400, detail="HoDs can only delete pending documents")
+    # Admins can delete documents of any status (no restriction)
     
     # Mark as deleted instead of actually deleting (for audit trail)
     document.status = 'deleted'
