@@ -27,7 +27,7 @@ const ManageAcademicYears = ({ userRole }) => {
   const fetchAcademicYears = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/academic-years");
+      const res = await API.get("/api/academic-years");
       setAcademicYears(res.data);
       for (const year of res.data) {
         fetchDeadlines(year.id);
@@ -66,7 +66,7 @@ const ManageAcademicYears = ({ userRole }) => {
 
   const toggleEnabled = async (yearId, isEnabled) => {
     try {
-      await API.patch(`/academic-years/${yearId}`, {
+      await API.patch(`/api/academic-years/${yearId}`, {
         is_enabled: !isEnabled,
       });
       fetchAcademicYears();
@@ -104,7 +104,7 @@ const ManageAcademicYears = ({ userRole }) => {
     if (!newYear.trim()) return;
     try {
       // Create the academic year
-      const response = await API.post("/academic-years", {
+      const response = await API.post("/api/academic-years", {
         year: newYear,
         is_enabled: true,
       });
@@ -146,7 +146,7 @@ const ManageAcademicYears = ({ userRole }) => {
 
   const toggleEnableYear = async (id) => {
     try {
-      await API.patch(`/academic-years/${id}/toggle`);
+      await API.patch(`/api/academic-years/${id}/toggle`);
       fetchAcademicYears();
     } catch (err) {
       console.error("Failed to toggle academic year", err);
@@ -156,7 +156,7 @@ const ManageAcademicYears = ({ userRole }) => {
   const deleteAcademicYear = async (id) => {
     if (!window.confirm("Are you sure you want to delete this academic year?")) return;
     try {
-      await API.delete(`/academic-years/${id}`);
+      await API.delete(`/api/academic-years/${id}`);
       fetchAcademicYears();
     } catch (err) {
       console.error("Failed to delete academic year", err);

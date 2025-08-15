@@ -123,7 +123,7 @@ const DocumentManagement = () => {
 
   const loadAcademicYears = async () => {
     try {
-      const response = await Api.get('/academic-years');
+      const response = await Api.get('/api/academic-years');
       setAcademicYears(response.data);
     } catch (error) {
       console.error('Error loading academic years:', error);

@@ -16,7 +16,7 @@ function ProgramEntrySummary({ userRole }) {
   const [deadlineInfo, setDeadlineInfo] = useState(null);
 
   useEffect(() => {
-    API.get("/academic-years")
+    API.get("/api/academic-years")
       .then((res) => {
         setAcademicYears(res.data);
         if (res.data.length > 0) {

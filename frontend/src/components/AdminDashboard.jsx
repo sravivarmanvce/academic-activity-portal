@@ -25,7 +25,7 @@ const AdminDashboard = ({ userRole }) => {
   useEffect(() => {
     const loadAcademicYears = async () => {
       try {
-        const response = await API.get('/academic-years');
+        const response = await API.get('/api/academic-years');
         setAcademicYears(response.data);
         if (response.data.length > 0) {
           setSelectedAcademicYear(response.data[0].id);

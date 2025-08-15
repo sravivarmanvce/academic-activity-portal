@@ -44,15 +44,6 @@ class DepartmentOut(DepartmentBase):
 # Academic Year Schemas
 # -------------------------------
 
-class AcademicYearBase(BaseModel):
-    year: str
-
-class AcademicYearOut(AcademicYearBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
 class AcademicYearCreate(BaseModel):
     year: str
     is_enabled: bool
@@ -177,15 +168,6 @@ class HodRemarksOut(HodRemarksBase):
     class Config:
         from_attributes = True
 
-# -------------------------------
-class AcademicYearOut(BaseModel):
-    id: int
-    year: str
-    is_enabled: bool
-
-    class Config:
-        from_attributes = True  # Required for Pydantic v2
-        
 # -------------------------------
 # Module Deadline Schemas   
 # -------------------------------

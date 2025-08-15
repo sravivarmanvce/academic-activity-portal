@@ -15,7 +15,27 @@ API.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${msalToken}`;
   } else if (user?.role) {
     // Fallback to dummy token for development
-    const token = `${user.role}-token`;
+    let token = `${user.role}-token`;
+    
+    // For HOD users, create department-specific tokens
+    if (user.role === 'hod' && user.department_id) {
+      const deptMap = {
+        1: 'civ',
+        2: 'eee', 
+        3: 'mec',
+        4: 'ece',
+        5: 'cse',
+        6: 'inf',
+        7: 'csm',
+        8: 'csd',
+        9: 'mba'
+      };
+      const deptCode = deptMap[user.department_id];
+      if (deptCode) {
+        token = `hod-${deptCode}-token`;
+      }
+    }
+    
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

@@ -56,7 +56,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
   useEffect(() => {
     // Fetch academic years on mount
-    API.get("/academic-years")
+    API.get("/api/academic-years")
       .then((res) => {
         setAcademicYears(res.data);
         if (res.data.length > 0) {
@@ -88,7 +88,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
           API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
             .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
-          API.get("/academic-years"),
+          API.get("/api/academic-years"),
           API.get(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
             .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err)))
         ]);

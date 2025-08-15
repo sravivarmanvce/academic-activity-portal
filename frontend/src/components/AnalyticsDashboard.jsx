@@ -1,5 +1,5 @@
 // Enhanced Analytics Dashboard with Charts and Visual Progress Tracking
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -18,21 +18,54 @@ const AnalyticsDashboard = ({ userRole }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  
+  // Academic year filtering
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState('');
+  const [yearsLoading, setYearsLoading] = useState(true);
+
+  // Get user info from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userDepartmentId = user?.department_id;
+  const departmentName = user?.department_name || user?.department || '';
 
   // Color palette for charts
   const COLORS = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#ffecd2', '#fcb69f'];
 
-  const loadAnalyticsData = async () => {
+  // Load academic years for dropdown
+  const loadAcademicYears = useCallback(async () => {
+    setYearsLoading(true);
+    try {
+      const years = await analyticsService.getEnabledAcademicYears();
+      setAcademicYears(years);
+      
+      // Set the most recent year as default if none selected
+      if (years.length > 0 && !selectedAcademicYear) {
+        const currentYear = years.find(y => y.is_current) || years[years.length - 1];
+        setSelectedAcademicYear(currentYear.id.toString());
+      }
+    } catch (error) {
+      console.error('❌ Failed to load academic years:', error);
+    } finally {
+      setYearsLoading(false);
+    }
+  }, [selectedAcademicYear]);
+
+  const loadAnalyticsData = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
-      // Load all analytics data in parallel
+      // Convert selectedAcademicYear to number for API calls
+      const academicYearId = selectedAcademicYear ? parseInt(selectedAcademicYear) : null;
+      
+      // Load all analytics data in parallel with academic year filter
+      // Backend automatically filters by department for HOD users
       const [overview, budget, timeline, monthly] = await Promise.all([
-        analyticsService.getDashboardOverview(),
-        analyticsService.getBudgetByDepartment(),
-        analyticsService.getEventsTimeline(),
-        analyticsService.getMonthlyBudgetUtilization()
+        analyticsService.getDashboardOverview(academicYearId),
+        analyticsService.getBudgetByDepartment(academicYearId),
+        analyticsService.getEventsTimeline(academicYearId),
+        analyticsService.getMonthlyBudgetUtilization(academicYearId)
       ]);
 
       setDashboardData(overview);
@@ -45,22 +78,27 @@ const AnalyticsDashboard = ({ userRole }) => {
 
       // Load performance data for Principal
       if (userRole === 'principal') {
-        const performance = await analyticsService.getDepartmentPerformance();
+        const performance = await analyticsService.getDepartmentPerformance(academicYearId);
         setPerformanceData(performance);
       }
 
       setLastUpdated(new Date());
     } catch (err) {
       setError(err.message);
-      console.error('Failed to load analytics data:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedAcademicYear, userRole]);
 
   useEffect(() => {
-    loadAnalyticsData();
-  }, [userRole]);
+    loadAcademicYears();
+  }, [loadAcademicYears]);
+
+  useEffect(() => {
+    if (selectedAcademicYear !== '' && !yearsLoading) {
+      loadAnalyticsData();
+    }
+  }, [userRole, userDepartmentId, selectedAcademicYear, yearsLoading, loadAnalyticsData]);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-IN', { 
@@ -124,17 +162,44 @@ const AnalyticsDashboard = ({ userRole }) => {
         <div>
           <h1 className="analytics-title">📊 Analytics Dashboard</h1>
           <p className="analytics-subtitle">
-            {userRole === 'principal' ? 'Institution-wide' : 'Department'} insights and performance metrics
+            {userRole === 'principal' 
+              ? 'Institution-wide' 
+              : userRole === 'hod' 
+                ? `${departmentName} Department`
+                : 'Department'
+            } insights and performance metrics
             {lastUpdated && ` • Last updated: ${lastUpdated.toLocaleTimeString()}`}
           </p>
         </div>
-        <button 
-          onClick={loadAnalyticsData} 
-          className="refresh-button"
-          disabled={loading}
-        >
-          🔄 Refresh Data
-        </button>
+        <div className="analytics-controls">
+          {/* Academic Year Dropdown */}
+          <div className="academic-year-filter">
+            <label htmlFor="academic-year-select">📅 Academic Year:</label>
+            <select
+              id="academic-year-select"
+              value={selectedAcademicYear}
+              onChange={(e) => setSelectedAcademicYear(e.target.value)}
+              disabled={yearsLoading || loading}
+              className="academic-year-dropdown"
+            >
+              <option value="">All Years</option>
+              {academicYears.map(year => (
+                <option key={year.id} value={year.id}>
+                  {year.year}
+                  {year.is_current ? ' (Current)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <button 
+            onClick={loadAnalyticsData} 
+            className="refresh-button"
+            disabled={loading}
+          >
+            🔄 Refresh Data
+          </button>
+        </div>
       </div>
 
       {/* Key Metrics Cards */}
@@ -225,7 +290,7 @@ const AnalyticsDashboard = ({ userRole }) => {
       {/* Charts Grid */}
       <div className="charts-grid">
         {/* Budget Distribution Pie Chart */}
-        {budgetData.length > 0 && (
+        {budgetData.length > 0 ? (
           <div className="chart-card">
             <div className="chart-header">
               <h3 className="chart-title">💰 Budget Distribution</h3>
@@ -248,6 +313,17 @@ const AnalyticsDashboard = ({ userRole }) => {
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3 className="chart-title">💰 Budget Distribution</h3>
+              <p className="chart-subtitle">No budget data available</p>
+            </div>
+            <div style={{ padding: '40px', textAlign: 'center', color: '#7f8c8d' }}>
+              <p>📊 No budget data found for {userRole === 'hod' ? `${departmentName} department` : 'your department'}</p>
+              <p>Budget data will appear here once program counts and budgets are submitted.</p>
+            </div>
           </div>
         )}
 
@@ -299,12 +375,12 @@ const AnalyticsDashboard = ({ userRole }) => {
         )}
 
         {/* Events Timeline */}
-        {timelineData.length > 0 && (
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3 className="chart-title">📅 Upcoming Events</h3>
-              <p className="chart-subtitle">Next 3 months event schedule</p>
-            </div>
+        <div className="chart-card">
+          <div className="chart-header">
+            <h3 className="chart-title">📅 Upcoming Events</h3>
+            <p className="chart-subtitle">Next 3 months event schedule</p>
+          </div>
+          {timelineData.length > 0 ? (
             <div className="timeline-container">
               {timelineData.slice(0, 8).map((event, index) => (
                 <div key={index} className="timeline-item">
@@ -327,8 +403,13 @@ const AnalyticsDashboard = ({ userRole }) => {
                 </div>
               )}
             </div>
-          </div>
-        )}
+          ) : (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#7f8c8d' }}>
+              <p>📅 No upcoming events found</p>
+              <p>Events will appear here once they are planned and scheduled.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

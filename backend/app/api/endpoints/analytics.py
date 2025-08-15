@@ -120,7 +120,7 @@ async def get_budget_by_department(
     
     results = query.all()
     
-    return [
+    response_data = [
         {
             "name": result.name,
             "full_name": result.full_name,
@@ -129,6 +129,8 @@ async def get_budget_by_department(
         }
         for result in results
     ]
+    
+    return response_data
 
 @router.get("/analytics/events-timeline")
 async def get_events_timeline(

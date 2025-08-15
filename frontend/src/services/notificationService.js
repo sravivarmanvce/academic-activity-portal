@@ -141,7 +141,7 @@ class NotificationService {
       const department = deptResponse.data.find(d => d.id === departmentId);
       
       // Get academic year details
-      const yearResponse = await API.get('/academic-years');
+      const yearResponse = await API.get('/api/academic-years');
       const academicYear = yearResponse.data.find(y => y.id === academicYearId);
       
       if (!department || !academicYear) {

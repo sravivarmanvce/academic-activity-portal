@@ -35,7 +35,7 @@ app.add_middleware(
 # Include routers
 app.include_router(users.router)
 app.include_router(departments.router)
-app.include_router(academic_years.router)
+app.include_router(academic_years.router, prefix="/api", tags=["Academic Years"])
 app.include_router(deadlines.router)
 app.include_router(program_counts.router)
 app.include_router(program_types.router)
