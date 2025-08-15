@@ -4,7 +4,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "./ProgramEntryForm.css";
 
-function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
+function ProgramEntryForm({ academicYearId, userRole }) {
   const [mergedData, setMergedData] = useState([]);
   const [grouped, setGrouped] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -25,6 +25,8 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [academicYears, setAcademicYears] = useState([]);
   const [selectedAcademicYearId, setSelectedAcademicYearId] = useState("");
+  const [departments, setDepartments] = useState([]);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
   
   // New workflow states
   const [submissionStatus, setSubmissionStatus] = useState('draft'); // 'draft', 'submitted', 'approved', 'events_submitted', 'events_planned', 'completed'
@@ -55,19 +57,25 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   const refreshDataRef = useRef();
 
   useEffect(() => {
-    // Fetch academic years on mount
-    API.get("/api/academic-years")
-      .then((res) => {
-        setAcademicYears(res.data);
-        if (res.data.length > 0) {
-          setSelectedAcademicYearId(res.data[0].id);
-        }
-      })
-      .catch((err) => console.error("Failed to load academic years", err));
-  }, []);
+    // Fetch academic years and departments on mount
+    Promise.all([
+      API.get("/api/academic-years"),
+      API.get("/departments")
+    ]).then(([academicRes, deptRes]) => {
+      setAcademicYears(academicRes.data);
+      setDepartments(deptRes.data);
+      if (academicRes.data.length > 0 && !selectedAcademicYearId) {
+        setSelectedAcademicYearId(academicRes.data[0].id);
+      }
+      // Auto-select first department if none is selected
+      if (deptRes.data.length > 0 && !selectedDepartmentId) {
+        setSelectedDepartmentId(deptRes.data[0].id);
+      }
+    }).catch((err) => console.error("Failed to load initial data", err));
+  }, [selectedAcademicYearId, selectedDepartmentId]);
 
   useEffect(() => {
-    if (!departmentId || !selectedAcademicYearId) return;
+    if (!selectedDepartmentId || !selectedAcademicYearId) return;
 
     const fetchAll = async () => {
       try {
@@ -81,19 +89,19 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           eventsRes
         ] = await Promise.all([
           API.get("/program-types"),
-          API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+          API.get(`/program-counts?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
             .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
           API.get("/departments"),
-          API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+          API.get(`/principal-remarks?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
             .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
-          API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+          API.get(`/hod-remarks?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
             .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
           API.get("/api/academic-years"),
-          API.get(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+          API.get(`/events?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
             .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err)))
         ]);
 
-        const departmentObj = deptRes.data.find((d) => d.id === departmentId);
+        const departmentObj = deptRes.data.find((d) => d.id === selectedDepartmentId);
         if (departmentObj) {
           setDepartmentName(departmentObj.name || "");
           setDepartmentFullName(departmentObj.full_name || "");
@@ -228,7 +236,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
           let hasOverride = false;
           try {
             const overrideRes = await API.get(
-              `/deadline-override?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}&module_name=program_entry`
+              `/deadline-override?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}&module_name=program_entry`
             );
             hasOverride = overrideRes.data.has_override;
             setOverrideInfo(overrideRes.data); // Store override info including expiration
@@ -256,7 +264,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
         // 🔁 Fetch submission status
         try {
-          const statusRes = await API.get(`/workflow-status?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`);
+          const statusRes = await API.get(`/workflow-status?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`);
           setSubmissionStatus(statusRes.data.status || 'draft');
           
           // Update event planning permissions based on status and user role
@@ -306,7 +314,28 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     };
 
     fetchAll();
-  }, [departmentId, selectedAcademicYearId, userRole]);
+  }, [selectedDepartmentId, selectedAcademicYearId, userRole]);
+
+  // Update department name when selectedDepartmentId changes
+  useEffect(() => {
+    if (selectedDepartmentId && departments.length > 0) {
+      const dept = departments.find(d => d.id === selectedDepartmentId);
+      if (dept) {
+        setDepartmentName(dept.name || "");
+        setDepartmentFullName(dept.full_name || "");
+      }
+    }
+  }, [selectedDepartmentId, departments]);
+
+  // Update academic year name when selectedAcademicYearId changes
+  useEffect(() => {
+    if (selectedAcademicYearId && academicYears.length > 0) {
+      const year = academicYears.find(y => y.id === selectedAcademicYearId);
+      if (year) {
+        setSelectedAcademicYear(year.year || "");
+      }
+    }
+  }, [selectedAcademicYearId, academicYears]);
 
   // Update time remaining every minute for active overrides
   useEffect(() => {
@@ -346,7 +375,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
   // Real-time data synchronization
   const refreshData = useCallback(async () => {
-    if (!departmentId || !selectedAcademicYearId || isPolling) return;
+    if (!selectedDepartmentId || !selectedAcademicYearId || isPolling) return;
     
     setIsPolling(true);
     try {
@@ -358,15 +387,15 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         statusRes,
         documentsRes
       ] = await Promise.all([
-        API.get(`/program-counts?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+        API.get(`/program-counts?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
-        API.get(`/principal-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+        API.get(`/principal-remarks?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
-        API.get(`/hod-remarks?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+        API.get(`/hod-remarks?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch((err) => (err.response?.status === 404 ? { data: { remarks: "" } } : { data: { remarks: "" } })),
-        API.get(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+        API.get(`/events?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err))),
-        API.get(`/workflow-status?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`)
+        API.get(`/workflow-status?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`)
           .catch(() => ({ data: { status: 'draft' } })),
         API.get(`/documents/list`)
           .catch((err) => (err.response?.status === 404 ? { data: [] } : Promise.reject(err)))
@@ -572,7 +601,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       setIsPolling(false);
     }
   }, [
-    departmentId, 
+    selectedDepartmentId, 
     selectedAcademicYearId, 
     isPolling, 
     principalRemarks, 
@@ -592,7 +621,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   // Call refreshData when academic year changes to load documents
   useEffect(() => {
     // Only call refreshData if we have the basic data loaded (after initial fetchAll)
-    if (departmentId && selectedAcademicYearId && mergedData.length > 0) {
+    if (selectedDepartmentId && selectedAcademicYearId && mergedData.length > 0) {
       // Small delay to ensure initial data is loaded first
       const timer = setTimeout(() => {
         refreshDataRef.current();
@@ -600,7 +629,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       
       return () => clearTimeout(timer);
     }
-  }, [selectedAcademicYearId, departmentId, mergedData.length]);
+  }, [selectedAcademicYearId, selectedDepartmentId, mergedData.length]);
 
   // Check event completion status whenever programEvents changes
   useEffect(() => {
@@ -614,7 +643,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     // Auto-refresh is now disabled to prevent losing unsaved event planning data
     // Users can manually refresh using the refresh button
     return; // No auto-refresh
-  }, [departmentId, selectedAcademicYearId, userRole, submissionStatus]);
+  }, [selectedDepartmentId, selectedAcademicYearId, userRole, submissionStatus]);
 
   // Browser beforeunload warning for unsaved changes
   useEffect(() => {
@@ -669,7 +698,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
     try {
       const payload = mergedData.map((entry) => ({
-        department_id: departmentId,
+        department_id: selectedDepartmentId,
         academic_year_id: selectedAcademicYearId,
         program_type: entry.program_type,
         sub_program_type: entry.sub_program_type,
@@ -687,7 +716,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
       if (userRole === "hod") {
         await API.post("/hod-remarks", {
-          department_id: departmentId,
+          department_id: selectedDepartmentId,
           academic_year_id: selectedAcademicYearId,
           remarks: hodRemarks,
         });
@@ -695,7 +724,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
 
       if (userRole === "principal") {
         await API.post("/principal-remarks", {
-          department_id: departmentId,
+          department_id: selectedDepartmentId,
           academic_year_id: selectedAcademicYearId,
           remarks: principalRemarks,
         });
@@ -1020,7 +1049,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       // Update status to 'submitted'
       await API.put(`/workflow-status`, { 
         academic_year_id: selectedAcademicYearId,
-        department_id: departmentId,
+        department_id: selectedDepartmentId,
         status: 'submitted'
       });
       
@@ -1037,7 +1066,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       // Update status to 'approved'
       await API.put(`/workflow-status`, { 
         academic_year_id: selectedAcademicYearId,
-        department_id: departmentId,
+        department_id: selectedDepartmentId,
         status: 'approved'
       });
       
@@ -1093,7 +1122,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       // Update workflow status to 'events_submitted'
       await API.put(`/workflow-status`, { 
         academic_year_id: selectedAcademicYearId,
-        department_id: departmentId,
+        department_id: selectedDepartmentId,
         status: 'events_submitted'
       });
       
@@ -1110,7 +1139,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     try {
       await API.put(`/workflow-status`, { 
         academic_year_id: selectedAcademicYearId,
-        department_id: departmentId,
+        department_id: selectedDepartmentId,
         status: 'events_planned'
       });
       
@@ -1227,7 +1256,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     }
     
     // Check if we have required IDs
-    if (!departmentId || !selectedAcademicYearId) {
+    if (!selectedDepartmentId || !selectedAcademicYearId) {
       alert('Department or Academic Year information is missing');
       return false;
     }
@@ -1277,7 +1306,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         title: event.title,
         description: '', // Empty description since we removed the field
         program_type_id: correctProgramTypeId,
-        department_id: departmentId,
+        department_id: selectedDepartmentId,
         academic_year_id: selectedAcademicYearId,
         event_date: event.event_date,
         budget_amount: parseFloat(event.budget_amount),
@@ -1517,7 +1546,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     try {
       // Create a deadline override for this department with time limit
       await API.post('/deadline-override', {
-        department_id: departmentId,
+        department_id: selectedDepartmentId,
         academic_year_id: selectedAcademicYearId,
         module_name: 'program_entry',
         enabled_by_principal: true,
@@ -1613,13 +1642,27 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
             </label>
             <select
               className="form-select"
-              style={{ maxWidth: "200px" }}
+              style={{ maxWidth: "150px" }}
               value={selectedAcademicYearId}
               onChange={(e) => setSelectedAcademicYearId(Number(e.target.value))}
             >
-              <option value="">-- Select Academic Year --</option>
               {academicYears.map((year) => (
                 <option key={year.id} value={year.id}>{year.year}</option>
+              ))}
+            </select>
+            
+            <div className="vr mx-2"></div>
+            <label className="form-label mb-0 text-nowrap">
+              <strong><i className="fas fa-building"></i> Select Deptartment:</strong>
+            </label>
+            <select
+              className="form-select"
+              style={{ maxWidth: "150px" }}
+              value={selectedDepartmentId}
+              onChange={(e) => setSelectedDepartmentId(Number(e.target.value))}
+            >
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>
             
@@ -1628,16 +1671,16 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
               <strong><i className="fas fa-calendar-alt"></i> Submission Deadline:</strong>
             </label>
             <div className="fw-semibold text-primary">
-              {deadlineDisplay}
+              <div>{deadlineDisplay}</div>
               {overrideInfo && overrideInfo.has_override && overrideInfo.expires_at && (
-                <span className="text-warning ms-2">
+                <div className="text-warning">
                   <i className="fas fa-unlock"></i> Override Active{timeRemaining && `: ${timeRemaining}`}
-                </span>
+                </div>
               )}
               {overrideInfo && overrideInfo.expired && (
-                <span className="text-danger ms-2">
+                <div className="text-danger">
                   <i className="fas fa-clock"></i> Override Expired
-                </span>
+                </div>
               )}
             </div>
           </div>
@@ -2090,7 +2133,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                               
                               
                               // Delete all events for this department and academic year from database
-                              await API.delete(`/events?department_id=${departmentId}&academic_year_id=${selectedAcademicYearId}`);
+                              await API.delete(`/events?department_id=${selectedDepartmentId}&academic_year_id=${selectedAcademicYearId}`);
                               
                               
                               

@@ -19,8 +19,6 @@ import ProtectedRoute from "./ProtectedRoute";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [departments, setDepartments] = useState([]);
-  const [academicYears, setAcademicYears] = useState([]);
   const [selectedAcademicYearId, setSelectedAcademicYearId] = useState("");
 
   const navigate = useNavigate();
@@ -31,28 +29,10 @@ function App() {
     if (stored) setUser(JSON.parse(stored));
   }, []);
 
-  useEffect(() => {
-    if (user?.role === "principal" || user?.role === "admin") {
-      API.get("/departments")
-        .then((res) => setDepartments(res.data))
-        .catch((err) => console.error("Failed to load departments", err));
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (user?.role === "principal" || user?.role === "admin") {
-      API.get("/departments")
-        .then((res) => {
-          setDepartments(res.data);
-        })
-        .catch((err) => console.error("Failed to load departments", err));
-    }
-  }, [user]);
-
+  // Load academic years and set default selection
   useEffect(() => {
     API.get("/api/academic-years")
       .then((res) => {
-        setAcademicYears(res.data);
         if (res.data.length > 0) {
           setSelectedAcademicYearId(res.data[0].id);
         }
@@ -157,61 +137,17 @@ function App() {
                     userRole={user.role}
                   />
                 )}
-                {user.role === "principal" && (
-                  <>
-                    <div className="mb-3">
-                      <label><strong>Select Department:</strong></label>
-                      <select
-                        className="form-select"
-                        value={user.departmentId || ""}
-                        onChange={(e) => {
-                          const deptId = Number(e.target.value);
-                          setUser({ ...user, departmentId: deptId });
-                          fetchProgramCounts(deptId);
-                        }}
-                      >
-                        <option value="">-- Select Department --</option>
-                        {departments.map((dept) => (
-                          <option key={dept.id} value={dept.id}>{dept.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    {user.departmentId && selectedAcademicYearId && (
-                      <ProgramEntryForm
-                        departmentId={user.departmentId}
-                        academicYearId={selectedAcademicYearId}
-                        userRole={user.role}
-                      />
-                    )}
-                  </>
+                {user.role === "principal" && selectedAcademicYearId && (
+                  <ProgramEntryForm
+                    academicYearId={selectedAcademicYearId}
+                    userRole={user.role}
+                  />
                 )}
-                {user.role === "admin" && (
-                  <>
-                    <div className="mb-3">
-                      <label><strong>Select Department:</strong></label>
-                      <select
-                        className="form-select"
-                        value={user.departmentId || ""}
-                        onChange={(e) => {
-                          const deptId = Number(e.target.value);
-                          setUser({ ...user, departmentId: deptId });
-                          fetchProgramCounts(deptId);
-                        }}
-                      >
-                        <option value="">-- Select Department --</option>
-                        {departments.map((dept) => (
-                          <option key={dept.id} value={dept.id}>{dept.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    {user.departmentId && selectedAcademicYearId && (
-                      <ProgramEntryForm
-                        departmentId={user.departmentId}
-                        academicYearId={selectedAcademicYearId}
-                        userRole="admin"
-                      />
-                    )}
-                  </>
+                {user.role === "admin" && selectedAcademicYearId && (
+                  <ProgramEntryForm
+                    academicYearId={selectedAcademicYearId}
+                    userRole="admin"
+                  />
                 )}
               </ProtectedRoute>
             } />

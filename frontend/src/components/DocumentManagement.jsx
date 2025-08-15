@@ -6,7 +6,8 @@ import {
   Download, 
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Search
 } from 'lucide-react';
 import Api from '../Api';
 import './DocumentManagement.css';
@@ -22,6 +23,15 @@ const DocumentManagement = () => {
     academic_year_id: '',
     department_id: '',
     event_id: ''
+  });
+
+  // New state for table filtering and sorting
+  const [tableFilters, setTableFilters] = useState({
+    searchQuery: '',
+    statusFilter: '',
+    documentTypeFilter: '',
+    sortBy: 'event_date',
+    sortOrder: 'desc'
   });
 
   // Upload form state
@@ -333,6 +343,117 @@ const DocumentManagement = () => {
     return academicYear ? academicYear.year : 'Unknown Year';
   };
 
+  // Filter and sort events based on table filters
+  const getFilteredAndSortedEvents = () => {
+    let filteredEvents = [...events];
+
+    // Apply search filter
+    if (tableFilters.searchQuery) {
+      const query = tableFilters.searchQuery.toLowerCase();
+      filteredEvents = filteredEvents.filter(event => 
+        event.title.toLowerCase().includes(query) ||
+        getDepartmentName(event.department_id).toLowerCase().includes(query) ||
+        event.id.toString().includes(query)
+      );
+    }
+
+    // Apply status filter
+    if (tableFilters.statusFilter) {
+      filteredEvents = filteredEvents.filter(event => {
+        const eventDocuments = documents.filter(doc => doc.event_id === event.id);
+        const reportDoc = eventDocuments.find(doc => doc.doc_type === 'report');
+        const zipDoc = eventDocuments.find(doc => doc.doc_type === 'zipfile');
+
+        if (tableFilters.statusFilter === 'no_documents') {
+          return !reportDoc && !zipDoc;
+        } else if (tableFilters.statusFilter === 'complete') {
+          return reportDoc && zipDoc && 
+                 reportDoc.status === 'approved' && 
+                 zipDoc.status === 'approved';
+        } else if (tableFilters.statusFilter === 'pending') {
+          return (reportDoc && reportDoc.status === 'pending') || 
+                 (zipDoc && zipDoc.status === 'pending');
+        } else if (tableFilters.statusFilter === 'rejected') {
+          return (reportDoc && reportDoc.status === 'rejected') || 
+                 (zipDoc && zipDoc.status === 'rejected');
+        }
+        return true;
+      });
+    }
+
+    // Apply document type filter
+    if (tableFilters.documentTypeFilter) {
+      filteredEvents = filteredEvents.filter(event => {
+        const eventDocuments = documents.filter(doc => doc.event_id === event.id);
+        if (tableFilters.documentTypeFilter === 'report_only') {
+          return eventDocuments.some(doc => doc.doc_type === 'report');
+        } else if (tableFilters.documentTypeFilter === 'zip_only') {
+          return eventDocuments.some(doc => doc.doc_type === 'zipfile');
+        }
+        return true;
+      });
+    }
+
+    // Apply sorting
+    filteredEvents.sort((a, b) => {
+      let aValue, bValue;
+
+      switch (tableFilters.sortBy) {
+        case 'event_id':
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case 'event_title':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case 'department':
+          aValue = getDepartmentName(a.department_id).toLowerCase();
+          bValue = getDepartmentName(b.department_id).toLowerCase();
+          break;
+        case 'event_date':
+          aValue = new Date(a.event_date);
+          bValue = new Date(b.event_date);
+          break;
+        case 'budget':
+          aValue = a.budget_amount || 0;
+          bValue = b.budget_amount || 0;
+          break;
+        case 'academic_year':
+          aValue = getAcademicYearName(a.academic_year_id);
+          bValue = getAcademicYearName(b.academic_year_id);
+          break;
+        default:
+          aValue = a.id;
+          bValue = b.id;
+      }
+
+      if (aValue < bValue) return tableFilters.sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return tableFilters.sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filteredEvents;
+  };
+
+  const handleSort = (sortBy) => {
+    setTableFilters(prev => ({
+      ...prev,
+      sortBy,
+      sortOrder: prev.sortBy === sortBy && prev.sortOrder === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const resetTableFilters = () => {
+    setTableFilters({
+      searchQuery: '',
+      statusFilter: '',
+      documentTypeFilter: '',
+      sortBy: 'event_date',
+      sortOrder: 'desc'
+    });
+  };
+
   if (loading) return <div className="loading">Loading documents...</div>;
 
   return (
@@ -409,27 +530,220 @@ const DocumentManagement = () => {
 
       {/* Events Section */}
       <div className="documents-section">
-        <h3>📋 Events & Documents ({events.length} events)</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3>📋 Events & Documents ({getFilteredAndSortedEvents().length} of {events.length} events)</h3>
+          
+          {/* Table Controls */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative' }}>
+              <Search 
+                size={16} 
+                style={{ 
+                  position: 'absolute', 
+                  left: '8px', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  color: '#666',
+                  pointerEvents: 'none'
+                }} 
+              />
+              <input
+                type="text"
+                placeholder="Search events, departments, or IDs..."
+                value={tableFilters.searchQuery}
+                onChange={(e) => setTableFilters({...tableFilters, searchQuery: e.target.value})}
+                style={{
+                  padding: '6px 12px 6px 32px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  minWidth: '240px'
+                }}
+              />
+            </div>
+            
+            <select
+              value={tableFilters.statusFilter}
+              onChange={(e) => setTableFilters({...tableFilters, statusFilter: e.target.value})}
+              style={{
+                padding: '6px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">All Status</option>
+              <option value="no_documents">No Documents</option>
+              <option value="complete">Complete (Both Approved)</option>
+              <option value="pending">Has Pending</option>
+              <option value="rejected">Has Rejected</option>
+            </select>
+            
+            <select
+              value={tableFilters.documentTypeFilter}
+              onChange={(e) => setTableFilters({...tableFilters, documentTypeFilter: e.target.value})}
+              style={{
+                padding: '6px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}
+            >
+              <option value="">All Documents</option>
+              <option value="report_only">Has Report</option>
+              <option value="zip_only">Has ZIP</option>
+            </select>
+            
+            <button
+              onClick={resetTableFilters}
+              style={{
+                padding: '6px 12px',
+                border: '1px solid #dc3545',
+                borderRadius: '4px',
+                backgroundColor: '#dc3545',
+                color: 'white',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+              title="Reset all filters and sorting"
+            >
+              🔄 Reset
+            </button>
+          </div>
+        </div>
+
+        {/* Filter Summary */}
+        {(tableFilters.searchQuery || tableFilters.statusFilter || tableFilters.documentTypeFilter) && (
+          <div style={{
+            background: '#f8f9fa',
+            border: '1px solid #e9ecef',
+            borderRadius: '4px',
+            padding: '12px',
+            marginBottom: '16px',
+            fontSize: '14px',
+            color: '#495057'
+          }}>
+            <strong>Active Filters:</strong>{' '}
+            {tableFilters.searchQuery && (
+              <span style={{ background: '#e7f3ff', padding: '2px 8px', borderRadius: '3px', marginRight: '8px' }}>
+                Search: "{tableFilters.searchQuery}"
+              </span>
+            )}
+            {tableFilters.statusFilter && (
+              <span style={{ background: '#fff3cd', padding: '2px 8px', borderRadius: '3px', marginRight: '8px' }}>
+                Status: {tableFilters.statusFilter.replace('_', ' ')}
+              </span>
+            )}
+            {tableFilters.documentTypeFilter && (
+              <span style={{ background: '#d1ecf1', padding: '2px 8px', borderRadius: '3px', marginRight: '8px' }}>
+                Type: {tableFilters.documentTypeFilter.replace('_', ' ')}
+              </span>
+            )}
+            <button
+              onClick={resetTableFilters}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#dc3545',
+                cursor: 'pointer',
+                fontSize: '13px',
+                marginLeft: '8px'
+              }}
+            >
+              ✕ Clear all
+            </button>
+          </div>
+        )}
         
-        {events.length === 0 ? (
+        {getFilteredAndSortedEvents().length === 0 ? (
           <div className="no-documents">
             <FileText size={48} />
             <h4>No events found</h4>
-            <p>No events available for the selected criteria.</p>
+            <p>{events.length === 0 ? 'No events available for the selected criteria.' : 'No events match the current filters.'}</p>
           </div>
         ) : (
           <div className="enhanced-documents-table">
+            <style jsx>{`
+              .sortable {
+                cursor: pointer;
+                user-select: none;
+                position: relative;
+                transition: background-color 0.2s ease;
+                padding: 12px 8px !important;
+                vertical-align: top;
+                min-height: 60px;
+              }
+              .sortable:hover {
+                background-color: #f8f9fa;
+              }
+              .sortable:active {
+                background-color: #e9ecef;
+              }
+              .table-header-content {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                line-height: 1.3;
+              }
+              .header-title {
+                font-weight: bold;
+                margin-bottom: 4px;
+              }
+              .header-subtitle {
+                font-size: 11px;
+                color: #666;
+                font-weight: normal;
+                opacity: 0.8;
+              }
+            `}</style>
             <table>
               <thead>
                 <tr>
-                  <th className="text-center">Event ID</th>
-                  <th>Event Details</th>
-                  <th className="text-center">Academic Year</th>
-                  <th>Documents & Actions</th>
+                  <th 
+                    className="text-center sortable" 
+                    onClick={() => handleSort('event_id')}
+                    style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
+                    title="Click to sort by Event ID"
+                  >
+                    <div className="table-header-content" style={{ alignItems: 'center' }}>
+                      <span className="header-title">
+                        Event ID {tableFilters.sortBy === 'event_id' && (tableFilters.sortOrder === 'asc' ? '↑' : '↓')}
+                      </span>
+                    </div>
+                  </th>
+                  <th 
+                    className="sortable" 
+                    onClick={() => handleSort('event_title')}
+                    style={{ cursor: 'pointer', userSelect: 'none', minWidth: '200px' }}
+                    title="Click to sort by Event Title"
+                  >
+                    <div className="table-header-content">
+                      <span className="header-title">
+                        Event Details {tableFilters.sortBy === 'event_title' && (tableFilters.sortOrder === 'asc' ? '↑' : '↓')}
+                      </span>
+                    </div>
+                  </th>
+                  <th 
+                    className="text-center sortable" 
+                    onClick={() => handleSort('academic_year')}
+                    style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
+                    title="Click to sort by Academic Year"
+                  >
+                    <div className="table-header-content" style={{ alignItems: 'center' }}>
+                      <span className="header-title">
+                        Academic Year {tableFilters.sortBy === 'academic_year' && (tableFilters.sortOrder === 'asc' ? '↑' : '↓')}
+                      </span>
+                    </div>
+                  </th>
+                  <th style={{ padding: '12px 8px', verticalAlign: 'top' }}>
+                    <div className="table-header-content">
+                      <span className="header-title">Documents & Actions</span>
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {events.map(event => {
+                {getFilteredAndSortedEvents().map(event => {
                   const departmentName = getDepartmentName(event.department_id);
                   const eventDocuments = documents.filter(doc => doc.event_id === event.id);
                   const reportDoc = eventDocuments.find(doc => doc.doc_type === 'report');

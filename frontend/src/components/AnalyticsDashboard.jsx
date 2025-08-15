@@ -1,16 +1,15 @@
 // Enhanced Analytics Dashboard with Advanced Features
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, 
+  PieChart, Pie, Cell, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { 
-  Search, Filter, Calendar, Download, Settings, RefreshCw,
-  TrendingUp, BarChart3, PieChart as PieChartIcon, Activity,
-  Eye, EyeOff, Maximize2, Minimize2, Move, GripVertical
+  Calendar, RefreshCw,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 import analyticsService from '../services/analyticsService';
 import './AnalyticsDashboard.css';
@@ -30,17 +29,6 @@ const AnalyticsDashboard = ({ userRole }) => {
   const [selectedAcademicYear, setSelectedAcademicYear] = useState('');
   const [yearsLoading, setYearsLoading] = useState(true);
 
-  // Advanced Filtering & Search
-  const [filters, setFilters] = useState({
-    dateRange: { start: null, end: null },
-    eventType: '',
-    status: '',
-    department: '',
-    budgetRange: { min: '', max: '' }
-  });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-
   // Get user info from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userDepartmentId = user?.department_id;
@@ -48,53 +36,6 @@ const AnalyticsDashboard = ({ userRole }) => {
 
   // Enhanced Color palette for charts
   const COLORS = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#ffecd2', '#fcb69f'];
-  const TREND_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00c49f'];
-
-  // Advanced filtering functions
-  const applyFilters = useCallback((data) => {
-    if (!data) return data;
-    
-    let filtered = [...data];
-    
-    // Search query filter
-    if (searchQuery) {
-      filtered = filtered.filter(item => 
-        item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.department?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.status?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Date range filter
-    if (filters.dateRange.start && filters.dateRange.end) {
-      filtered = filtered.filter(item => {
-        const itemDate = new Date(item.date);
-        return itemDate >= filters.dateRange.start && itemDate <= filters.dateRange.end;
-      });
-    }
-
-    // Event type filter
-    if (filters.eventType) {
-      filtered = filtered.filter(item => item.type === filters.eventType);
-    }
-
-    // Status filter
-    if (filters.status) {
-      filtered = filtered.filter(item => item.status === filters.status);
-    }
-
-    // Budget range filter
-    if (filters.budgetRange.min || filters.budgetRange.max) {
-      filtered = filtered.filter(item => {
-        const budget = item.budget || 0;
-        const min = filters.budgetRange.min ? parseFloat(filters.budgetRange.min) : 0;
-        const max = filters.budgetRange.max ? parseFloat(filters.budgetRange.max) : Infinity;
-        return budget >= min && budget <= max;
-      });
-    }
-
-    return filtered;
-  }, [searchQuery, filters]);
 
   // Generate comprehensive trend analysis data from real API data
   const generateTrendData = useMemo(() => {
@@ -175,10 +116,8 @@ const AnalyticsDashboard = ({ userRole }) => {
     }));
   }, [performanceData]);
 
-  // Filtered timeline data
-  const filteredTimelineData = useMemo(() => {
-    return applyFilters(timelineData);
-  }, [timelineData, applyFilters]);
+  // Timeline data (no filtering)
+  // (Note: timelineData is used directly instead of filteredTimelineData)
 
   // Load academic years for dropdown
   const loadAcademicYears = useCallback(async () => {
@@ -321,20 +260,6 @@ const AnalyticsDashboard = ({ userRole }) => {
               {lastUpdated && ` • Last updated: ${lastUpdated.toLocaleTimeString()}`}
             </p>
           </div>
-          
-          {/* Search Bar */}
-          <div className="search-section">
-            <div className="search-input-container">
-              <Search size={20} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search events, departments, or status..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-            </div>
-          </div>
         </div>
 
         <div className="analytics-controls">
@@ -357,15 +282,6 @@ const AnalyticsDashboard = ({ userRole }) => {
             </select>
           </div>
 
-          {/* Filter Toggle */}
-          <button 
-            onClick={() => setShowFilters(!showFilters)}
-            className={`filter-button ${showFilters ? 'active' : ''}`}
-          >
-            <Filter size={16} />
-            Advanced Filters
-          </button>
-
           {/* Refresh Button */}
           <button 
             onClick={loadAnalyticsData} 
@@ -377,117 +293,6 @@ const AnalyticsDashboard = ({ userRole }) => {
           </button>
         </div>
       </div>
-
-      {/* Advanced Filters Panel */}
-      {showFilters && (
-        <div className="filters-panel">
-          <div className="filters-grid">
-            {/* Date Range Filter */}
-            <div className="filter-group">
-              <label>� Date Range</label>
-              <div className="date-range-inputs">
-                <input
-                  type="date"
-                  value={filters.dateRange.start ? filters.dateRange.start.toISOString().split('T')[0] : ''}
-                  onChange={(e) => setFilters(prev => ({
-                    ...prev,
-                    dateRange: { ...prev.dateRange, start: e.target.value ? new Date(e.target.value) : null }
-                  }))}
-                  className="filter-input"
-                />
-                <span>to</span>
-                <input
-                  type="date"
-                  value={filters.dateRange.end ? filters.dateRange.end.toISOString().split('T')[0] : ''}
-                  onChange={(e) => setFilters(prev => ({
-                    ...prev,
-                    dateRange: { ...prev.dateRange, end: e.target.value ? new Date(e.target.value) : null }
-                  }))}
-                  className="filter-input"
-                />
-              </div>
-            </div>
-
-            {/* Event Type Filter */}
-            <div className="filter-group">
-              <label>🎯 Event Type</label>
-              <select
-                value={filters.eventType}
-                onChange={(e) => setFilters(prev => ({ ...prev, eventType: e.target.value }))}
-                className="filter-select"
-              >
-                <option value="">All Types</option>
-                <option value="seminar">Seminar</option>
-                <option value="workshop">Workshop</option>
-                <option value="conference">Conference</option>
-                <option value="training">Training</option>
-              </select>
-            </div>
-
-            {/* Status Filter */}
-            <div className="filter-group">
-              <label>📊 Status</label>
-              <select
-                value={filters.status}
-                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="filter-select"
-              >
-                <option value="">All Status</option>
-                <option value="planned">Planned</option>
-                <option value="ongoing">Ongoing</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-
-            {/* Budget Range Filter */}
-            <div className="filter-group">
-              <label>💰 Budget Range</label>
-              <div className="budget-range-inputs">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={filters.budgetRange.min}
-                  onChange={(e) => setFilters(prev => ({
-                    ...prev,
-                    budgetRange: { ...prev.budgetRange, min: e.target.value }
-                  }))}
-                  className="filter-input"
-                />
-                <span>to</span>
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={filters.budgetRange.max}
-                  onChange={(e) => setFilters(prev => ({
-                    ...prev,
-                    budgetRange: { ...prev.budgetRange, max: e.target.value }
-                  }))}
-                  className="filter-input"
-                />
-              </div>
-            </div>
-
-            {/* Clear Filters */}
-            <div className="filter-group">
-              <button
-                onClick={() => {
-                  setFilters({
-                    dateRange: { start: null, end: null },
-                    eventType: '',
-                    status: '',
-                    department: '',
-                    budgetRange: { min: '', max: '' }
-                  });
-                  setSearchQuery('');
-                }}
-                className="clear-filters-button"
-              >
-                Clear All Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Key Metrics Cards */}
       {dashboardData && (
@@ -617,6 +422,28 @@ const AnalyticsDashboard = ({ userRole }) => {
           </div>
         )}
 
+        {/* Department Radar Chart */}
+        {userRole === 'principal' && generateRadarData.length > 0 && (
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3 className="chart-title">🎯 Department Radar</h3>
+              <p className="chart-subtitle">Multi-dimensional performance view</p>
+            </div>
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart data={generateRadarData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="department" />
+                  <PolarRadiusAxis domain={[0, 100]} />
+                  <Radar name="Budget" dataKey="Budget" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                  <Radar name="Events" dataKey="Events" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                  <Tooltip />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
         {/* Trend Analysis - Full Width */}
         <div className="chart-card" style={{ gridColumn: '1 / -1' }}>
           <div className="chart-header">
@@ -687,37 +514,15 @@ const AnalyticsDashboard = ({ userRole }) => {
           </div>
         )}
 
-        {/* Budget Radar Chart */}
-        {userRole === 'principal' && generateRadarData.length > 0 && (
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3 className="chart-title">🎯 Department Radar</h3>
-              <p className="chart-subtitle">Multi-dimensional performance view</p>
-            </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={generateRadarData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="department" />
-                  <PolarRadiusAxis domain={[0, 100]} />
-                  <Radar name="Budget" dataKey="Budget" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                  <Radar name="Events" dataKey="Events" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
-                  <Tooltip />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
-
         {/* Events Timeline */}
         <div className="chart-card">
           <div className="chart-header">
             <h3 className="chart-title">📅 Upcoming Events</h3>
             <p className="chart-subtitle">Next 3 months event schedule</p>
           </div>
-          {filteredTimelineData.length > 0 ? (
+          {timelineData.length > 0 ? (
             <div className="timeline-container">
-              {filteredTimelineData.slice(0, 8).map((event, index) => (
+              {timelineData.slice(0, 8).map((event, index) => (
                 <div 
                   key={index} 
                   className="timeline-item"
@@ -733,9 +538,9 @@ const AnalyticsDashboard = ({ userRole }) => {
                   </div>
                 </div>
               ))}
-              {filteredTimelineData.length > 8 && (
+              {timelineData.length > 8 && (
                 <div style={{ textAlign: 'center', padding: '16px', color: '#7f8c8d' }}>
-                  ...and {filteredTimelineData.length - 8} more events
+                  ...and {timelineData.length - 8} more events
                 </div>
               )}
             </div>
