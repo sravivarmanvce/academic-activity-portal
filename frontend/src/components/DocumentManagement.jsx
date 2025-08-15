@@ -42,6 +42,23 @@ const DocumentManagement = () => {
   const userRole = user?.role;
   const userDepartmentId = user?.department_id; // Assuming HoD has department_id in user data
 
+  // Common button style for uniform width
+  const uniformButtonStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '4px',
+    padding: '3px 3px',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '11px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    width: '80px', // Fixed width instead of minWidth for true uniformity
+    textAlign: 'center'
+  };
+
   const loadDocuments = useCallback(async () => {
     try {
       setLoading(true);
@@ -475,18 +492,9 @@ const DocumentManagement = () => {
                                 }}
                                 title="Upload Report"
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  padding: '6px 12px',
+                                  ...uniformButtonStyle,
                                   backgroundColor: '#28a745',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  fontSize: '11px',
-                                  fontWeight: '500',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s ease'
+                                  color: 'white'
                                 }}
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
@@ -503,18 +511,9 @@ const DocumentManagement = () => {
                                 onClick={() => handleDelete(reportDoc.id)}
                                 title="Delete Report"
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  padding: '6px 12px',
+                                  ...uniformButtonStyle,
                                   backgroundColor: '#dc3545',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  fontSize: '11px',
-                                  fontWeight: '500',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s ease'
+                                  color: 'white'
                                 }}
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
@@ -531,18 +530,9 @@ const DocumentManagement = () => {
                                 onClick={() => handleDownload(reportDoc.id, reportDoc.filename, reportDoc.event_id, reportDoc.doc_type)}
                                 title={`Download: ${reportDoc.filename}`}
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  padding: '6px 12px',
+                                  ...uniformButtonStyle,
                                   backgroundColor: '#007bff',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  fontSize: '11px',
-                                  fontWeight: '500',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s ease'
+                                  color: 'white'
                                 }}
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
@@ -560,18 +550,9 @@ const DocumentManagement = () => {
                                   onClick={() => handleApprove(reportDoc.id)}
                                   title="Approve Report"
                                   style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    padding: '6px 12px',
+                                    ...uniformButtonStyle,
                                     backgroundColor: '#28a745',
                                     color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
                                     marginRight: '4px'
                                   }}
                                   onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
@@ -585,18 +566,9 @@ const DocumentManagement = () => {
                                   onClick={() => handleReject(reportDoc.id)}
                                   title="Reject Report"
                                   style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    padding: '6px 12px',
+                                    ...uniformButtonStyle,
                                     backgroundColor: '#dc3545',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
+                                    color: 'white'
                                   }}
                                   onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
                                   onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
@@ -642,18 +614,9 @@ const DocumentManagement = () => {
                                 }}
                                 title="Upload ZIP"
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  padding: '6px 12px',
+                                  ...uniformButtonStyle,
                                   backgroundColor: '#28a745',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  fontSize: '11px',
-                                  fontWeight: '500',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s ease'
+                                  color: 'white'
                                 }}
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
@@ -670,18 +633,9 @@ const DocumentManagement = () => {
                                 onClick={() => handleDelete(zipDoc.id)}
                                 title="Delete ZIP"
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  padding: '6px 12px',
+                                  ...uniformButtonStyle,
                                   backgroundColor: '#dc3545',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  fontSize: '11px',
-                                  fontWeight: '500',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s ease'
+                                  color: 'white'
                                 }}
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
@@ -698,18 +652,9 @@ const DocumentManagement = () => {
                                 onClick={() => handleDownload(zipDoc.id, zipDoc.filename, zipDoc.event_id, zipDoc.doc_type)}
                                 title={`Download: ${zipDoc.filename}`}
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  padding: '6px 12px',
+                                  ...uniformButtonStyle,
                                   backgroundColor: '#007bff',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  fontSize: '11px',
-                                  fontWeight: '500',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s ease'
+                                  color: 'white'
                                 }}
                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
@@ -727,18 +672,9 @@ const DocumentManagement = () => {
                                   onClick={() => handleApprove(zipDoc.id)}
                                   title="Approve ZIP"
                                   style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    padding: '6px 12px',
+                                    ...uniformButtonStyle,
                                     backgroundColor: '#28a745',
                                     color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
                                     marginRight: '4px'
                                   }}
                                   onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
@@ -752,18 +688,9 @@ const DocumentManagement = () => {
                                   onClick={() => handleReject(zipDoc.id)}
                                   title="Reject ZIP"
                                   style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    padding: '6px 12px',
+                                    ...uniformButtonStyle,
                                     backgroundColor: '#dc3545',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    fontWeight: '500',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease'
+                                    color: 'white'
                                   }}
                                   onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
                                   onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}

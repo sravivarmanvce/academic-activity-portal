@@ -1,11 +1,17 @@
-// Enhanced Analytics Dashboard with Charts and Visual Progress Tracking
-import React, { useState, useEffect, useCallback } from 'react';
+// Enhanced Analytics Dashboard with Advanced Features
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { 
+  Search, Filter, Calendar, Download, Settings, RefreshCw,
+  TrendingUp, BarChart3, PieChart as PieChartIcon, Activity,
+  Eye, EyeOff, Maximize2, Minimize2, Move, GripVertical
+} from 'lucide-react';
 import analyticsService from '../services/analyticsService';
 import './AnalyticsDashboard.css';
 
@@ -24,13 +30,155 @@ const AnalyticsDashboard = ({ userRole }) => {
   const [selectedAcademicYear, setSelectedAcademicYear] = useState('');
   const [yearsLoading, setYearsLoading] = useState(true);
 
+  // Advanced Filtering & Search
+  const [filters, setFilters] = useState({
+    dateRange: { start: null, end: null },
+    eventType: '',
+    status: '',
+    department: '',
+    budgetRange: { min: '', max: '' }
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+
   // Get user info from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userDepartmentId = user?.department_id;
   const departmentName = user?.department_name || user?.department || '';
 
-  // Color palette for charts
+  // Enhanced Color palette for charts
   const COLORS = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#ffecd2', '#fcb69f'];
+  const TREND_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00c49f'];
+
+  // Advanced filtering functions
+  const applyFilters = useCallback((data) => {
+    if (!data) return data;
+    
+    let filtered = [...data];
+    
+    // Search query filter
+    if (searchQuery) {
+      filtered = filtered.filter(item => 
+        item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.department?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.status?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Date range filter
+    if (filters.dateRange.start && filters.dateRange.end) {
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.date);
+        return itemDate >= filters.dateRange.start && itemDate <= filters.dateRange.end;
+      });
+    }
+
+    // Event type filter
+    if (filters.eventType) {
+      filtered = filtered.filter(item => item.type === filters.eventType);
+    }
+
+    // Status filter
+    if (filters.status) {
+      filtered = filtered.filter(item => item.status === filters.status);
+    }
+
+    // Budget range filter
+    if (filters.budgetRange.min || filters.budgetRange.max) {
+      filtered = filtered.filter(item => {
+        const budget = item.budget || 0;
+        const min = filters.budgetRange.min ? parseFloat(filters.budgetRange.min) : 0;
+        const max = filters.budgetRange.max ? parseFloat(filters.budgetRange.max) : Infinity;
+        return budget >= min && budget <= max;
+      });
+    }
+
+    return filtered;
+  }, [searchQuery, filters]);
+
+  // Generate comprehensive trend analysis data from real API data
+  const generateTrendData = useMemo(() => {
+    if (!monthlyData?.monthly_data) {
+      // If no monthly data, create a basic structure from timeline data
+      if (!timelineData.length) return [];
+      
+      // Get all unique months from timeline data and create basic trend
+      const monthsMap = new Map();
+      timelineData.forEach(event => {
+        const eventDate = new Date(event.date);
+        const monthKey = eventDate.toLocaleString('default', { month: 'short' });
+        
+        if (!monthsMap.has(monthKey)) {
+          monthsMap.set(monthKey, { month: monthKey, events: 0, completed: 0, budget: 0 });
+        }
+        
+        monthsMap.get(monthKey).events++;
+        if (event.status === 'Completed' || event.status === 'completed') {
+          monthsMap.get(monthKey).completed++;
+        }
+        monthsMap.get(monthKey).budget += (event.budget || 0);
+      });
+      
+      return Array.from(monthsMap.values()).map(item => ({
+        month: item.month,
+        budget: item.budget,
+        events: item.events,
+        completion: item.events > 0 ? Math.round((item.completed / item.events) * 100) : 0
+      }));
+    }
+    
+    // Create comprehensive trend analysis combining monthly budget data with event counts
+    const trendData = monthlyData.monthly_data.map(monthItem => {
+      // Count events in this month
+      const monthEventsCount = timelineData.filter(event => {
+        const eventDate = new Date(event.date);
+        const eventMonth = eventDate.toLocaleString('default', { month: 'short' });
+        return eventMonth === monthItem.month;
+      }).length;
+
+      // Calculate completion rate based on completed vs total events
+      const monthEvents = timelineData.filter(event => {
+        const eventDate = new Date(event.date);
+        const eventMonth = eventDate.toLocaleString('default', { month: 'short' });
+        return eventMonth === monthItem.month;
+      });
+
+      const completedEvents = monthEvents.filter(event => 
+        event.status === 'Completed' || event.status === 'completed'
+      ).length;
+
+      const completionRate = monthEvents.length > 0 ? 
+        Math.round((completedEvents / monthEvents.length) * 100) : 0;
+
+      return {
+        month: monthItem.month,
+        budget: monthItem.utilized || 0,
+        events: monthEventsCount,
+        completion: completionRate
+      };
+    });
+
+    return trendData;
+  }, [monthlyData, timelineData]);
+
+  // Generate radar chart data
+  const generateRadarData = useMemo(() => {
+    if (!performanceData.length) return [];
+    
+    return performanceData.map(dept => ({
+      department: dept.department,
+      Budget: dept.utilization_percentage || 0,
+      Events: dept.completion_rate || 0,
+      Efficiency: dept.efficiency_score || 0,
+      Quality: Math.random() * 100, // Mock data
+      Innovation: Math.random() * 100 // Mock data
+    }));
+  }, [performanceData]);
+
+  // Filtered timeline data
+  const filteredTimelineData = useMemo(() => {
+    return applyFilters(timelineData);
+  }, [timelineData, applyFilters]);
 
   // Load academic years for dropdown
   const loadAcademicYears = useCallback(async () => {
@@ -95,7 +243,7 @@ const AnalyticsDashboard = ({ userRole }) => {
   }, [loadAcademicYears]);
 
   useEffect(() => {
-    if (selectedAcademicYear !== '' && !yearsLoading) {
+    if (selectedAcademicYear && !yearsLoading) {
       loadAnalyticsData();
     }
   }, [userRole, userDepartmentId, selectedAcademicYear, yearsLoading, loadAnalyticsData]);
@@ -111,7 +259,8 @@ const AnalyticsDashboard = ({ userRole }) => {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
+      year: 'numeric'
     });
   };
 
@@ -157,20 +306,37 @@ const AnalyticsDashboard = ({ userRole }) => {
 
   return (
     <div className="analytics-dashboard">
-      {/* Header */}
+      {/* Enhanced Header with Advanced Controls */}
       <div className="analytics-header">
-        <div>
-          <h1 className="analytics-title">📊 Analytics Dashboard</h1>
-          <p className="analytics-subtitle">
-            {userRole === 'principal' 
-              ? 'Institution-wide' 
-              : userRole === 'hod' 
-                ? `${departmentName} Department`
-                : 'Department'
-            } insights and performance metrics
-            {lastUpdated && ` • Last updated: ${lastUpdated.toLocaleTimeString()}`}
-          </p>
+        <div className="header-main">
+          <div className="header-title-section">
+            <h1 className="analytics-title">📊 Enhanced Analytics Dashboard</h1>
+            <p className="analytics-subtitle">
+              {userRole === 'principal' 
+                ? 'Institution-wide' 
+                : userRole === 'hod' 
+                  ? `${departmentName} Department`
+                  : 'Department'
+              } insights and performance metrics
+              {lastUpdated && ` • Last updated: ${lastUpdated.toLocaleTimeString()}`}
+            </p>
+          </div>
+          
+          {/* Search Bar */}
+          <div className="search-section">
+            <div className="search-input-container">
+              <Search size={20} className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search events, departments, or status..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+            </div>
+          </div>
         </div>
+
         <div className="analytics-controls">
           {/* Academic Year Dropdown */}
           <div className="academic-year-filter">
@@ -182,7 +348,6 @@ const AnalyticsDashboard = ({ userRole }) => {
               disabled={yearsLoading || loading}
               className="academic-year-dropdown"
             >
-              <option value="">All Years</option>
               {academicYears.map(year => (
                 <option key={year.id} value={year.id}>
                   {year.year}
@@ -191,16 +356,138 @@ const AnalyticsDashboard = ({ userRole }) => {
               ))}
             </select>
           </div>
-          
+
+          {/* Filter Toggle */}
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className={`filter-button ${showFilters ? 'active' : ''}`}
+          >
+            <Filter size={16} />
+            Advanced Filters
+          </button>
+
+          {/* Refresh Button */}
           <button 
             onClick={loadAnalyticsData} 
             className="refresh-button"
             disabled={loading}
           >
-            🔄 Refresh Data
+            <RefreshCw size={16} className={loading ? 'spinning' : ''} />
+            Refresh
           </button>
         </div>
       </div>
+
+      {/* Advanced Filters Panel */}
+      {showFilters && (
+        <div className="filters-panel">
+          <div className="filters-grid">
+            {/* Date Range Filter */}
+            <div className="filter-group">
+              <label>� Date Range</label>
+              <div className="date-range-inputs">
+                <input
+                  type="date"
+                  value={filters.dateRange.start ? filters.dateRange.start.toISOString().split('T')[0] : ''}
+                  onChange={(e) => setFilters(prev => ({
+                    ...prev,
+                    dateRange: { ...prev.dateRange, start: e.target.value ? new Date(e.target.value) : null }
+                  }))}
+                  className="filter-input"
+                />
+                <span>to</span>
+                <input
+                  type="date"
+                  value={filters.dateRange.end ? filters.dateRange.end.toISOString().split('T')[0] : ''}
+                  onChange={(e) => setFilters(prev => ({
+                    ...prev,
+                    dateRange: { ...prev.dateRange, end: e.target.value ? new Date(e.target.value) : null }
+                  }))}
+                  className="filter-input"
+                />
+              </div>
+            </div>
+
+            {/* Event Type Filter */}
+            <div className="filter-group">
+              <label>🎯 Event Type</label>
+              <select
+                value={filters.eventType}
+                onChange={(e) => setFilters(prev => ({ ...prev, eventType: e.target.value }))}
+                className="filter-select"
+              >
+                <option value="">All Types</option>
+                <option value="seminar">Seminar</option>
+                <option value="workshop">Workshop</option>
+                <option value="conference">Conference</option>
+                <option value="training">Training</option>
+              </select>
+            </div>
+
+            {/* Status Filter */}
+            <div className="filter-group">
+              <label>📊 Status</label>
+              <select
+                value={filters.status}
+                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                className="filter-select"
+              >
+                <option value="">All Status</option>
+                <option value="planned">Planned</option>
+                <option value="ongoing">Ongoing</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            {/* Budget Range Filter */}
+            <div className="filter-group">
+              <label>💰 Budget Range</label>
+              <div className="budget-range-inputs">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value={filters.budgetRange.min}
+                  onChange={(e) => setFilters(prev => ({
+                    ...prev,
+                    budgetRange: { ...prev.budgetRange, min: e.target.value }
+                  }))}
+                  className="filter-input"
+                />
+                <span>to</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value={filters.budgetRange.max}
+                  onChange={(e) => setFilters(prev => ({
+                    ...prev,
+                    budgetRange: { ...prev.budgetRange, max: e.target.value }
+                  }))}
+                  className="filter-input"
+                />
+              </div>
+            </div>
+
+            {/* Clear Filters */}
+            <div className="filter-group">
+              <button
+                onClick={() => {
+                  setFilters({
+                    dateRange: { start: null, end: null },
+                    eventType: '',
+                    status: '',
+                    department: '',
+                    budgetRange: { min: '', max: '' }
+                  });
+                  setSearchQuery('');
+                }}
+                className="clear-filters-button"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Key Metrics Cards */}
       {dashboardData && (
@@ -296,23 +583,25 @@ const AnalyticsDashboard = ({ userRole }) => {
               <h3 className="chart-title">💰 Budget Distribution</h3>
               <p className="chart-subtitle">Budget allocation across departments</p>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={budgetData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="value"
-                  label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
-                >
-                  {budgetData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={budgetData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="value"
+                    label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
+                  >
+                    {budgetData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         ) : (
           <div className="chart-card">
@@ -320,37 +609,59 @@ const AnalyticsDashboard = ({ userRole }) => {
               <h3 className="chart-title">💰 Budget Distribution</h3>
               <p className="chart-subtitle">No budget data available</p>
             </div>
-            <div style={{ padding: '40px', textAlign: 'center', color: '#7f8c8d' }}>
-              <p>📊 No budget data found for {userRole === 'hod' ? `${departmentName} department` : 'your department'}</p>
+            <div className="no-data-message">
+              <PieChartIcon size={48} color="#ccc" />
+              <p>No budget data found for {userRole === 'hod' ? `${departmentName} department` : 'your department'}</p>
               <p>Budget data will appear here once program counts and budgets are submitted.</p>
             </div>
           </div>
         )}
 
-        {/* Monthly Budget Utilization */}
-        {monthlyData && monthlyData.monthly_data && (
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3 className="chart-title">📈 Monthly Budget Utilization</h3>
-              <p className="chart-subtitle">Budget usage trends over time</p>
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={monthlyData.monthly_data}>
+        {/* Trend Analysis - Full Width */}
+        <div className="chart-card" style={{ gridColumn: '1 / -1' }}>
+          <div className="chart-header">
+            <h3 className="chart-title">📊 Comprehensive Trend Analysis</h3>
+            <p className="chart-subtitle">12-month budget utilization, events count, and completion rate trends</p>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={400}>
+              <AreaChart data={generateTrendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f3f4" />
                 <XAxis dataKey="month" stroke="#7f8c8d" />
-                <YAxis stroke="#7f8c8d" tickFormatter={(value) => `₹${value/1000}K`} />
+                <YAxis stroke="#7f8c8d" />
                 <Tooltip content={<CustomTooltip />} />
-                <Line 
+                <Legend />
+                <Area 
                   type="monotone" 
-                  dataKey="utilized" 
-                  stroke="#667eea" 
-                  strokeWidth={3}
-                  dot={{ fill: '#667eea', strokeWidth: 2, r: 4 }}
+                  dataKey="budget" 
+                  stackId="1" 
+                  stroke="#8884d8" 
+                  fill="#8884d8" 
+                  fillOpacity={0.6}
+                  name="Budget (₹)"
                 />
-              </LineChart>
+                <Area 
+                  type="monotone" 
+                  dataKey="events" 
+                  stackId="2" 
+                  stroke="#82ca9d" 
+                  fill="#82ca9d" 
+                  fillOpacity={0.6}
+                  name="Events Count"
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="completion" 
+                  stackId="3" 
+                  stroke="#ffc658" 
+                  fill="#ffc658" 
+                  fillOpacity={0.4}
+                  name="Completion Rate (%)"
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
-        )}
+        </div>
 
         {/* Department Performance (Principal only) */}
         {userRole === 'principal' && performanceData.length > 0 && (
@@ -359,18 +670,42 @@ const AnalyticsDashboard = ({ userRole }) => {
               <h3 className="chart-title">🏆 Department Performance</h3>
               <p className="chart-subtitle">Efficiency and completion metrics by department</p>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={performanceData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f3f4" />
-                <XAxis dataKey="department" stroke="#7f8c8d" />
-                <YAxis stroke="#7f8c8d" />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Bar dataKey="completion_rate" name="Completion Rate (%)" fill="#667eea" />
-                <Bar dataKey="utilization_percentage" name="Budget Utilization (%)" fill="#764ba2" />
-                <Bar dataKey="efficiency_score" name="Overall Efficiency (%)" fill="#f093fb" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={performanceData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f3f4" />
+                  <XAxis dataKey="department" stroke="#7f8c8d" />
+                  <YAxis stroke="#7f8c8d" />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Bar dataKey="completion_rate" name="Completion Rate (%)" fill="#667eea" />
+                  <Bar dataKey="utilization_percentage" name="Budget Utilization (%)" fill="#764ba2" />
+                  <Bar dataKey="efficiency_score" name="Overall Efficiency (%)" fill="#f093fb" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Budget Radar Chart */}
+        {userRole === 'principal' && generateRadarData.length > 0 && (
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3 className="chart-title">🎯 Department Radar</h3>
+              <p className="chart-subtitle">Multi-dimensional performance view</p>
+            </div>
+            <div className="chart-container">
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart data={generateRadarData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="department" />
+                  <PolarRadiusAxis domain={[0, 100]} />
+                  <Radar name="Budget" dataKey="Budget" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                  <Radar name="Events" dataKey="Events" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+                  <Tooltip />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         )}
 
@@ -380,32 +715,34 @@ const AnalyticsDashboard = ({ userRole }) => {
             <h3 className="chart-title">📅 Upcoming Events</h3>
             <p className="chart-subtitle">Next 3 months event schedule</p>
           </div>
-          {timelineData.length > 0 ? (
+          {filteredTimelineData.length > 0 ? (
             <div className="timeline-container">
-              {timelineData.slice(0, 8).map((event, index) => (
-                <div key={index} className="timeline-item">
-                  <div className="timeline-date">{formatDate(event.date)}</div>
-                  <div className="timeline-content">
-                    <h4 className="timeline-title">{event.title}</h4>
-                    <div className="timeline-meta">
-                      <span className={`timeline-status status-${event.status}`}>
-                        {event.status}
-                      </span>
-                      <span>{formatCurrency(event.budget)}</span>
-                      <span>{event.department}</span>
-                    </div>
+              {filteredTimelineData.slice(0, 8).map((event, index) => (
+                <div 
+                  key={index} 
+                  className="timeline-item"
+                >
+                  <div className="timeline-single-line">
+                    <span className="timeline-date">{formatDate(event.date)}</span>
+                    <span className="timeline-department">{event.department}</span>
+                    <span className="timeline-title">{event.title}</span>
+                    <span className="timeline-budget">{formatCurrency(event.budget)}</span>
+                    <span className={`timeline-status status-${event.status}`}>
+                      {event.status}
+                    </span>
                   </div>
                 </div>
               ))}
-              {timelineData.length > 8 && (
+              {filteredTimelineData.length > 8 && (
                 <div style={{ textAlign: 'center', padding: '16px', color: '#7f8c8d' }}>
-                  ...and {timelineData.length - 8} more events
+                  ...and {filteredTimelineData.length - 8} more events
                 </div>
               )}
             </div>
           ) : (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#7f8c8d' }}>
-              <p>📅 No upcoming events found</p>
+            <div className="no-data-message">
+              <Calendar size={48} color="#ccc" />
+              <p>No upcoming events found</p>
               <p>Events will appear here once they are planned and scheduled.</p>
             </div>
           )}

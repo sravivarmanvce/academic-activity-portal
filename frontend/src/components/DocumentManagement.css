@@ -617,7 +617,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0;
+  padding: 2px 0;
   margin: 2px 0;
   border-bottom: 1px solid #f0f0f0;
 }
@@ -693,7 +693,7 @@
 }
 
 .enhanced-documents-table td {
-  padding: 12px 16px;
+  padding: 4px 8px;
   border-bottom: 1px solid #004fff;
   vertical-align: top;
 }
