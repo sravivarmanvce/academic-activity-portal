@@ -405,8 +405,9 @@ const DocumentManagement = () => {
             <table>
               <thead>
                 <tr>
+                  <th className="text-center">Event ID</th>
                   <th>Event Details</th>
-                  <th>Academic Year</th>
+                  <th className="text-center">Academic Year</th>
                   <th>Documents & Actions</th>
                 </tr>
               </thead>
@@ -419,6 +420,12 @@ const DocumentManagement = () => {
                   
                   return (
                     <tr key={event.id} className="event-row">
+                      <td className="event-id-cell">
+                        <div className="event-id" style={{ textAlign: 'center' }}>
+                          {event.id}
+                        </div>
+                      </td>
+                      
                       <td className="event-details-cell">
                         <div className="event-name">📝 {event.title}</div>
                         <div className="event-meta">

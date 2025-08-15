@@ -39,7 +39,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
   // Real-time data sync states
   const [isPolling, setIsPolling] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false); // Disabled auto-refresh
+  // Auto-refresh is disabled to prevent losing unsaved event planning data
   const [dataUpdatedNotification, setDataUpdatedNotification] = useState(false);
   
   // Unsaved changes tracking
@@ -579,7 +579,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     hodRemarks, 
     submissionStatus, 
     userRole, 
-    lastUpdateTime
+    lastUpdateTime,
+    mergedData,
+    programEvents
   ]);
 
   // Update the ref whenever refreshData changes
@@ -612,7 +614,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     // Auto-refresh is now disabled to prevent losing unsaved event planning data
     // Users can manually refresh using the refresh button
     return; // No auto-refresh
-  }, [departmentId, selectedAcademicYearId, userRole, submissionStatus, autoRefreshEnabled]);
+  }, [departmentId, selectedAcademicYearId, userRole, submissionStatus]);
 
   // Browser beforeunload warning for unsaved changes
   useEffect(() => {
@@ -845,7 +847,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
         onChange={(e) => handleChange(index, field, e.target.value)}
       />
     ) : (
-      <span>{value}</span>
+      <span>
+        {field === "total_budget" ? `₹${(value || 0).toLocaleString()}` : value}
+      </span>
     );
   };
 
@@ -902,28 +906,24 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
               const isCompleted = currentIndex > index;
               const isCurrentStep = index === currentIndex;
               const isNextStep = index === currentIndex + 1;
-              const isPending = currentIndex < index && !isNextStep;
               
-              let stepClass, badgeClass, iconColor, bgClass;
+              let stepClass, iconColor, bgClass;
               
               // Green for completed steps OR current step (when it's a completed action)
               if (isCompleted || (isCurrentStep && status !== 'draft')) {
                 stepClass = 'text-success';
-                badgeClass = 'bg-success text-white';
                 iconColor = '#198754';
                 bgClass = 'bg-success bg-opacity-10 border-success';
               } 
               // Blue for next step that needs action (one step ahead)
               else if (isNextStep) {
                 stepClass = 'text-primary';
-                badgeClass = 'bg-primary text-white';
                 iconColor = '#0d6efd';
                 bgClass = 'bg-primary bg-opacity-10 border-primary';
               } 
               // Muted for pending future steps
               else {
                 stepClass = 'text-muted';
-                badgeClass = 'bg-light text-muted border';
                 iconColor = '#6c757d';
                 bgClass = 'bg-light border';
               }
@@ -1044,7 +1044,10 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
       setSubmissionStatus('approved');
       
       // Update permissions based on user role
-      if (userRole === 'principal') {
+      if (userRole === 'admin') {
+        setCanPlanEvents(true);  // Admin can view events
+        setCanEditEvents(true);  // And can edit them
+      } else if (userRole === 'principal') {
         setCanPlanEvents(true);  // Principal can view events
         setCanEditEvents(false); // But cannot edit them
       } else if (userRole === 'hod') {
@@ -1166,17 +1169,6 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     }
     setActiveTab(newTab);
   };
-
-  // Handle navigation with unsaved changes
-  const handleNavigationWithWarning = (action) => {
-    if (hasUnsavedChanges) {
-      setShowUnsavedWarning(true);
-      setPendingNavigation(action);
-      return false;
-    }
-    return true;
-  };
-
   // Confirm navigation and lose changes
   const confirmNavigationAndLoseChanges = () => {
     setHasUnsavedChanges(false);
@@ -1356,6 +1348,97 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
     } finally {
       setEventsSaving(prev => ({ ...prev, [programKey]: false }));
     }
+  };
+
+  // Admin Functions - Extended permissions for system administrators
+  const handleAdminDeleteEvent = async (programKey, eventIndex, eventId) => {
+    if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone and will also delete all associated documents.')) {
+      return;
+    }
+
+    try {
+      // Delete the event from backend if it has an ID
+      if (eventId && typeof eventId === 'number') {
+        await API.delete(`/events/${eventId}`);
+      }
+
+      // Update local state - remove the event from the program
+      setProgramEvents(prevEvents => {
+        const updatedEvents = { ...prevEvents };
+        const program = { ...updatedEvents[programKey] };
+        
+        // Remove the event at the specified index
+        program.events = program.events.filter((_, index) => index !== eventIndex);
+        
+        // Update event numbers for remaining events
+        program.events = program.events.map((event, index) => ({
+          ...event,
+          eventNumber: index + 1,
+          id: `${programKey}_${index + 1}`
+        }));
+        
+        updatedEvents[programKey] = program;
+        return updatedEvents;
+      });
+
+      // Refresh data to sync with backend
+      await refreshDataRef.current();
+      
+      alert('Event deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert('Failed to delete event. Please try again.');
+    }
+  };
+
+  const handleAdminDeleteDocument = async (documentId, documentType, eventId) => {
+    if (!window.confirm(`Are you sure you want to delete this ${documentType} document? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await API.delete(`/documents/delete/${documentId}`);
+      
+      // Refresh data to sync with backend
+      await refreshDataRef.current();
+      
+      alert(`${documentType} document deleted successfully!`);
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      alert('Failed to delete document. Please try again.');
+    }
+  };
+
+  const handleAdminAddEvent = (programKey) => {
+    setProgramEvents(prevEvents => {
+      const updatedEvents = { ...prevEvents };
+      const program = { ...updatedEvents[programKey] };
+      
+      // Get the next event number
+      const nextEventNumber = program.events.length + 1;
+      
+      // Add new empty event
+      const newEvent = {
+        id: `${programKey}_${nextEventNumber}`,
+        eventNumber: nextEventNumber,
+        title: '',
+        event_date: '',
+        budget_amount: program.programInfo.budget_mode === 'Fixed' 
+          ? program.programInfo.budget_per_event 
+          : Math.round(program.totalBudget / program.totalCount),
+        coordinator_name: '',
+        coordinator_contact: '',
+        status: 'pending'
+      };
+      
+      program.events.push(newEvent);
+      updatedEvents[programKey] = program;
+      
+      return updatedEvents;
+    });
+
+    // Mark as having unsaved changes
+    setHasUnsavedChanges(true);
   };
 
   // Helper function to get events for a specific program type
@@ -1778,9 +1861,9 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                       <th>Activity Category</th>
                       <th>Program Type</th>
                       <th>Sub Type</th>
-                      <th className="text-center">Budget / Event</th>
+                      <th className="text-center">Budget / Event (₹)</th>
                       <th className="text-center">Count</th>
-                      <th className="text-center">Total Budget</th>
+                      <th className="text-center">Total Budget (₹)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1834,7 +1917,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                     {idx === 0 && <td className="bold" rowSpan={categoryRowSpan}>{category}</td>}
                                     <td className="fw-bold">{item.program_type}</td>
                                     <td className="fw-bold">{item.sub_program_type || "-"}</td>
-                                    <td align="center">{item.budget_per_event || "-"}</td>
+                                    <td align="center">{item.budget_per_event ? `₹${item.budget_per_event.toLocaleString()}` : "-"}</td>
                                     <td align="center">
                                       {renderInput(
                                         globalIndex,
@@ -1845,7 +1928,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                     </td>
                                     <td align="center">
                                       {item.budget_mode === "Fixed" ? (
-                                        budget
+                                        `₹${budget.toLocaleString()}`
                                       ) : (
                                         renderInput(
                                           globalIndex,
@@ -1883,7 +1966,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                 Subtotal for {category}
                               </td>
                               <td align="center">{subtotal.count}</td>
-                              <td align="center">{subtotal.budget}</td>
+                              <td align="center">₹{subtotal.budget.toLocaleString()}</td>
                             </tr>
                           </React.Fragment>
                         );
@@ -1895,7 +1978,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                       <tr className="table-warning fw-bold">
                         <td colSpan="4" className="text-end">Grand Total</td>
                         <td align="center">{grandTotal.count}</td>
-                        <td align="center">{grandTotal.budget}</td>
+                        <td align="center">₹{grandTotal.budget.toLocaleString()}</td>
                       </tr>
                     )}
                   </tbody>
@@ -2222,21 +2305,41 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                     <span className="badge bg-success">
                                       <i className="fas fa-trophy"></i> Events Completed
                                     </span>
+                                    {userRole === 'admin' && (
+                                      <button
+                                        className="btn btn-outline-light btn-sm"
+                                        onClick={() => handleAdminAddEvent(programKey)}
+                                        title="Add New Event (Admin)"
+                                      >
+                                        <i className="fas fa-plus"></i> Add Event
+                                      </button>
+                                    )}
                                   </div>
                                 );
                               } else if (canEditEvents) {
                                 return (
-                                  <button
-                                    className="btn btn-success btn-sm"
-                                    onClick={() => handleSaveProgramEvents(programKey)}
-                                    disabled={eventsSaving[programKey]}
-                                  >
-                                    {eventsSaving[programKey] ? (
-                                      <><i className="fas fa-spinner fa-spin"></i> Saving...</>
-                                    ) : (
-                                      <><i className="fas fa-save"></i> Save All Events</>
+                                  <div className="d-flex gap-2 align-items-center">
+                                    <button
+                                      className="btn btn-success btn-sm"
+                                      onClick={() => handleSaveProgramEvents(programKey)}
+                                      disabled={eventsSaving[programKey]}
+                                    >
+                                      {eventsSaving[programKey] ? (
+                                        <><i className="fas fa-spinner fa-spin"></i> Saving...</>
+                                      ) : (
+                                        <><i className="fas fa-save"></i> Save All Events</>
+                                      )}
+                                    </button>
+                                    {userRole === 'admin' && (
+                                      <button
+                                        className="btn btn-outline-primary btn-sm"
+                                        onClick={() => handleAdminAddEvent(programKey)}
+                                        title="Add New Event (Admin)"
+                                      >
+                                        <i className="fas fa-plus"></i> Add Event
+                                      </button>
                                     )}
-                                  </button>
+                                  </div>
                                 );
                               } else {
                                 return (
@@ -2262,6 +2365,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                 <th style={{ width: '180px' }}>Coordinator</th>
                                 <th style={{ width: '150px' }}>Contact</th>
                                 <th style={{ width: '200px' }}>Documents</th>
+                                {userRole === 'admin' && <th style={{ width: '80px' }}>Actions</th>}
                               </tr>
                             </thead>
                             <tbody>
@@ -2417,6 +2521,15 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                                   >
                                                     <i className="fas fa-download"></i> DL
                                                   </button>
+                                                  {userRole === 'admin' && (
+                                                    <button
+                                                      onClick={() => handleAdminDeleteDocument(doc.id)}
+                                                      className="btn btn-sm btn-outline-danger"
+                                                      title={`Delete ${doc.original_filename || doc.filename}`}
+                                                    >
+                                                      <i className="fas fa-trash"></i>
+                                                    </button>
+                                                  )}
                                                 </div>
                                               );
                                             case 'pending':
@@ -2443,6 +2556,19 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                       })()}
                                     </div>
                                   </td>
+                                  
+                                  {/* Admin Actions Column */}
+                                  {userRole === 'admin' && (
+                                    <td className="text-center">
+                                      <button
+                                        onClick={() => handleAdminDeleteEvent(event.id, programKey, eventIndex)}
+                                        className="btn btn-sm btn-outline-danger"
+                                        title="Delete Event (Admin)"
+                                      >
+                                        <i className="fas fa-trash"></i>
+                                      </button>
+                                    </td>
+                                  )}
                                 </tr>
                                 );
                               })}
@@ -2453,7 +2579,7 @@ function ProgramEntryForm({ departmentId, academicYearId, userRole }) {
                                 <td className="fw-bold text-primary">
                                   ₹{program.events.reduce((sum, event) => sum + (parseFloat(event.budget_amount) || 0), 0).toLocaleString()}
                                 </td>
-                                <td colSpan="3" className="text-muted small">
+                                <td colSpan={userRole === 'admin' ? "4" : "3"} className="text-muted small">
                                   {program.events.reduce((sum, event) => sum + (parseFloat(event.budget_amount) || 0), 0) === program.totalBudget ? (
                                     <span className="text-success">
                                       <i className="fas fa-check"></i> Budget allocation matches approved amount
