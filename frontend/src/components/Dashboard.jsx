@@ -31,7 +31,7 @@ const Dashboard = ({ role }) => {
                   <FaUserShield size={36} className="mb-2" />
                   <h5 className="card-title">User Management</h5>
                   <p className="card-text">Add, Edit, or Delete Users</p>
-                  <button className="btn btn-light mt-2">Manage</button>
+                  <button className="btn btn-dark mt-2">Manage</button>
                 </div>
               </div>
             </div>
@@ -48,7 +48,7 @@ const Dashboard = ({ role }) => {
                   <FaUniversity size={36} className="mb-2" />
                   <h5 className="card-title">Years & Dealines Setup</h5>
                   <p className="card-text">Manage Academic Years and Deadlines</p>
-                  <button className="btn btn-light mt-2">Setup</button>
+                  <button className="btn btn-dark mt-2">Setup</button>
                 </div>
               </div>
             </div>
@@ -67,7 +67,7 @@ const Dashboard = ({ role }) => {
                 <FaClipboardList size={36} className="mb-2" />
                 <h5 className="card-title">Budget Proposals for Student Activities</h5>
                 <p className="card-text">Submit or Review Student Activity Budgets</p>
-                <button className="btn btn-light mt-2">Go to Form</button>
+                <button className="btn btn-dark mt-2">Go to Form</button>
               </div>
             </div>
           </div>
@@ -87,7 +87,7 @@ const Dashboard = ({ role }) => {
               <FaFileAlt size={36} className="mb-2" />
               <h5 className="card-title">📄 Document Management</h5>
               <p className="card-text">Upload, organize and manage documents</p>
-              <button className="btn btn-light mt-2">Manage Documents</button>
+              <button className="btn btn-dark mt-2">Manage Documents</button>
             </div>
           </div>
         </div>
@@ -102,7 +102,7 @@ const Dashboard = ({ role }) => {
                 <FaClipboardList size={36} className="mb-2" />
                 <h5 className="card-title">Student Activities Entry Status</h5>
                 <p className="card-text">View submission status and send reminders</p>
-                <button className="btn btn-light mt-2">View Status</button>
+                <button className="btn btn-dark mt-2">View Status</button>
               </div>
             </div>
           </div>
@@ -122,7 +122,7 @@ const Dashboard = ({ role }) => {
                 <FaChartBar size={36} className="mb-2" />
                 <h5 className="card-title">📊 Analytics Dashboard</h5>
                 <p className="card-text">Visual insights, charts and performance metrics</p>
-                <button className="btn btn-light mt-2">View Analytics</button>
+                <button className="btn btn-dark mt-2">View Analytics</button>
               </div>
             </div>
           </div>
@@ -139,7 +139,7 @@ const Dashboard = ({ role }) => {
                 <FaCogs size={36} className="mb-2" />
                 <h5 className="card-title">Program Type Manager</h5>
                 <p className="card-text">Manage Program Types and Categories</p>
-                <button className="btn btn-light mt-2">Manage</button>
+                <button className="btn btn-dark mt-2">Manage</button>
               </div>
             </div>
           </div>
