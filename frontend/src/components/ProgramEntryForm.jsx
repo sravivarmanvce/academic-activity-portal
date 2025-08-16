@@ -68,22 +68,41 @@ function ProgramEntryForm({ academicYearId, userRole }) {
   const refreshDataRef = useRef();
 
   useEffect(() => {
+    // Get user information for HOD filtering
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userDepartmentId = user?.department_id;
+    const isHoD = userRole && userRole.toLowerCase().includes('hod');
+    
     // Fetch academic years and departments on mount
     Promise.all([
       API.get("/api/academic-years"),
       API.get("/departments")
     ]).then(([academicRes, deptRes]) => {
       setAcademicYears(academicRes.data);
-      setDepartments(deptRes.data);
+      
+      // Filter departments for HOD users
+      let filteredDepartments = deptRes.data;
+      if (isHoD && userDepartmentId) {
+        filteredDepartments = deptRes.data.filter(dept => dept.id === userDepartmentId);
+      }
+      setDepartments(filteredDepartments);
+      
       if (academicRes.data.length > 0 && !selectedAcademicYearId) {
         setSelectedAcademicYearId(academicRes.data[0].id);
       }
-      // Auto-select first department if none is selected
-      if (deptRes.data.length > 0 && !selectedDepartmentId) {
-        setSelectedDepartmentId(deptRes.data[0].id);
+      
+      // Auto-select department based on user role
+      if (filteredDepartments.length > 0 && !selectedDepartmentId) {
+        if (isHoD && userDepartmentId) {
+          // HOD users get their department auto-selected
+          setSelectedDepartmentId(userDepartmentId);
+        } else {
+          // Admin/Principal get first department
+          setSelectedDepartmentId(filteredDepartments[0].id);
+        }
       }
     }).catch((err) => console.error("Failed to load initial data", err));
-  }, [selectedAcademicYearId, selectedDepartmentId]);
+  }, [selectedAcademicYearId, selectedDepartmentId, userRole]);
 
   useEffect(() => {
     if (!selectedDepartmentId || !selectedAcademicYearId) return;
@@ -1739,20 +1758,25 @@ function ProgramEntryForm({ academicYearId, userRole }) {
               ))}
             </select>
             
-            <div className="vr mx-2"></div>
-            <label className="form-label mb-0 text-nowrap">
-              <strong><i className="fas fa-building"></i> Select Deptartment:</strong>
-            </label>
-            <select
-              className="form-select"
-              style={{ maxWidth: "150px" }}
-              value={selectedDepartmentId}
-              onChange={(e) => setSelectedDepartmentId(Number(e.target.value))}
-            >
-              {departments.map((dept) => (
-                <option key={dept.id} value={dept.id}>{dept.name}</option>
-              ))}
-            </select>
+            {/* Department Dropdown - Only show for non-HOD users */}
+            {!(userRole && userRole.toLowerCase().includes('hod')) && (
+              <>
+                <div className="vr mx-2"></div>
+                <label className="form-label mb-0 text-nowrap">
+                  <strong><i className="fas fa-building"></i> Select Deptartment:</strong>
+                </label>
+                <select
+                  className="form-select"
+                  style={{ maxWidth: "150px" }}
+                  value={selectedDepartmentId}
+                  onChange={(e) => setSelectedDepartmentId(Number(e.target.value))}
+                >
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>{dept.name}</option>
+                  ))}
+                </select>
+              </>
+            )}
             
             <div className="vr mx-2"></div>
             <label className="form-label mb-0 text-nowrap">

@@ -100,7 +100,7 @@ const Dashboard = ({ role }) => {
             >
               <div className="card-body text-center">
                 <FaClipboardList size={36} className="mb-2" />
-                <h5 className="card-title">Program Entry Status</h5>
+                <h5 className="card-title">Student Activities Entry Status</h5>
                 <p className="card-text">View submission status and send reminders</p>
                 <button className="btn btn-light mt-2">View Status</button>
               </div>

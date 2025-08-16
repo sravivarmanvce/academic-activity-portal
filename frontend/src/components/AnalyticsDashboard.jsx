@@ -1,4 +1,4 @@
-// Enhanced Analytics Dashboard with Advanced Features
+// Analytics Dashboard with Advanced Features
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   PieChart, Pie, Cell, BarChart, Bar,
@@ -249,7 +249,7 @@ const AnalyticsDashboard = ({ userRole }) => {
       <div className="analytics-header">
         <div className="header-main">
           <div className="header-title-section">
-            <h1 className="analytics-title">📊 Enhanced Analytics Dashboard</h1>
+            <h1 className="analytics-title">📊 Analytics Dashboard</h1>
             <p className="analytics-subtitle">
               {userRole === 'principal' 
                 ? 'Institution-wide' 
