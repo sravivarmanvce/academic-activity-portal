@@ -537,9 +537,9 @@ function ProgramEntrySummary({ userRole }) {
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h4 className="mb-1">Program Entry Summary</h4>
+          <h4 className="mb-1">Budget Proposals for Student Activities - Summary Status</h4>
           <p className="text-muted mb-0">
-            Monitor and manage program entry submissions across all departments
+            Monitor and manage budget proposals across all departments
           </p>
         </div>
         <div className="d-flex gap-2">

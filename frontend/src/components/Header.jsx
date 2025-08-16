@@ -71,7 +71,7 @@ function Header({ userRole, userName, onLogout }) {
                 </a>
                 <ul className="dropdown-menu" aria-labelledby="bpsaDropdown">
                   <li>
-                    <Link className={getDropdownItemClass("/bpsaform")} to="/bpsaform">BPSA Plan</Link>
+                    <Link className={getDropdownItemClass("/bpsaform")} to="/bpsaform">Budget & Plan</Link>
                   </li>
                   <li>
                     <Link className={getDropdownItemClass("/documents")} to="/documents">Document Management</Link>
@@ -79,7 +79,7 @@ function Header({ userRole, userName, onLogout }) {
                 </ul>
               </li>
               <li className="nav-item">
-                <Link className={getLinkClass("/analytics")} to="/analytics">Analytics Dashboard</Link>
+                <Link className={getLinkClass("/analytics")} to="/analytics">Analytics</Link>
               </li>
             </>
           )}
@@ -99,21 +99,21 @@ function Header({ userRole, userName, onLogout }) {
                 </a>
                 <ul className="dropdown-menu" aria-labelledby="bpsaDropdownAdmin">
                   <li>
-                    <Link className={getDropdownItemClass("/bpsaform")} to="/bpsaform">BPSA Plan</Link>
+                    <Link className={getDropdownItemClass("/bpsaform")} to="/bpsaform">Budget & Plan</Link>
                   </li>
                   <li>
                     <Link className={getDropdownItemClass("/documents")} to="/documents">Document Management</Link>
                   </li>
                   <li>
-                    <Link className={getDropdownItemClass("/program-entry-summary")} to="/program-entry-summary">Entry Status</Link>
+                    <Link className={getDropdownItemClass("/program-entry-summary")} to="/program-entry-summary">Summary Status</Link>
                   </li>
                   <li>
-                    <Link className={getDropdownItemClass("/manage-types")} to="/manage-types">Program Type Manager</Link>
+                    <Link className={getDropdownItemClass("/manage-types")} to="/manage-types">Program Types Manager</Link>
                   </li>
                 </ul>
               </li>
               <li className="nav-item">
-                <Link className={getLinkClass("/analytics")} to="/analytics">Analytics Dashboard</Link>
+                <Link className={getLinkClass("/analytics")} to="/analytics">Analytics</Link>
               </li>
             </>
           )}
