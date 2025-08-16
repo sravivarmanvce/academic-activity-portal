@@ -2,25 +2,56 @@
 
 /* Sticky and styled navbar */
 .custom-navbar {
-  background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+  background: linear-gradient(90deg, #e9ecef, #dee2e6);
+  border-bottom: 2px solid #adb5bd;
   z-index: 1050; /* Always on top */
 }
 
 /* Style nav links */
 .navbar-nav .nav-link {
-  color: #ffffff;
+  color: #3c4978; /* Using the logo's blue color */
   font-weight: 500;
   transition: color 0.2s ease-in-out;
 }
 
 .navbar-nav .nav-link:hover {
-  color: #ffd700; /* gold on hover */
+  color: #748d91; /* Using the logo's gray color for hover */
+}
+
+.navbar-nav .nav-link.active,
+.navbar-nav .nav-link:focus {
+  color: #ff5e00 !important; /* Dark orange for active/focused links with important */
+  font-weight: 600;
+}
+
+/* For React Router active class */
+.navbar-nav .nav-link[aria-current="page"],
+.navbar-nav .nav-link.router-link-active {
+  color: #ff5e00 !important; /* Dark orange for active page with important */
+  font-weight: 600;
+}
+
+/* Additional specificity for active links */
+.custom-navbar .navbar-nav .nav-link.active {
+  color: #ff5e00 !important;
+  font-weight: 600;
+}
+
+/* Dropdown toggle active state */
+.navbar-nav .dropdown-toggle.active,
+.custom-navbar .navbar-nav .dropdown-toggle.active {
+  color: #ff5e00 !important;
+  font-weight: 600;
 }
 
 /* Welcome text spacing */
 .navbar-text {
-  color: #ffffff;
+  color: #3c4978; /* Using logo's blue color */
   font-size: 0.95rem;
+}
+
+.navbar-text .text-white {
+  color: #3c4978 !important; /* Override Bootstrap's text-white class */
 }
 
 /* Sticky padding to avoid overlap */
@@ -30,14 +61,66 @@ body {
 
 /* Collapse nav toggle (hamburger) */
 .navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(60, 73, 120, 0.5); /* Using logo's blue color */
 }
 
 .navbar-toggler-icon {
-  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255,255,255,0.8%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%2860,73,120,0.8%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }
 
 .navbar-brand img {
   border-radius: 4px;
   object-fit: contain;
+}
+
+.navbar-brand {
+  color: #3c4978 !important; /* Using logo's blue color */
+  font-weight: 600;
+}
+
+/* Dropdown Menu Styles */
+.navbar-nav .dropdown-menu {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #adb5bd;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(60, 73, 120, 0.15);
+  margin-top: 5px;
+}
+
+.navbar-nav .dropdown-item {
+  color: #3c4978; /* Using logo's blue color */
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  border-radius: 4px;
+  margin: 2px 8px;
+}
+
+.navbar-nav .dropdown-item:hover {
+  background: rgba(60, 73, 120, 0.1);
+  color: #748d91; /* Using logo's gray color */
+  transform: translateX(5px);
+}
+
+.navbar-nav .dropdown-item:focus {
+  background: rgba(60, 73, 120, 0.1);
+  color: #748d91;
+}
+
+.navbar-nav .dropdown-item.active,
+.navbar-nav .dropdown-item:active {
+  background: rgba(204, 102, 0, 0.1) !important;
+  color: #ff5e00 !important; /* Dark orange for active dropdown items */
+  font-weight: 600;
+}
+
+/* Additional specificity for dropdown active items */
+.custom-navbar .navbar-nav .dropdown-item.active {
+  background: rgba(204, 102, 0, 0.1) !important;
+  color: #ff5e00 !important;
+  font-weight: 600;
+}
+
+.navbar-nav .dropdown-toggle::after {
+  margin-left: 8px;
 }

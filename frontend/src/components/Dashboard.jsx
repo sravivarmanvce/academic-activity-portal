@@ -16,7 +16,7 @@ const Dashboard = ({ role }) => {
 
   return (
     <div className="container mt-4">
-      <h4 className="mb-4">Dashboard ({role.toUpperCase()})</h4>
+      <h4 className="mb-4">Home Dashboard ({role.toUpperCase()})</h4>
 
       <div className="row g-3">
         {/* 1st row: User Management, Manage Deadlines */}

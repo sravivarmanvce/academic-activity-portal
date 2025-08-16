@@ -52,7 +52,7 @@ const Login = ({ onLogin }) => {
               alt="Vardhaman"
               className="login-logo mb-2"
             />
-            <h4 className="text-white">Academic Activity Portal</h4>
+            <h4 className="text-dark">Academic Activity Portal</h4>
           </div>
 
           {error && <div className="alert alert-danger">{error}</div>}

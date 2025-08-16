@@ -1,12 +1,42 @@
 // src/components/Header.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import "./Header.css";
 
 function Header({ userRole, userName, onLogout }) {
+  const location = useLocation();
+  
+  // Helper function to determine if a link is active
+  const isActiveLink = (path) => {
+    return location.pathname === path;
+  };
+
+  // Helper function to determine if a dropdown menu should be active
+  const isDropdownActive = (menuPaths) => {
+    return menuPaths.some(path => location.pathname === path);
+  };
+
+  // Helper function to get link class based on active state
+  const getLinkClass = (path) => {
+    return `nav-link ${isActiveLink(path) ? 'active' : ''}`;
+  };
+
+  // Helper function to get dropdown toggle class (for main menu items like BPSA)
+  const getDropdownToggleClass = (menuPaths) => {
+    return `nav-link dropdown-toggle ${isDropdownActive(menuPaths) ? 'active' : ''}`;
+  };
+
+  // Helper function for dropdown items
+  const getDropdownItemClass = (path) => {
+    return `dropdown-item ${isActiveLink(path) ? 'active' : ''}`;
+  };
+
+  // Example usage for future dropdowns:
+  // For a "Reports" dropdown with submenu items at "/reports/summary" and "/reports/details":
+  // <a className={getDropdownToggleClass(["/reports/summary", "/reports/details"])} ...>Reports</a>
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark custom-navbar fixed-top shadow-sm px-3">
+    <nav className="navbar navbar-expand-lg navbar-light custom-navbar fixed-top shadow-sm px-3">
       <Link className="navbar-brand d-flex align-items-center" to="/">
   <img
     src="/assets/logo.png"
@@ -23,33 +53,81 @@ function Header({ userRole, userName, onLogout }) {
       <div className="collapse navbar-collapse" id="navbarNav">
         <ul className="navbar-nav me-auto mb-2 mb-lg-0">
           <li className="nav-item">
-            <Link className="nav-link" to="/">Dashboard</Link>
+            <Link className={getLinkClass("/")} to="/">Home</Link>
           </li>
 
-          {(userRole === "hod" || userRole === "principal" || userRole === "admin") && (
-            <li className="nav-item">
-              <Link className="nav-link" to="/bpsaform">BPSA Entry</Link>
-            </li>
-          )}
-
-          {(userRole === "principal" || userRole === "admin") && (
-            <li className="nav-item">
-              <Link className="nav-link" to="/manage-types">BPSA Manager</Link>
-            </li>
-          )}
-
-          {userRole === "admin" && (
+          {userRole === "hod" && (
             <>
+              <li className="nav-item dropdown">
+                <a 
+                  className={getDropdownToggleClass(["/bpsaform", "/documents"])}
+                  href="#" 
+                  id="bpsaDropdown" 
+                  role="button" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false"
+                >
+                  BPSA
+                </a>
+                <ul className="dropdown-menu" aria-labelledby="bpsaDropdown">
+                  <li>
+                    <Link className={getDropdownItemClass("/bpsaform")} to="/bpsaform">BPSA Plan</Link>
+                  </li>
+                  <li>
+                    <Link className={getDropdownItemClass("/documents")} to="/documents">Document Management</Link>
+                  </li>
+                </ul>
+              </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/users">Users</Link>
+                <Link className={getLinkClass("/analytics")} to="/analytics">Analytics Dashboard</Link>
               </li>
             </>
           )}
 
+          {userRole !== "hod" && (userRole === "principal" || userRole === "admin") && (
+            <>
+              <li className="nav-item dropdown">
+                <a 
+                  className={getDropdownToggleClass(["/bpsaform", "/documents", "/program-entry-summary", "/manage-types"])}
+                  href="#" 
+                  id="bpsaDropdownAdmin" 
+                  role="button" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false"
+                >
+                  BPSA
+                </a>
+                <ul className="dropdown-menu" aria-labelledby="bpsaDropdownAdmin">
+                  <li>
+                    <Link className={getDropdownItemClass("/bpsaform")} to="/bpsaform">BPSA Plan</Link>
+                  </li>
+                  <li>
+                    <Link className={getDropdownItemClass("/documents")} to="/documents">Document Management</Link>
+                  </li>
+                  <li>
+                    <Link className={getDropdownItemClass("/program-entry-summary")} to="/program-entry-summary">Entry Status</Link>
+                  </li>
+                  <li>
+                    <Link className={getDropdownItemClass("/manage-types")} to="/manage-types">Program Type Manager</Link>
+                  </li>
+                </ul>
+              </li>
+              <li className="nav-item">
+                <Link className={getLinkClass("/analytics")} to="/analytics">Analytics Dashboard</Link>
+              </li>
+            </>
+          )}
+
+          {userRole === "admin" && (
+            <li className="nav-item">
+              <Link className={getLinkClass("/admin/users")} to="/admin/users">Users</Link>
+            </li>
+          )}
+
           {(userRole === "principal" || userRole === "admin") && (
             <>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/manage-academic-years">Deadlines</Link>
+                <Link className={getLinkClass("/admin/manage-academic-years")} to="/admin/manage-academic-years">Deadlines</Link>
               </li>
             </>
           )}
@@ -60,7 +138,7 @@ function Header({ userRole, userName, onLogout }) {
           <span className="navbar-text me-3">
             👤 <strong className="text-white">{userName}</strong>
           </span>
-          <button className="btn btn-outline-light btn-sm" onClick={onLogout}>
+          <button className="btn btn-outline-primary btn-sm" onClick={onLogout}>
             Logout
           </button>
         </div>
