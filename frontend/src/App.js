@@ -19,6 +19,7 @@ import ProtectedRoute from "./ProtectedRoute";
 
 function App() {
   const [user, setUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
   const [selectedAcademicYearId, setSelectedAcademicYearId] = useState("");
 
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ function App() {
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) setUser(JSON.parse(stored));
+    setUserLoading(false); // Mark loading as complete
   }, []);
 
   // Load academic years and set default selection
@@ -75,7 +77,14 @@ function App() {
 
   return (
     <div className="container mt-4">
-      {!user ? (
+      {userLoading ? (
+        // Show loading while checking authentication
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : !user ? (
         <Routes>
           <Route path="/login" element={<Login onLogin={(u) => setUser(u)} />} />
           <Route path="*" element={<Navigate to="/login" />} />
@@ -85,7 +94,7 @@ function App() {
           <Header userRole={user.role} userName={user.name} onLogout={handleLogout} />
 
           <Routes key={user.id}>
-            <Route index element={<Navigate to="/dashboard" />} />
+            <Route path="/" element={<Navigate to="/dashboard" />} />
 
             <Route path="/dashboard" element={
               <ProtectedRoute user={user}>
@@ -158,7 +167,7 @@ function App() {
               </ProtectedRoute>
             } />
 
-            <Route path="*" element={<Navigate to="/dashboard" />} />
+            {/* Remove wildcard redirect - let React Router handle 404s naturally */}
           </Routes>
         </>
       )}

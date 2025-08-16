@@ -93,7 +93,7 @@ const DocumentManagement = () => {
     fontWeight: '500',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    width: '80px', // Fixed width instead of minWidth for true uniformity
+    width: '50px', // Fixed width instead of minWidth for true uniformity
     textAlign: 'center'
   };
 
@@ -436,6 +436,7 @@ const DocumentManagement = () => {
           bValue = b.title.toLowerCase();
           break;
         case 'department':
+        case 'department_name':
           aValue = getDepartmentName(a.department_id).toLowerCase();
           bValue = getDepartmentName(b.department_id).toLowerCase();
           break;
@@ -740,6 +741,18 @@ const DocumentManagement = () => {
                     </div>
                   </th>
                   <th 
+                    className="text-center sortable" 
+                    onClick={() => handleSort('department_name')}
+                    style={{ cursor: 'pointer', userSelect: 'none', textAlign: 'center', minWidth: '100px' }}
+                    title="Click to sort by Department"
+                  >
+                    <div className="table-header-content" style={{ alignItems: 'center' }}>
+                      <span className="header-title">
+                        Department {tableFilters.sortBy === 'department_name' && (tableFilters.sortOrder === 'asc' ? '↑' : '↓')}
+                      </span>
+                    </div>
+                  </th>
+                  <th 
                     className="sortable" 
                     onClick={() => handleSort('event_title')}
                     style={{ cursor: 'pointer', userSelect: 'none', minWidth: '200px' }}
@@ -765,7 +778,7 @@ const DocumentManagement = () => {
                   </th>
                   <th style={{ padding: '12px 8px', verticalAlign: 'top' }}>
                     <div className="table-header-content">
-                      <span className="header-title">Documents & Actions</span>
+                      <span className="header-title" style={{ minWidth: '450px' }}>Documents & Actions</span>
                     </div>
                   </th>
                 </tr>
@@ -785,10 +798,15 @@ const DocumentManagement = () => {
                         </div>
                       </td>
                       
+                      <td className="department-cell">
+                        <div className="department-name" style={{ textAlign: 'center' }}>
+                          {departmentName}
+                        </div>
+                      </td>
+                      
                       <td className="event-details-cell">
                         <div className="event-name">📝 {event.title}</div>
                         <div className="event-meta">
-                          <div>🏢 {departmentName}</div>
                           <div>📅 {new Date(event.event_date).toLocaleDateString()}</div>
                           <div>💰 ₹{event.budget_amount?.toLocaleString()}</div>
                         </div>
@@ -842,7 +860,7 @@ const DocumentManagement = () => {
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                               >
                                 <Upload size={12} />
-                                <span>Upload</span>
+                                <span>U</span>
                               </button>
                             )}
                             
@@ -881,7 +899,7 @@ const DocumentManagement = () => {
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
                               >
                                 <Download size={12} />
-                                <span>Download</span>
+                                <span>D</span>
                               </button>
                             )}
                             
@@ -902,7 +920,7 @@ const DocumentManagement = () => {
                                   onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                                 >
                                   <CheckCircle size={12} />
-                                  <span>Approve</span>
+                                  <span>A</span>
                                 </button>
                                 <button
                                   className="action-btn-compact reject"
@@ -917,7 +935,7 @@ const DocumentManagement = () => {
                                   onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                                 >
                                   <XCircle size={12} />
-                                  <span>Reject</span>
+                                  <span>R</span>
                                 </button>
                               </>
                             )}
@@ -965,7 +983,7 @@ const DocumentManagement = () => {
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                               >
                                 <Upload size={12} />
-                                <span>Upload</span>
+                                <span>U</span>
                               </button>
                             )}
                             
@@ -1004,7 +1022,7 @@ const DocumentManagement = () => {
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
                               >
                                 <Download size={12} />
-                                <span>Download</span>
+                                <span>D</span>
                               </button>
                             )}
                             
@@ -1025,7 +1043,7 @@ const DocumentManagement = () => {
                                   onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
                                 >
                                   <CheckCircle size={12} />
-                                  <span>Approve</span>
+                                  <span>A</span>
                                 </button>
                                 <button
                                   className="action-btn-compact reject"
@@ -1040,7 +1058,7 @@ const DocumentManagement = () => {
                                   onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                                 >
                                   <XCircle size={12} />
-                                  <span>Reject</span>
+                                  <span>R</span>
                                 </button>
                               </>
                             )}

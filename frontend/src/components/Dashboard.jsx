@@ -60,24 +60,6 @@ const Dashboard = ({ role }) => {
         {["hod", "principal", "admin"].includes(role) && (
           <div className="col-sm-6 col-lg-4">
             <div
-              className="card text-white bg-gradient-primary h-100 shadow dashboard-tile clickable-tile"
-              style={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-              }}
-              onClick={() => navigate("/analytics")}
-            >
-              <div className="card-body text-center">
-                <FaChartBar size={36} className="mb-2" />
-                <h5 className="card-title">📊 Analytics Dashboard</h5>
-                <p className="card-text">Visual insights, charts and performance metrics</p>
-                <button className="btn btn-light mt-2">View Analytics</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {["hod", "principal", "admin"].includes(role) && (
-          <div className="col-sm-6 col-lg-4">
-            <div
               className="card text-white bg-primary h-100 shadow dashboard-tile clickable-tile"
               onClick={() => navigate("/bpsaform")}
             >
@@ -90,36 +72,7 @@ const Dashboard = ({ role }) => {
             </div>
           </div>
         )}
-        {(role === "admin" || role === "principal") && (
-          <div className="col-sm-6 col-lg-4">
-            <div
-              className="card text-white bg-info h-100 shadow dashboard-tile clickable-tile"
-              onClick={() => navigate("/program-entry-summary")}
-            >
-              <div className="card-body text-center">
-                <FaClipboardList size={36} className="mb-2" />
-                <h5 className="card-title">Program Entry Status</h5>
-                <p className="card-text">View submission status and send reminders</p>
-                <button className="btn btn-light mt-2">View Status</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {(role === "principal" || role === "admin") && (
-          <div className="col-sm-6 col-lg-4">
-            <div
-              className="card text-white bg-success h-100 shadow dashboard-tile clickable-tile"
-              onClick={() => navigate("/manage-types")}
-            >
-              <div className="card-body text-center">
-                <FaCogs size={36} className="mb-2" />
-                <h5 className="card-title">Program Type Manager</h5>
-                <p className="card-text">Manage Program Types and Categories</p>
-                <button className="btn btn-light mt-2">Manage</button>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Document Management Tile */}
         <div className="col-sm-6 col-lg-4">
@@ -138,6 +91,59 @@ const Dashboard = ({ role }) => {
             </div>
           </div>
         </div>
+
+        {(role === "admin" || role === "principal") && (
+          <div className="col-sm-6 col-lg-4">
+            <div
+              className="card text-white bg-info h-100 shadow dashboard-tile clickable-tile"
+              onClick={() => navigate("/program-entry-summary")}
+            >
+              <div className="card-body text-center">
+                <FaClipboardList size={36} className="mb-2" />
+                <h5 className="card-title">Program Entry Status</h5>
+                <p className="card-text">View submission status and send reminders</p>
+                <button className="btn btn-light mt-2">View Status</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {["hod", "principal", "admin"].includes(role) && (
+          <div className="col-sm-6 col-lg-4">
+            <div
+              className="card text-white bg-gradient-primary h-100 shadow dashboard-tile clickable-tile"
+              style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+              }}
+              onClick={() => navigate("/analytics")}
+            >
+              <div className="card-body text-center">
+                <FaChartBar size={36} className="mb-2" />
+                <h5 className="card-title">📊 Analytics Dashboard</h5>
+                <p className="card-text">Visual insights, charts and performance metrics</p>
+                <button className="btn btn-light mt-2">View Analytics</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {(role === "principal" || role === "admin") && (
+          <div className="col-sm-6 col-lg-4">
+            <div
+              className="card text-white bg-success h-100 shadow dashboard-tile clickable-tile"
+              onClick={() => navigate("/manage-types")}
+            >
+              <div className="card-body text-center">
+                <FaCogs size={36} className="mb-2" />
+                <h5 className="card-title">Program Type Manager</h5>
+                <p className="card-text">Manage Program Types and Categories</p>
+                <button className="btn btn-light mt-2">Manage</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
