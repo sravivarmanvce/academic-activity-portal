@@ -880,7 +880,7 @@ const DocumentManagement = () => {
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                               >
                                 🗑️
-                                <span>Delete</span>
+                                <span>D</span>
                               </button>
                             )}
                             
@@ -1003,7 +1003,7 @@ const DocumentManagement = () => {
                                 onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                               >
                                 🗑️
-                                <span>Delete</span>
+                                <span>D</span>
                               </button>
                             )}
                             
