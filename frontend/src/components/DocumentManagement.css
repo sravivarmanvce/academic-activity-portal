@@ -393,7 +393,7 @@
   background: #f8d7da;
 }
 
-.modal-overlay {
+.document-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -407,7 +407,7 @@
   padding: 20px;
 }
 
-.modal {
+.document-modal {
   background: white;
   border-radius: 8px;
   max-width: 500px;
@@ -417,11 +417,11 @@
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-.modal.large {
+.document-modal.large {
   max-width: 700px;
 }
 
-.modal-header {
+.document-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -429,12 +429,12 @@
   margin-bottom: 20px;
 }
 
-.modal-header h3 {
+.document-modal-header h3 {
   margin: 0;
   color: #333;
 }
 
-.modal-header button {
+.document-modal-header button {
   background: none;
   border: none;
   font-size: 24px;
@@ -449,11 +449,11 @@
   border-radius: 15px;
 }
 
-.modal-header button:hover {
+.document-modal-header button:hover {
   background: #f0f0f0;
 }
 
-.modal-body {
+.document-modal-body {
   padding: 0 24px 20px 24px;
 }
 
@@ -488,7 +488,7 @@
   font-family: inherit;
 }
 
-.modal-actions {
+.document-modal-actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
@@ -497,7 +497,7 @@
   border-top: 1px solid #e0e0e0;
 }
 
-.modal-actions button {
+.document-modal-actions button {
   padding: 10px 20px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -506,15 +506,15 @@
   transition: all 0.2s;
 }
 
-.modal-actions button[type="submit"],
-.modal-actions .btn-primary {
+.document-modal-actions button[type="submit"],
+.document-modal-actions .btn-primary {
   background: #007bff;
   color: white;
   border-color: #007bff;
 }
 
-.modal-actions button[type="submit"]:hover,
-.modal-actions .btn-primary:hover {
+.document-modal-actions button[type="submit"]:hover,
+.document-modal-actions .btn-primary:hover {
   background: #0056b3;
 }
 
@@ -593,16 +593,16 @@
     min-width: 800px;
   }
 
-  .modal {
+  .document-modal {
     margin: 10px;
     max-width: none;
   }
 
-  .modal-body {
+  .document-modal-body {
     padding: 0 16px 16px 16px;
   }
 
-  .modal-header {
+  .document-modal-header {
     padding: 16px 16px 0 16px;
   }
 }

@@ -134,7 +134,6 @@ const ManageProgramTypes = () => {
           <tr>
             <th>#</th>
             <th>Program Type</th>
-            <th>Sub Type</th>
             <th>Activity Category</th>
             <th>Departments</th>
             <th>Budget Mode</th>
@@ -147,7 +146,6 @@ const ManageProgramTypes = () => {
             <tr key={pt.id}>
               <td>{index + 1}</td>
               <td>{pt.program_type}</td>
-              <td>{pt.sub_program_type}</td>
               <td>{pt.activity_category}</td>
               <td>{pt.departments}</td>
               <td>{pt.budget_mode}</td>
@@ -178,15 +176,12 @@ const ManageProgramTypes = () => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-2">
-              <Form.Label>Sub Program Type</Form.Label>
-              <Form.Control
-                type="text"
-                name="sub_program_type"
-                value={formData.sub_program_type}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
+            {/* Sub Program Type - Hidden but kept in database */}
+            <Form.Control
+              type="hidden"
+              name="sub_program_type"
+              value={formData.sub_program_type}
+            />
 
             <Form.Group className="mb-2">
               <Form.Label>Activity Category</Form.Label>

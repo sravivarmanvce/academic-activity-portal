@@ -49,6 +49,18 @@ function ProgramEntryForm({ academicYearId, userRole }) {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   
+  // Export options state
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportType, setExportType] = useState(''); // 'pdf' or 'excel'
+  const [includeHodRemarks, setIncludeHodRemarks] = useState(true);
+  const [includePrincipalRemarks, setIncludePrincipalRemarks] = useState(true);
+  
+  // Remarks modal states
+  const [showHodRemarksModal, setShowHodRemarksModal] = useState(false);
+  const [showPrincipalRemarksModal, setShowPrincipalRemarksModal] = useState(false);
+  const [tempHodRemarks, setTempHodRemarks] = useState('');
+  const [tempPrincipalRemarks, setTempPrincipalRemarks] = useState('');
+  
   // Edit event modal states
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -718,7 +730,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
 
     if (invalidRows.length > 0) {
       const errors = invalidRows.map((entry) =>
-        `${entry.program_type}${entry.sub_program_type ? ' - ' + entry.sub_program_type : ''}`
+        `${entry.program_type}`
       );
       setValidationErrors(errors);
       setShowValidationModal(true);
@@ -744,22 +756,6 @@ function ProgramEntryForm({ academicYearId, userRole }) {
 
       await API.post("/program-counts", { entries: payload });
 
-      if (userRole === "hod") {
-        await API.post("/hod-remarks", {
-          department_id: selectedDepartmentId,
-          academic_year_id: selectedAcademicYearId,
-          remarks: hodRemarks,
-        });
-      }
-
-      if (userRole === "principal") {
-        await API.post("/principal-remarks", {
-          department_id: selectedDepartmentId,
-          academic_year_id: selectedAcademicYearId,
-          remarks: principalRemarks,
-        });
-      }
-
       setStatus("success");
       setHasUnsavedChanges(false); // Clear unsaved changes after successful save
     } catch (error) {
@@ -771,6 +767,25 @@ function ProgramEntryForm({ academicYearId, userRole }) {
   };
 
   const handleDownloadPDF = () => {
+    setExportType('pdf');
+    setShowExportModal(true);
+  };
+
+  const handleDownloadExcel = () => {
+    setExportType('excel');
+    setShowExportModal(true);
+  };
+
+  const handleExportConfirm = () => {
+    if (exportType === 'pdf') {
+      generatePDF();
+    } else if (exportType === 'excel') {
+      generateExcel();
+    }
+    setShowExportModal(false);
+  };
+
+  const generatePDF = () => {
     const printContents = printRef.current.innerHTML;
     const printWindow = window.open("", "_blank", "width=800,height=600");
 
@@ -778,6 +793,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
     <html>
       <head>
         <title>Budget Proposals for Student Activities - ${departmentName}</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <style>
           body {
             font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
@@ -866,6 +882,21 @@ function ProgramEntryForm({ academicYearId, userRole }) {
           tr, td, th {
            page-break-inside: avoid;
           }
+          
+          /* Hide buttons and non-printable elements */
+          .d-print-none,
+          button,
+          .btn {
+            display: none !important;
+          }
+          
+          /* Hide the remarks action buttons specifically */
+          .d-flex.justify-content-center.gap-3.mb-3 {
+            display: none !important;
+          }
+          .exclude-remarks {
+            display: none !important;
+          }
         </style>
       </head>
       <body>
@@ -879,6 +910,27 @@ function ProgramEntryForm({ academicYearId, userRole }) {
         ${printContents}
         <script>
           window.onload = function() {
+            // Hide remarks based on selections
+            ${!includeHodRemarks ? `
+            const hodRemarksRows = document.querySelectorAll('tr');
+            hodRemarksRows.forEach(row => {
+              const firstCell = row.querySelector('td');
+              if (firstCell && firstCell.innerHTML.includes('HoD Remarks:')) {
+                row.style.display = 'none';
+              }
+            });
+            ` : ''}
+            
+            ${!includePrincipalRemarks ? `
+            const principalRemarksRows = document.querySelectorAll('tr');
+            principalRemarksRows.forEach(row => {
+              const firstCell = row.querySelector('td');
+              if (firstCell && firstCell.innerHTML.includes('Principal Remarks:')) {
+                row.style.display = 'none';
+              }
+            });
+            ` : ''}
+            
             window.print();
           };
         </script>
@@ -888,12 +940,79 @@ function ProgramEntryForm({ academicYearId, userRole }) {
     printWindow.document.close();
   };
 
-
-  const handleDownloadExcel = () => {
-    const table = printRef.current.querySelector("table");
+  const generateExcel = () => {
+    // Clone the table to modify it without affecting the original
+    const table = printRef.current.querySelector("table").cloneNode(true);
+    
+    // Remove remarks rows based on selections
+    const rows = table.querySelectorAll('tr');
+    rows.forEach(row => {
+      const firstCell = row.querySelector('td');
+      if (firstCell) {
+        const cellContent = firstCell.innerHTML;
+        if ((!includeHodRemarks && cellContent.includes('HoD Remarks:')) ||
+            (!includePrincipalRemarks && cellContent.includes('Principal Remarks:'))) {
+          row.remove();
+        }
+      }
+    });
+    
     const wb = XLSX.utils.table_to_book(table, { sheet: "Program Data" });
     const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     saveAs(new Blob([wbout], { type: "application/octet-stream" }), "program_entry.xlsx");
+  };
+
+  // Remarks modal handlers
+  const handleOpenHodRemarksModal = () => {
+    setTempHodRemarks(hodRemarks);
+    setShowHodRemarksModal(true);
+  };
+
+  const handleOpenPrincipalRemarksModal = () => {
+    setTempPrincipalRemarks(principalRemarks);
+    setShowPrincipalRemarksModal(true);
+  };
+
+  const handleSaveHodRemarks = async () => {
+    try {
+      await API.post("/hod-remarks", {
+        department_id: selectedDepartmentId,
+        academic_year_id: selectedAcademicYearId,
+        remarks: tempHodRemarks,
+      });
+      setHodRemarks(tempHodRemarks);
+      setShowHodRemarksModal(false);
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      console.error("Failed to save HoD remarks", error);
+      alert("Failed to save remarks. Please try again.");
+    }
+  };
+
+  const handleSavePrincipalRemarks = async () => {
+    try {
+      await API.post("/principal-remarks", {
+        department_id: selectedDepartmentId,
+        academic_year_id: selectedAcademicYearId,
+        remarks: tempPrincipalRemarks,
+      });
+      setPrincipalRemarks(tempPrincipalRemarks);
+      setShowPrincipalRemarksModal(false);
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      console.error("Failed to save Principal remarks", error);
+      alert("Failed to save remarks. Please try again.");
+    }
+  };
+
+  const handleCancelRemarksModal = (type) => {
+    if (type === 'hod') {
+      setShowHodRemarksModal(false);
+      setTempHodRemarks('');
+    } else {
+      setShowPrincipalRemarksModal(false);
+      setTempPrincipalRemarks('');
+    }
   };
 
   const renderInput = (index, field, value, editable, type = "number") => {
@@ -2015,7 +2134,6 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                     <tr>
                       <th>Activity Category</th>
                       <th>Program Type</th>
-                      <th>Sub Type</th>
                       <th className="text-center">Budget / Event (₹)</th>
                       <th className="text-center">Count</th>
                       <th className="text-center">Total Budget (₹)</th>
@@ -2024,7 +2142,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                   <tbody>
                     {Object.entries(grouped).length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="text-center">
+                        <td colSpan="5" className="text-center">
                           No program types found for your department.
                         </td>
                       </tr>
@@ -2071,7 +2189,6 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                                   <tr>
                                     {idx === 0 && <td className="bold" rowSpan={categoryRowSpan}>{category}</td>}
                                     <td className="fw-bold">{item.program_type}</td>
-                                    <td className="fw-bold">{item.sub_program_type || "-"}</td>
                                     <td align="center">{item.budget_per_event ? `₹${item.budget_per_event.toLocaleString()}` : "-"}</td>
                                     <td align="center">
                                       {renderInput(
@@ -2099,16 +2216,15 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                                   {/* Event Rows - Only show if events exist */}
                                   {events.map((event) => (
                                     <tr key={event.id} className="table-light">
-                                      <td className="ps-4 text-muted small">
-                                        <i className="fas fa-calendar me-1"></i>
+                                      <td className="ps-4 text-muted small" style={{ fontStyle: 'italic', backgroundColor: '#f0f8ff' }}>
+                                        <i className="fas fa-calendar me-1">&nbsp;</i>
                                         {event.title || `Event ${event.eventNumber}`}
                                       </td>
-                                      <td className="text-muted small">
-                                        {event.event_date ? new Date(event.event_date).toLocaleDateString() : '-'}
+                                      <td className="text-center" style={{ backgroundColor: '#e6ffe6' }} align="center">
+                                        ₹{(item.budget_mode === 'Fixed' ? item.budget_per_event : event.budget_amount)?.toLocaleString() || 0}
                                       </td>
-                                      <td className="text-muted small">-</td>
-                                      <td className="text-muted small text-center">-</td>
-                                      <td className="text-muted small text-center">
+                                      <td className="text-center" align="center" style={{ backgroundColor: '#fff9e6' }}>1</td>
+                                      <td className="text-center" align="center" style={{ backgroundColor: '#f0e6ff' }}>
                                         ₹{event.budget_amount?.toLocaleString() || 0}
                                       </td>
                                     </tr>
@@ -2117,7 +2233,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                               );
                             })}
                             <tr className="table-info fw-bold">
-                              <td colSpan="4" className="text-end">
+                              <td colSpan="3" className="text-end">
                                 Subtotal for {category}
                               </td>
                               <td align="center">{subtotal.count}</td>
@@ -2131,7 +2247,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                     {/* Grand Total Row */}
                     {Object.entries(grouped).length > 0 && (
                       <tr className="table-warning fw-bold">
-                        <td colSpan="4" className="text-end">Grand Total</td>
+                        <td colSpan="3" className="text-end">Grand Total</td>
                         <td align="center">{grandTotal.count}</td>
                         <td align="center">₹{grandTotal.budget.toLocaleString()}</td>
                       </tr>
@@ -2141,28 +2257,68 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                 
                 <div style={{ height: "24px" }}></div>
                 
+                {/* Remarks Action Buttons */}
+                <div className="d-flex justify-content-center gap-3 mb-3 d-print-none">
+                  {userRole === "hod" && (
+                    <button
+                      type="button"
+                      className="btn btn-info btn-sm"
+                      onClick={handleOpenHodRemarksModal}
+                      disabled={!isEditable}
+                    >
+                      <i className="fas fa-comment me-2"></i>
+                      {hodRemarks ? 'Edit HoD Remarks' : 'Add HoD Remarks'}
+                    </button>
+                  )}
+                  {userRole === "principal" && (
+                    <button
+                      type="button"
+                      className="btn btn-warning btn-sm"
+                      onClick={handleOpenPrincipalRemarksModal}
+                      disabled={!isEditable}
+                    >
+                      <i className="fas fa-star me-2"></i>
+                      {principalRemarks ? 'Edit Principal Remarks' : 'Add Principal Remarks'}
+                    </button>
+                  )}
+                </div>
+                
                 <table className="table table-bordered mt-3">
                   <tbody>
                     {/* HoD Remarks Row */}
-                    {hodRemarks && (
-                      <tr>
-                        <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
-                          HoD Remarks:<br />
-                          <span style={{ fontWeight: "normal" }}>{hodRemarks}</span>
-                        </td>
-                      </tr>
-                    )}
+                    <tr>
+                      <td colSpan="5" style={{ 
+                        whiteSpace: "pre-wrap", 
+                        fontWeight: "bold",
+                        backgroundColor: hodRemarks ? "#f8f9fa" : "#e9ecef",
+                        minHeight: "60px",
+                        verticalAlign: "top",
+                        padding: "12px"
+                      }}>
+                        HoD Remarks:<br />
+                        <span style={{ fontWeight: "normal", color: hodRemarks ? "#000" : "#6c757d" }}>
+                          {hodRemarks || "No remarks provided yet."}
+                        </span>
+                      </td>
+                    </tr>
 
                     {/* Principal Remarks Row */}
-                    {principalRemarks && (
-                      <tr>
-                        <td colSpan="6" style={{ whiteSpace: "pre-wrap", fontWeight: "bold" }}>
-                          Principal Remarks:<br />
-                          <span style={{ fontWeight: "normal" }}>{principalRemarks}</span>
-                          <div style={{ height: "14px" }}></div>
-                        </td>
-                      </tr>
-                    )}
+                    <tr>
+                      <td colSpan="5" style={{ 
+                        whiteSpace: "pre-wrap", 
+                        fontWeight: "bold",
+                        backgroundColor: principalRemarks ? "#fff3cd" : "#e9ecef",
+                        minHeight: "60px",
+                        verticalAlign: "top",
+                        padding: "12px"
+                      }}>
+                        Principal Remarks:<br />
+                        <span style={{ fontWeight: "normal", color: principalRemarks ? "#000" : "#6c757d" }}>
+                          {principalRemarks || "No remarks provided yet."}
+                        </span>
+                        <div style={{ height: "14px" }}></div>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
                 
@@ -2428,7 +2584,6 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                           <div>
                             <h6 className="mb-0">
                               <i className="fas fa-calendar-check"></i> {program.programInfo.program_type}
-                              {program.programInfo.sub_program_type && ` - ${program.programInfo.sub_program_type}`}
                             </h6>
                             <small>
                               Approved: {program.totalCount} events | Budget: ₹{program.totalBudget.toLocaleString()}
@@ -2578,7 +2733,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                                   </td>
                                   
                                   {/* Budget Amount */}
-                                  <td>
+                                  <td align="center">
                                     <input
                                       type="number"
                                       className="form-control form-control-sm"
@@ -2753,78 +2908,6 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                     </div>
                   ))}
                 </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Remarks Section */}
-      <div className="row">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header bg-info text-white">
-              <h6 className="mb-0"><i className="fas fa-comment"></i> HoD Remarks</h6>
-            </div>
-            <div className="card-body">
-              {userRole === "hod" ? (
-                <>
-                  <textarea
-                    rows={4}
-                    className="form-control"
-                    value={hodRemarks}
-                    onChange={(e) => setHodRemarks(e.target.value)}
-                    readOnly={!isEditable}
-                    style={{ whiteSpace: "pre-wrap" }}
-                    placeholder="Enter your remarks here..."
-                  />
-                  {/* Printable version for PDF */}
-                  <div
-                    className="d-none d-print-block mt-2"
-                    style={{
-                      whiteSpace: "pre-wrap",
-                      border: "1px solid #ccc",
-                      padding: "10px",
-                      marginTop: "10px",
-                    }}
-                  >
-                    {hodRemarks}
-                  </div>
-                </>
-              ) : (
-                <div
-                  className="form-control bg-light"
-                  style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}
-                >
-                  {hodRemarks || "No remarks provided yet."}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header bg-warning text-dark">
-              <h6 className="mb-0"><i className="fas fa-star"></i> Principal Remarks</h6>
-            </div>
-            <div className="card-body">
-              {userRole === "principal" ? (
-                <textarea
-                  rows={4}
-                  className="form-control"
-                  value={principalRemarks}
-                  onChange={(e) => setPrincipalRemarks(e.target.value)}
-                  readOnly={!isEditable}
-                  style={{ whiteSpace: "pre-wrap" }}
-                  placeholder="Enter your remarks here..."
-                />
-              ) : (
-                <div
-                  className="form-control bg-light"
-                  style={{ whiteSpace: "pre-wrap", minHeight: "100px" }}>
-                  {principalRemarks || "No remarks provided yet."}
-                </div>
               )}
             </div>
           </div>
@@ -3145,6 +3228,335 @@ function ProgramEntryForm({ academicYearId, userRole }) {
           <div className="modal-backdrop fade show"></div>
         </>
       )}
+
+      {/* Export Options Modal */}
+      {showExportModal && (
+        <>
+          <div 
+            className="modal-backdrop fade show"
+            onClick={() => setShowExportModal(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1040
+            }}
+          ></div>
+          <div 
+            className="modal fade show" 
+            tabIndex="-1" 
+            role="dialog"
+            style={{ 
+              display: 'block',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 1050,
+              overflow: 'auto'
+            }}
+          >
+            <div 
+              className="modal-dialog" 
+              role="document"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                margin: 0,
+                maxWidth: '500px',
+                width: '90%'
+              }}
+            >
+              <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  <i className={`fas ${exportType === 'pdf' ? 'fa-file-pdf' : 'fa-file-excel'} me-2`}></i>
+                  Export Options - {exportType.toUpperCase()}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowExportModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p className="mb-3">Choose which remarks to include in the export:</p>
+                
+                <div className="form-check mb-3">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="includeHodRemarks"
+                    checked={includeHodRemarks}
+                    onChange={(e) => setIncludeHodRemarks(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="includeHodRemarks">
+                    <i className="fas fa-comment text-info me-2"></i>
+                    Include HoD Remarks
+                    {hodRemarks && (
+                      <small className="d-block text-muted">
+                        Preview: {hodRemarks.substring(0, 100)}
+                        {hodRemarks.length > 100 && '...'}
+                      </small>
+                    )}
+                  </label>
+                </div>
+                
+                <div className="form-check mb-3">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="includePrincipalRemarks"
+                    checked={includePrincipalRemarks}
+                    onChange={(e) => setIncludePrincipalRemarks(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="includePrincipalRemarks">
+                    <i className="fas fa-comment text-warning me-2"></i>
+                    Include Principal Remarks
+                    {principalRemarks && (
+                      <small className="d-block text-muted">
+                        Preview: {principalRemarks.substring(0, 100)}
+                        {principalRemarks.length > 100 && '...'}
+                      </small>
+                    )}
+                  </label>
+                </div>
+
+                {!includeHodRemarks && !includePrincipalRemarks && (
+                  <div className="alert alert-info">
+                    <i className="fas fa-info-circle me-2"></i>
+                    No remarks will be included in the export.
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowExportModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${exportType === 'pdf' ? 'btn-danger' : 'btn-success'}`}
+                  onClick={handleExportConfirm}
+                >
+                  <i className={`fas ${exportType === 'pdf' ? 'fa-file-pdf' : 'fa-file-excel'} me-2`}></i>
+                  Export {exportType.toUpperCase()}
+                </button>
+              </div>
+            </div>
+          </div>
+          </div>
+        </>
+      )}
+
+      {/* HoD Remarks Modal */}
+      {showHodRemarksModal && (
+        <>
+          <div 
+            className="modal-backdrop fade show"
+            onClick={() => handleCancelRemarksModal('hod')}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1040
+            }}
+          ></div>
+          <div 
+            className="modal fade show" 
+            tabIndex="-1" 
+            role="dialog"
+            style={{ 
+              display: 'block',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 1050,
+              overflow: 'auto'
+            }}
+          >
+            <div 
+              className="modal-dialog" 
+              role="document"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                margin: 0,
+                maxWidth: '600px',
+                width: '90%'
+              }}
+            >
+              <div className="modal-content">
+                <div className="modal-header bg-info text-white">
+                  <h5 className="modal-title">
+                    <i className="fas fa-comment me-2"></i>
+                    {hodRemarks ? 'Edit HoD Remarks' : 'Add HoD Remarks'}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    onClick={() => handleCancelRemarksModal('hod')}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label htmlFor="hodRemarksTextarea" className="form-label">
+                      <strong>Enter your remarks:</strong>
+                    </label>
+                    <textarea
+                      id="hodRemarksTextarea"
+                      rows={6}
+                      className="form-control"
+                      value={tempHodRemarks}
+                      onChange={(e) => setTempHodRemarks(e.target.value)}
+                      placeholder="Enter your remarks here..."
+                      style={{ whiteSpace: "pre-wrap" }}
+                    />
+                    <small className="form-text text-muted">
+                      These remarks will be included in the official budget proposal document.
+                    </small>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => handleCancelRemarksModal('hod')}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-info"
+                    onClick={handleSaveHodRemarks}
+                  >
+                    <i className="fas fa-save me-2"></i>
+                    Save Remarks
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Principal Remarks Modal */}
+      {showPrincipalRemarksModal && (
+        <>
+          <div 
+            className="modal-backdrop fade show"
+            onClick={() => handleCancelRemarksModal('principal')}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1040
+            }}
+          ></div>
+          <div 
+            className="modal fade show" 
+            tabIndex="-1" 
+            role="dialog"
+            style={{ 
+              display: 'block',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 1050,
+              overflow: 'auto'
+            }}
+          >
+            <div 
+              className="modal-dialog" 
+              role="document"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                margin: 0,
+                maxWidth: '600px',
+                width: '90%'
+              }}
+            >
+              <div className="modal-content">
+                <div className="modal-header bg-warning text-dark">
+                  <h5 className="modal-title">
+                    <i className="fas fa-star me-2"></i>
+                    {principalRemarks ? 'Edit Principal Remarks' : 'Add Principal Remarks'}
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => handleCancelRemarksModal('principal')}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label htmlFor="principalRemarksTextarea" className="form-label">
+                      <strong>Enter your remarks:</strong>
+                    </label>
+                    <textarea
+                      id="principalRemarksTextarea"
+                      rows={6}
+                      className="form-control"
+                      value={tempPrincipalRemarks}
+                      onChange={(e) => setTempPrincipalRemarks(e.target.value)}
+                      placeholder="Enter your remarks here..."
+                      style={{ whiteSpace: "pre-wrap" }}
+                    />
+                    <small className="form-text text-muted">
+                      These remarks will be included in the official budget proposal document.
+                    </small>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => handleCancelRemarksModal('principal')}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-warning"
+                    onClick={handleSavePrincipalRemarks}
+                  >
+                    <i className="fas fa-save me-2"></i>
+                    Save Remarks
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
     </div>
   );
 }
