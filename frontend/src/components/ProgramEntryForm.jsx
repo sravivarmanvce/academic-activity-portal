@@ -897,6 +897,37 @@ function ProgramEntryForm({ academicYearId, userRole }) {
           .exclude-remarks {
             display: none !important;
           }
+          
+          /* Print Header and Footer */
+          @media print {
+            @page {
+              @top-left {
+                content: "Budget Proposals for Student Activities - ${departmentName}";
+                font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
+                font-size: 9pt;
+              }
+              @top-right {
+                content: "Academic Year: ${selectedAcademicYear}";
+                font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
+                font-size: 9pt;
+              }
+              @bottom-left {
+                content: "Generated on: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true
+                })}";
+                font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
+                font-size: 9pt;
+              }
+              @bottom-right {
+                content: "Page " counter(page) " of " counter(pages);
+                font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
+                font-size: 9pt;
+              }
+            }
+          }
         </style>
       </head>
       <body>
