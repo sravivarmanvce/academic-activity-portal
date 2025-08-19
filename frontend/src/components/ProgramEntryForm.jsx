@@ -30,8 +30,8 @@ function ProgramEntryForm({ academicYearId, userRole }) {
   
   // New workflow states
   const [submissionStatus, setSubmissionStatus] = useState('draft'); // 'draft', 'submitted', 'approved', 'events_submitted', 'events_planned', 'completed'
-  const [canPlanEvents, setCanPlanEvents] = useState(false); // Can access events tab
-  const [canEditEvents, setCanEditEvents] = useState(false); // Can edit events (Admin or HoD)
+  const [canPlanEvents, setCanPlanEvents] = useState(userRole === 'admin' || userRole === 'principal' || userRole === 'hod'); // Can access events tab
+  const [canEditEvents, setCanEditEvents] = useState(userRole === 'admin' || userRole === 'hod'); // Can edit events (Admin or HoD)
   const [activeTab, setActiveTab] = useState('budget'); // 'budget' or 'events'
   
   // Event planning states
@@ -341,8 +341,16 @@ function ProgramEntryForm({ academicYearId, userRole }) {
           console.warn("Could not fetch submission status, defaulting to draft");
           setSubmissionStatus('draft');
           
-          // Set default permissions for unknown status
+          // Set default permissions based on user role when status is unknown
           if (userRole === 'admin') {
+            setCanPlanEvents(true);
+            setCanEditEvents(true);
+          } else if (userRole === 'principal') {
+            // Principal should be able to view events even when status is unknown
+            setCanPlanEvents(true);
+            setCanEditEvents(false);
+          } else if (userRole === 'hod') {
+            // HoD should be able to view events by default
             setCanPlanEvents(true);
             setCanEditEvents(true);
           } else {
