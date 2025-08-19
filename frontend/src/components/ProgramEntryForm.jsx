@@ -897,9 +897,91 @@ function ProgramEntryForm({ academicYearId, userRole }) {
           .exclude-remarks {
             display: none !important;
           }
+          
+          /* Page setup for headers and footers */
+          @page {
+            margin: 1in;
+            @top-left {
+              content: "Budget Proposals - ${departmentName}";
+              font-size: 10pt;
+              font-weight: bold;
+            }
+            @top-right {
+              content: "Academic Year: ${selectedAcademicYear}";
+              font-size: 10pt;
+            }
+            @bottom-left {
+              content: "Generated on: " date();
+              font-size: 9pt;
+              color: #666;
+            }
+            @bottom-center {
+              content: "Department of ${departmentFullName}";
+              font-size: 9pt;
+              color: #666;
+            }
+            @bottom-right {
+              content: "Page " counter(page) " of " counter(pages);
+              font-size: 9pt;
+              color: #666;
+            }
+          }
+          
+          /* Print-specific header styling */
+          .print-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: white;
+            border-bottom: 2px solid #333;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+          }
+          
+          .print-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: white;
+            border-top: 1px solid #333;
+            padding: 10px;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+            z-index: 1000;
+          }
+          
+          /* Adjust content margins for fixed header/footer */
+          body {
+            padding-top: 80px;
+            padding-bottom: 70px;
+          }
         </style>
       </head>
       <body>
+        <!-- Print Header -->
+        <div class="print-header">
+          <div>
+            <img src="assets/logo.png" alt="College Logo" style="height: 40px;" />
+          </div>
+          <div style="text-align: center; flex-grow: 1;">
+            <strong>Budget Proposals for Student Activities</strong><br/>
+            <span>Department of ${departmentFullName}</span>
+          </div>
+          <div style="text-align: right;">
+            <strong>Academic Year:</strong><br/>
+            <span>${selectedAcademicYear}</span>
+          </div>
+        </div>
+        
+        <!-- Main Content -->
         <div class="header">
           <img src="assets/logo.png" alt="College Logo" class="logo" />
           <div>
@@ -908,6 +990,15 @@ function ProgramEntryForm({ academicYearId, userRole }) {
           </div>
         </div>
         ${printContents}
+        
+        <!-- Print Footer -->
+        <div class="print-footer">
+          <div>
+            <strong>Department of ${departmentFullName}</strong> | 
+            Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()} | 
+            <em>This is a computer-generated document</em>
+          </div>
+        </div>
         <script>
           window.onload = function() {
             // Hide remarks based on selections
