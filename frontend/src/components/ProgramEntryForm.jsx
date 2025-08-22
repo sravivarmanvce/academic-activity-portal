@@ -2272,7 +2272,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                               );
                             })}
                             <tr className="table-info fw-bold">
-                              <td colSpan="3" className="text-end">
+                              <td colSpan="3" className="text-end" align="right">
                                 Subtotal for {category}
                               </td>
                               <td align="center">{subtotal.count}</td>
