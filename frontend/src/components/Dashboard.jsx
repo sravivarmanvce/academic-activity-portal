@@ -37,7 +37,7 @@ const Dashboard = ({ role }) => {
             </div>
             </>
           )}
-        {(role === "admin" || role === "principal") && (
+        {(role === "admin" || role === "principal" || role === "pa_principal") && (
           <>
             <div className="col-sm-6 col-lg-4">
               <div
@@ -57,7 +57,7 @@ const Dashboard = ({ role }) => {
 
         {/* 2nd row: Analytics Dashboard, BPSA Entry Form, Status, Program Type Manager */}
         <div className="w-100"></div> {/* Force new row */}
-        {["hod", "principal", "admin"].includes(role) && (
+        {["hod", "principal", "admin", "pa_principal"].includes(role) && (
           <div className="col-sm-6 col-lg-4">
             <div
               className="card text-white bg-primary h-100 shadow dashboard-tile clickable-tile"
@@ -92,7 +92,7 @@ const Dashboard = ({ role }) => {
           </div>
         </div>
 
-        {(role === "admin" || role === "principal") && (
+        {(role === "admin" || role === "principal" || role === "pa_principal") && (
           <div className="col-sm-6 col-lg-4">
             <div
               className="card text-white bg-info h-100 shadow dashboard-tile clickable-tile"
@@ -129,7 +129,7 @@ const Dashboard = ({ role }) => {
         )}
 
 
-        {(role === "principal" || role === "admin") && (
+        {(role === "principal" || role === "admin" || role === "pa_principal") && (
           <div className="col-sm-6 col-lg-4">
             <div
               className="card text-white bg-success h-100 shadow dashboard-tile clickable-tile"

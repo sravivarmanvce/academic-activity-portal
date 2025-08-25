@@ -30,7 +30,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
   
   // New workflow states
   const [submissionStatus, setSubmissionStatus] = useState('draft'); // 'draft', 'submitted', 'approved', 'events_submitted', 'events_planned', 'completed'
-  const [canPlanEvents, setCanPlanEvents] = useState(userRole === 'admin' || userRole === 'principal' || userRole === 'hod'); // Can access events tab
+  const [canPlanEvents, setCanPlanEvents] = useState(userRole === 'admin' || userRole === 'principal' || userRole === 'hod' || userRole === 'pa_principal'); // Can access events tab
   const [canEditEvents, setCanEditEvents] = useState(userRole === 'admin' || userRole === 'hod'); // Can edit events (Admin or HoD)
   const [activeTab, setActiveTab] = useState('budget'); // 'budget' or 'events'
   
@@ -294,6 +294,11 @@ function ProgramEntryForm({ academicYearId, userRole }) {
             setIsEditable(true);
             // Store deadline status for override button logic
             setDeadlinePassed(!isBeforeDeadline && !hasOverride);
+          } else if (userRole === "pa_principal") {
+            // PA to Principal has read-only access for data but can override deadlines
+            setIsEditable(false);
+            // Store deadline status for override button logic (same as principal)
+            setDeadlinePassed(!isBeforeDeadline && !hasOverride);
           } else if (userRole === "hod") {
             // HoDs initial editability based on deadline - will be further restricted by status later
             setIsEditable(yearObj?.is_enabled && (isBeforeDeadline || hasOverride));
@@ -507,6 +512,11 @@ function ProgramEntryForm({ academicYearId, userRole }) {
           setCanEditEvents(false);
         }
         setIsEditable(true); // Principal can always edit budget
+      } else if (userRole === 'pa_principal') {
+        // PA to Principal: Read-only access to all data
+        setCanPlanEvents(true); // Can view events
+        setCanEditEvents(false); // Cannot edit events
+        setIsEditable(false); // Cannot edit budget
       } else if (userRole === 'hod') {
         if (status === 'approved') {
           setCanPlanEvents(true);
@@ -1567,47 +1577,6 @@ function ProgramEntryForm({ academicYearId, userRole }) {
     }
   };
 
-  // Admin Functions - Extended permissions for system administrators
-  const handleAdminDeleteEvent = async (programKey, eventIndex, eventId) => {
-    if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone and will also delete all associated documents.')) {
-      return;
-    }
-
-    try {
-      // Delete the event from backend if it has an ID
-      if (eventId && typeof eventId === 'number') {
-        await API.delete(`/events/${eventId}`);
-      }
-
-      // Update local state - remove the event from the program
-      setProgramEvents(prevEvents => {
-        const updatedEvents = { ...prevEvents };
-        const program = { ...updatedEvents[programKey] };
-        
-        // Remove the event at the specified index
-        program.events = program.events.filter((_, index) => index !== eventIndex);
-        
-        // Update event numbers for remaining events
-        program.events = program.events.map((event, index) => ({
-          ...event,
-          eventNumber: index + 1,
-          id: `${programKey}_${index + 1}`
-        }));
-        
-        updatedEvents[programKey] = program;
-        return updatedEvents;
-      });
-
-      // Refresh data to sync with backend
-      await refreshDataRef.current();
-      
-      alert('Event deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      alert('Failed to delete event. Please try again.');
-    }
-  };
-
   // Handle admin edit event
   const handleAdminEditEvent = (programKey, eventIndex, event) => {
     setEditingEvent({ programKey, eventIndex, eventId: event.id });
@@ -2024,7 +1993,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
                 {/* Principal Override Actions */}
                 {submissionStatus === 'draft' && userRole === 'principal' && (
                   <div className="text-end">
-                    {((userRole === "principal" && deadlinePassed) || (!isEditable && userRole !== "principal")) && (
+                    {(((userRole === "principal" || userRole === "pa_principal") && deadlinePassed) || (!isEditable && userRole !== "principal" && userRole !== "pa_principal")) && (
                       <button 
                         className="btn btn-warning btn-sm mb-2"
                         onClick={handleEnableSubmissionOverride}
@@ -2086,7 +2055,7 @@ function ProgramEntryForm({ academicYearId, userRole }) {
               <div className="alert alert-secondary mb-0">
                 <i className="fas fa-edit"></i> Department is still drafting their budget proposal.
                 
-                {((userRole === "principal" && deadlinePassed) || (!isEditable && userRole !== "principal")) && (
+                {(((userRole === "principal" || userRole === "pa_principal") && deadlinePassed) || (!isEditable && userRole !== "principal" && userRole !== "pa_principal")) && (
                   <div className="mt-2">
                     <small className="text-muted">Note: Submission deadline has passed.</small>
                   </div>

@@ -234,7 +234,7 @@ function ProgramEntrySummary({ userRole }) {
       return;
     }
     
-    const reason = prompt("Enter reason for override (optional):", `Principal override - ${hours} hours extension for ${deptName}`);
+    const reason = prompt("Enter reason for override (optional):", `Administrative override - ${hours} hours extension for ${deptName}`);
     
     try {
       await API.post('/deadline-override', {
@@ -243,7 +243,7 @@ function ProgramEntrySummary({ userRole }) {
         module_name: 'program_entry',
         duration_hours: hours,
         enabled_by_principal: true,
-        reason: reason || `Principal override - ${hours} hours extension`
+        reason: reason || `Administrative override - ${hours} hours extension`
       });
       
       alert(`Override created for ${deptName} - ${hours} hours extension granted`);
@@ -365,7 +365,7 @@ function ProgramEntrySummary({ userRole }) {
       return;
     }
 
-    const reason = prompt("Enter reason for bulk override (optional):", `Principal bulk override - ${hours} hours extension for missed deadlines`);
+    const reason = prompt("Enter reason for bulk override (optional):", `Administrative bulk override - ${hours} hours extension for missed deadlines`);
 
     try {
       // Process overrides for all missed departments
@@ -376,7 +376,7 @@ function ProgramEntrySummary({ userRole }) {
           module_name: 'program_entry',
           duration_hours: hours,
           enabled_by_principal: true,
-          reason: reason || `Principal bulk override - ${hours} hours extension`
+          reason: reason || `Administrative bulk override - ${hours} hours extension`
         })
       );
 
@@ -692,8 +692,8 @@ function ProgramEntrySummary({ userRole }) {
               </div>
             </div>
 
-            {/* Quick Actions for Principal/Admin */}
-            {(userRole === "principal" || userRole === "admin") && (
+            {/* Quick Actions for Principal/Admin/PA */}
+            {(userRole === "principal" || userRole === "admin" || userRole === "pa_principal") && (
               <div className="mt-4 pt-3 border-top">
                 <div className="d-flex justify-content-between align-items-center">
                   <h6 className="mb-0 text-muted">
@@ -829,8 +829,8 @@ function ProgramEntrySummary({ userRole }) {
                             </button>
                           )}
                           
-                          {/* Override actions for Principals and Admins */}
-                          {(userRole === "principal" || userRole === "admin") && (
+                          {/* Override actions for Principals, Admins, and PA users */}
+                          {(userRole === "principal" || userRole === "admin" || userRole === "pa_principal") && (
                             <>
                               {!overrides[dept.id]?.has_override && statusInfo.stage === 'deadline_missed' && (
                                 <button

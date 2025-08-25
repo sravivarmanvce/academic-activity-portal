@@ -59,16 +59,16 @@ function Header({ userRole, userName, onLogout }) {
           {userRole === "hod" && (
             <>
               <li className="nav-item dropdown">
-                <a 
-                  className={getDropdownToggleClass(["/bpsaform", "/documents"])}
-                  href="#" 
+                <button 
+                  className={`nav-link dropdown-toggle ${getDropdownToggleClass(["/bpsaform", "/documents"]).includes('active') ? 'active' : ''}`}
                   id="bpsaDropdown" 
-                  role="button" 
+                  type="button"
                   data-bs-toggle="dropdown" 
                   aria-expanded="false"
+                  style={{ background: 'none', border: 'none' }}
                 >
                   BPSA
-                </a>
+                </button>
                 <ul className="dropdown-menu" aria-labelledby="bpsaDropdown">
                   <li>
                     <Link className={getDropdownItemClass("/bpsaform")} to="/bpsaform">Budget & Plan</Link>
@@ -78,25 +78,29 @@ function Header({ userRole, userName, onLogout }) {
                   </li>
                 </ul>
               </li>
-              <li className="nav-item">
-                <Link className={getLinkClass("/analytics")} to="/analytics">Analytics</Link>
-              </li>
             </>
           )}
 
-          {userRole !== "hod" && (userRole === "principal" || userRole === "admin") && (
+          {/* Analytics - Only for Principal, Admin, HOD (exclude PA) */}
+          {(userRole === "principal" || userRole === "admin" || userRole === "hod") && (
+            <li className="nav-item">
+              <Link className={getLinkClass("/analytics")} to="/analytics">Analytics</Link>
+            </li>
+          )}
+
+          {userRole !== "hod" && (userRole === "principal" || userRole === "admin" || userRole === "pa_principal") && (
             <>
               <li className="nav-item dropdown">
-                <a 
-                  className={getDropdownToggleClass(["/bpsaform", "/documents", "/program-entry-summary", "/manage-types"])}
-                  href="#" 
+                <button 
+                  className={`nav-link dropdown-toggle ${getDropdownToggleClass(["/bpsaform", "/documents", "/program-entry-summary", "/manage-types"]).includes('active') ? 'active' : ''}`}
                   id="bpsaDropdownAdmin" 
-                  role="button" 
+                  type="button"
                   data-bs-toggle="dropdown" 
                   aria-expanded="false"
+                  style={{ background: 'none', border: 'none' }}
                 >
                   BPSA
-                </a>
+                </button>
                 <ul className="dropdown-menu" aria-labelledby="bpsaDropdownAdmin">
                   <li>
                     <Link className={getDropdownItemClass("/bpsaform")} to="/bpsaform">Budget & Plan</Link>
@@ -112,9 +116,6 @@ function Header({ userRole, userName, onLogout }) {
                   </li>
                 </ul>
               </li>
-              <li className="nav-item">
-                <Link className={getLinkClass("/analytics")} to="/analytics">Analytics</Link>
-              </li>
             </>
           )}
 
@@ -124,7 +125,7 @@ function Header({ userRole, userName, onLogout }) {
             </li>
           )}
 
-          {(userRole === "principal" || userRole === "admin") && (
+          {(userRole === "principal" || userRole === "admin" || userRole === "pa_principal") && (
             <>
               <li className="nav-item">
                 <Link className={getLinkClass("/admin/manage-academic-years")} to="/admin/manage-academic-years">Deadlines</Link>

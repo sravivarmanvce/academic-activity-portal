@@ -48,7 +48,7 @@ const ManageUsers = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "role") {
-      const noDeptRoles = ["dean", "principal", "admin"];
+      const noDeptRoles = ["dean", "principal", "admin", "pa_principal"];
       setFormData((prev) => ({
         ...prev,
         role: value,
@@ -224,6 +224,7 @@ const ManageUsers = () => {
             <option value="">Select Role</option>
             <option value="admin">Admin</option>
             <option value="principal">Principal</option>
+            <option value="pa_principal">PA to Principal</option>
             <option value="hod">HoD</option>
             <option value="faculty">Faculty</option>
             <option value="dean">Dean</option>
@@ -235,7 +236,7 @@ const ManageUsers = () => {
             value={formData.department_id ?? ""}
             onChange={handleChange}
             className="form-select"
-            disabled={["dean", "principal", "admin"].includes(formData.role)}
+            disabled={["dean", "principal", "admin", "pa_principal"].includes(formData.role)}
           >
             <option value="">No Department</option>
             {departments.map((dept) => (
@@ -299,6 +300,7 @@ const ManageUsers = () => {
               <option value="">All Roles</option>
               <option value="admin">Admin</option>
               <option value="principal">Principal</option>
+              <option value="pa_principal">PA to Principal</option>
               <option value="hod">HoD</option>
               <option value="faculty">Faculty</option>
               <option value="dean">Dean</option>

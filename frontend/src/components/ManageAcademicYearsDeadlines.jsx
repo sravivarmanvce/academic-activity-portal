@@ -1,5 +1,5 @@
 // src/components/ManageAcademicYearsDeadlines.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
 import API from "../Api";
@@ -20,11 +20,19 @@ const ManageAcademicYears = ({ userRole }) => {
   const [loading, setLoading] = useState(true);
   const [newYear, setNewYear] = useState("");
 
-  useEffect(() => {
-    fetchAcademicYears();
+  const fetchDeadlines = useCallback(async (yearId) => {
+    try {
+      const res = await API.get(`/module-deadlines/${yearId}`);
+      setDeadlines((prev) => ({
+        ...prev,
+        [yearId]: res.data,
+      }));
+    } catch (err) {
+      console.error(`Failed to fetch deadlines for year ${yearId}`, err);
+    }
   }, []);
 
-  const fetchAcademicYears = async () => {
+  const fetchAcademicYears = useCallback(async () => {
     setLoading(true);
     try {
       const res = await API.get("/api/academic-years");
@@ -37,19 +45,11 @@ const ManageAcademicYears = ({ userRole }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchDeadlines]);
 
-  const fetchDeadlines = async (yearId) => {
-    try {
-      const res = await API.get(`/module-deadlines/${yearId}`);
-      setDeadlines((prev) => ({
-        ...prev,
-        [yearId]: res.data,
-      }));
-    } catch (err) {
-      console.error(`Failed to fetch deadlines for year ${yearId}`, err);
-    }
-  };
+  useEffect(() => {
+    fetchAcademicYears();
+  }, [fetchAcademicYears]);
 
   const updateDeadline = async (yearId, module, newDeadline) => {
     try {
@@ -61,17 +61,6 @@ const ManageAcademicYears = ({ userRole }) => {
       fetchDeadlines(yearId); // refresh
     } catch (err) {
       console.error("Failed to update deadline", err);
-    }
-  };
-
-  const toggleEnabled = async (yearId, isEnabled) => {
-    try {
-      await API.patch(`/api/academic-years/${yearId}`, {
-        is_enabled: !isEnabled,
-      });
-      fetchAcademicYears();
-    } catch (err) {
-      console.error("Failed to toggle academic year", err);
     }
   };
 
@@ -255,7 +244,7 @@ const ManageAcademicYears = ({ userRole }) => {
                 // Show message and initialize button when no deadlines exist
                 <div className="text-center py-4">
                   <p className="text-muted mb-3">No module deadlines found for this academic year.</p>
-                  {(userRole === "admin" || userRole === "principal") && (
+                  {(userRole === "admin" || userRole === "principal" || userRole === "pa_principal") && (
                     <button 
                       className="btn btn-primary" 
                       onClick={() => initializeDefaultDeadlines(year.id)}
@@ -268,7 +257,7 @@ const ManageAcademicYears = ({ userRole }) => {
                 // Show existing deadlines
                 (deadlines[year.id] || []).map((dl) => {
                   const deadlinePassed = isPast(dl.deadline);
-                  const canEdit = userRole === "admin" || userRole === "principal";
+                  const canEdit = userRole === "admin" || userRole === "principal" || userRole === "pa_principal";
 
                   const fieldKey = `${year.id}_${dl.module}`;
                   const isEditing = editingDeadlines[fieldKey] || false;
@@ -331,7 +320,7 @@ const ManageAcademicYears = ({ userRole }) => {
                       )}
 
                       {!canEdit && deadlinePassed && (
-                        <small className="text-danger">Deadline has passed. Only Principal can extend.</small>
+                        <small className="text-danger">Deadline has passed. Only Principal/Admin/PA can extend.</small>
                       )}
                     </div>
                   );

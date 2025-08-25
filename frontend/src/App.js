@@ -120,9 +120,9 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Program Entry Summary for Admin/Principal */}
+            {/* Program Entry Summary for Admin/Principal/PA */}
             <Route path="/program-entry-summary" element={
-              <ProtectedRoute user={user} allowedRoles={["admin", "principal"]}>
+              <ProtectedRoute user={user} allowedRoles={["admin", "principal", "pa_principal"]}>
                 <ProgramEntrySummary userRole={user.role} />
               </ProtectedRoute>
             } />
@@ -130,14 +130,14 @@ function App() {
             <Route
               path="/admin/manage-academic-years"
               element={
-                <ProtectedRoute user={user} allowedRoles={["admin", "principal"]}>
+                <ProtectedRoute user={user} allowedRoles={["admin", "principal", "pa_principal"]}>
                   <ManageAcademicYearsDeadlines userRole={user?.role?.toLowerCase()} />
                 </ProtectedRoute>
               }
             />
 
             <Route path="/bpsaform" element={
-              <ProtectedRoute user={user} allowedRoles={["hod", "principal", "admin"]}>
+              <ProtectedRoute user={user} allowedRoles={["hod", "principal", "admin", "pa_principal"]}>
                 {/* BPSA logic remains same */}
                 {user.role === "hod" && selectedAcademicYearId && (
                   <ProgramEntryForm
@@ -147,6 +147,12 @@ function App() {
                   />
                 )}
                 {user.role === "principal" && selectedAcademicYearId && (
+                  <ProgramEntryForm
+                    academicYearId={selectedAcademicYearId}
+                    userRole={user.role}
+                  />
+                )}
+                {user.role === "pa_principal" && selectedAcademicYearId && (
                   <ProgramEntryForm
                     academicYearId={selectedAcademicYearId}
                     userRole={user.role}
@@ -162,7 +168,7 @@ function App() {
             } />
 
             <Route path="/manage-types" element={
-              <ProtectedRoute user={user} allowedRoles={["principal", "admin"]}>
+              <ProtectedRoute user={user} allowedRoles={["principal", "admin", "pa_principal"]}>
                 <ManageProgramTypes />
               </ProtectedRoute>
             } />
