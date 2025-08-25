@@ -208,7 +208,7 @@ def approve_event_document(
     current_user_role: str = Depends(get_current_user_role)
 ):
     """Approve a document (Principal only)"""
-    if current_user_role not in ['principal', 'admin']:
+    if current_user_role not in ['principal', 'admin', 'pa_principal']:
         raise HTTPException(status_code=403, detail="Only principal can approve documents")
     
     try:
@@ -228,7 +228,7 @@ def reject_event_document(
     current_user_role: str = Depends(get_current_user_role)
 ):
     """Reject a document with reason (Principal only)"""
-    if current_user_role not in ['principal', 'admin']:
+    if current_user_role not in ['principal', 'admin', 'pa_principal']:
         raise HTTPException(status_code=403, detail="Only principal can reject documents")
     
     try:

@@ -25,7 +25,7 @@ def create_program_type(
     db: Session = Depends(get_db),
     role: str = Depends(get_current_user_role)
 ):
-    if role not in ["admin", "principal"]:
+    if role not in ["admin", "principal", "pa_principal"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     return crud.create_program_type(db, data)
 
@@ -37,7 +37,7 @@ def update_program_type(
     db: Session = Depends(get_db),
     role: str = Depends(get_current_user_role)
 ):
-    if role not in ["admin", "principal"]:
+    if role not in ["admin", "principal", "pa_principal"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     return crud.update_program_type(db, id, data)
 
@@ -48,7 +48,7 @@ def delete_program_type(
     db: Session = Depends(get_db),
     role: str = Depends(get_current_user_role)
 ):
-    if role not in ["admin", "principal"]:
+    if role not in ["admin", "principal", "pa_principal"]:
         raise HTTPException(status_code=403, detail="Not authorized")
     deleted = crud.delete_program_type(db, id)
     if not deleted:
