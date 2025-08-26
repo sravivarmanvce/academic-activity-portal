@@ -15,6 +15,7 @@ from app.api.endpoints import notifications
 from app.api.endpoints import notifications_inbox
 from app.api.endpoints import analytics
 from app.api.endpoints import documents
+from app.api.endpoints import scorecard
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -50,4 +51,5 @@ app.include_router(notifications.router, prefix="/notifications", tags=["notific
 app.include_router(notifications_inbox.router, prefix="/notifications", tags=["notifications"])
 app.include_router(analytics.router, prefix="/api", tags=["analytics"])
 app.include_router(documents.router, prefix="/documents", tags=["documents"])
+app.include_router(scorecard.router, prefix="/api", tags=["scorecard"])
 

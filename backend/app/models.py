@@ -1,6 +1,6 @@
 # app/models.py
 
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, Boolean, DateTime, BigInteger
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, Boolean, DateTime, BigInteger, Date
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy.ext.declarative import declarative_base
@@ -311,4 +311,112 @@ class DocumentFolder(Base):
     department = relationship("Department")
     academic_year = relationship("AcademicYear")
     creator = relationship("User")
+
+# ----------------------------- 
+# Score Card Tables
+# -----------------------------
+
+class ScoreCardTemplate(Base):
+    __tablename__ = "score_card_templates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text)
+    academic_year_id = Column(Integer, ForeignKey("academic_years.id"), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    academic_year = relationship("AcademicYear")
+    questions = relationship("ScoreCardQuestion", back_populates="template", cascade="all, delete-orphan")
+    submissions = relationship("ScoreCardSubmission", back_populates="template")
+
+class ScoreCardQuestion(Base):
+    __tablename__ = "score_card_questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    template_id = Column(Integer, ForeignKey("score_card_templates.id"), nullable=False)
+    question_number = Column(Integer, nullable=False)
+    question_text = Column(Text, nullable=False)
+    question_type = Column(String(50), nullable=False, default='objective')  # 'objective' or 'subjective'
+    max_score = Column(Integer, nullable=False, default=5)
+    requires_document = Column(Boolean, default=False, nullable=False)
+    is_mandatory = Column(Boolean, default=True, nullable=False)
+    document_description = Column(Text)
+    document_formats = Column(Text)  # JSON array of accepted formats
+
+    template = relationship("ScoreCardTemplate", back_populates="questions")
+    responses = relationship("ScoreCardResponse", back_populates="question")
+
+class ScoreCardSubmission(Base):
+    __tablename__ = "score_card_submissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    template_id = Column(Integer, ForeignKey("score_card_templates.id"), nullable=False)
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=False)
+    submitted_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    submission_status = Column(String(20), default='draft', nullable=False)  # 'draft', 'submitted', 'under_review', 'approved', 'rejected'
+    submission_date = Column(DateTime)
+    total_score = Column(Float, default=0.0)
+    max_possible_score = Column(Float, default=0.0)
+    percentage_score = Column(Float, default=0.0)
+    comments = Column(Text)
+    reviewed_by = Column(Integer, ForeignKey("users.id"))
+    reviewed_date = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    template = relationship("ScoreCardTemplate", back_populates="submissions")
+    department = relationship("Department")
+    submitter = relationship("User", foreign_keys=[submitted_by])
+    reviewer = relationship("User", foreign_keys=[reviewed_by])
+    responses = relationship("ScoreCardResponse", back_populates="submission", cascade="all, delete-orphan")
+
+class ScoreCardResponse(Base):
+    __tablename__ = "score_card_responses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    submission_id = Column(Integer, ForeignKey("score_card_submissions.id"), nullable=False)
+    question_id = Column(Integer, ForeignKey("score_card_questions.id"), nullable=False)
+    response_text = Column(Text)
+    score = Column(Float, default=0.0)
+    reviewer_comments = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    submission = relationship("ScoreCardSubmission", back_populates="responses")
+    question = relationship("ScoreCardQuestion", back_populates="responses")
+    documents = relationship("ScoreCardDocument", back_populates="response", cascade="all, delete-orphan")
+
+class ScoreCardDocument(Base):
+    __tablename__ = "score_card_documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    response_id = Column(Integer, ForeignKey("score_card_responses.id"), nullable=False)
+    document_type = Column(String(20), nullable=False, default='upload')  # 'upload', 'onedrive', 'physical'
+    file_name = Column(String(255))
+    file_path = Column(String(500))
+    file_size = Column(BigInteger)
+    onedrive_link = Column(String(500))
+    physical_location = Column(String(255))
+    physical_status = Column(String(20), default='pending')  # 'pending', 'received', 'verified', 'missing'
+    physical_received_date = Column(Date)
+    physical_received_by = Column(Integer, ForeignKey("users.id"))
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+    response = relationship("ScoreCardResponse", back_populates="documents")
+    receiver = relationship("User", foreign_keys=[physical_received_by])
+
+class ScoreCardAuditLog(Base):
+    __tablename__ = "score_card_audit_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    submission_id = Column(Integer, ForeignKey("score_card_submissions.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    action = Column(String(50), nullable=False)
+    old_values = Column(Text)  # JSON
+    new_values = Column(Text)  # JSON
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    submission = relationship("ScoreCardSubmission")
+    user = relationship("User")
 

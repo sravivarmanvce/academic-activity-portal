@@ -2,7 +2,7 @@
 
 from typing import Optional, List
 from pydantic import BaseModel, EmailStr
-from datetime import datetime
+from datetime import datetime, date
 
 # -------------------------------
 # User Schemas
@@ -288,3 +288,147 @@ class NotificationOut(NotificationBase):
 
 class NotificationUpdate(BaseModel):
     read: bool
+
+# -------------------------------
+# Score Card Schemas
+# -------------------------------
+
+class ScoreCardTemplateBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    academic_year_id: int
+    is_active: bool = True
+
+class ScoreCardTemplateCreate(ScoreCardTemplateBase):
+    pass
+
+class ScoreCardTemplateOut(ScoreCardTemplateBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ScoreCardQuestionBase(BaseModel):
+    question_number: int
+    question_text: str
+    question_type: str = 'objective'
+    max_score: int = 5
+    requires_document: bool = False
+    is_mandatory: bool = True
+    document_description: Optional[str] = None
+    document_formats: Optional[str] = None
+
+class ScoreCardQuestionCreate(ScoreCardQuestionBase):
+    template_id: int
+
+class ScoreCardQuestionOut(ScoreCardQuestionBase):
+    id: int
+    template_id: int
+
+    class Config:
+        from_attributes = True
+
+class ScoreCardDocumentBase(BaseModel):
+    document_type: str = 'upload'
+    file_name: Optional[str] = None
+    onedrive_link: Optional[str] = None
+    physical_location: Optional[str] = None
+    physical_status: str = 'pending'
+
+class ScoreCardDocumentCreate(ScoreCardDocumentBase):
+    pass
+
+class ScoreCardDocumentOut(ScoreCardDocumentBase):
+    id: int
+    response_id: int
+    file_path: Optional[str] = None
+    file_size: Optional[int] = None
+    physical_received_date: Optional[date] = None
+    physical_received_by: Optional[int] = None
+    uploaded_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ScoreCardResponseBase(BaseModel):
+    response_text: Optional[str] = None
+    score: float = 0.0
+    reviewer_comments: Optional[str] = None
+
+class ScoreCardResponseCreate(ScoreCardResponseBase):
+    question_id: int
+    documents: List[ScoreCardDocumentCreate] = []
+
+class ScoreCardResponseOut(ScoreCardResponseBase):
+    id: int
+    submission_id: int
+    question_id: int
+    created_at: datetime
+    updated_at: datetime
+    documents: List[ScoreCardDocumentOut] = []
+
+    class Config:
+        from_attributes = True
+
+class ScoreCardSubmissionBase(BaseModel):
+    submission_status: str = 'draft'
+    comments: Optional[str] = None
+
+class ScoreCardSubmissionCreate(ScoreCardSubmissionBase):
+    template_id: int
+    department_id: int
+    responses: List[ScoreCardResponseCreate] = []
+
+class ScoreCardSubmissionUpdate(BaseModel):
+    submission_status: Optional[str] = None
+    comments: Optional[str] = None
+    responses: Optional[List[ScoreCardResponseCreate]] = None
+
+class ScoreCardSubmissionOut(ScoreCardSubmissionBase):
+    id: int
+    template_id: int
+    department_id: int
+    submitted_by: int
+    submission_date: Optional[datetime] = None
+    total_score: float = 0.0
+    max_possible_score: float = 0.0
+    percentage_score: float = 0.0
+    reviewed_by: Optional[int] = None
+    reviewed_date: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    responses: List[ScoreCardResponseOut] = []
+
+    class Config:
+        from_attributes = True
+
+# Template with Questions
+class ScoreCardTemplateWithQuestions(ScoreCardTemplateOut):
+    questions: List[ScoreCardQuestionOut] = []
+
+    class Config:
+        from_attributes = True
+
+# Submission Summary for Dashboard
+class ScoreCardSubmissionSummary(BaseModel):
+    id: int
+    template_name: str
+    department_name: str
+    submission_status: str
+    submission_date: Optional[datetime] = None
+    percentage_score: float = 0.0
+    submitted_by_name: str
+    reviewed_by_name: Optional[str] = None
+
+class ScoreCardAuditLogOut(BaseModel):
+    id: int
+    submission_id: int
+    user_id: int
+    action: str
+    old_values: Optional[str] = None
+    new_values: Optional[str] = None
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
