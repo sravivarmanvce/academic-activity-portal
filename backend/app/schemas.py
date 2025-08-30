@@ -310,7 +310,7 @@ class ScoreCardTemplateOut(ScoreCardTemplateBase):
         from_attributes = True
 
 class ScoreCardQuestionBase(BaseModel):
-    question_number: int
+    question_number: str  # Changed from int to str to support "1.1", "2.1" format
     question_text: str
     question_type: str = 'objective'
     max_score: int = 5
@@ -321,6 +321,9 @@ class ScoreCardQuestionBase(BaseModel):
 
 class ScoreCardQuestionCreate(ScoreCardQuestionBase):
     template_id: int
+
+class ScoreCardQuestionUpdate(ScoreCardQuestionBase):
+    pass
 
 class ScoreCardQuestionOut(ScoreCardQuestionBase):
     id: int

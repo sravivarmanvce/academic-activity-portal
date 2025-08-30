@@ -12,6 +12,9 @@ import ProgramEntryForm from "./components/ProgramEntryForm";
 import ManageProgramTypes from "./components/ManageProgramTypes";
 import ManageUsers from "./components/ManageUsers";
 import ManageAcademicYearsDeadlines from "./components/ManageAcademicYearsDeadlines";
+import ScoreCardAdmin from "./components/ScoreCardAdmin";
+import ScoreCardForm from "./components/ScoreCardForm";
+import ScoreCardReview from "./components/ScoreCardReview";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import API from "./Api";
@@ -170,6 +173,24 @@ function App() {
             <Route path="/manage-types" element={
               <ProtectedRoute user={user} allowedRoles={["principal", "admin", "pa_principal"]}>
                 <ManageProgramTypes />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/scorecard-admin" element={
+              <ProtectedRoute user={user} allowedRoles={["admin", "principal", "dean_iqac", "pa_principal"]}>
+                <ScoreCardAdmin />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/scorecard-form" element={
+              <ProtectedRoute user={user} allowedRoles={["hod"]}>
+                <ScoreCardForm user={user} />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/scorecard-review" element={
+              <ProtectedRoute user={user} allowedRoles={["principal", "dean_iqac", "admin"]}>
+                <ScoreCardReview />
               </ProtectedRoute>
             } />
 

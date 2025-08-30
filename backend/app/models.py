@@ -335,7 +335,7 @@ class ScoreCardQuestion(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     template_id = Column(Integer, ForeignKey("score_card_templates.id"), nullable=False)
-    question_number = Column(Integer, nullable=False)
+    question_number = Column(String(20), nullable=False)  # Changed from Integer to String to support "1.1", "2.1" format
     question_text = Column(Text, nullable=False)
     question_type = Column(String(50), nullable=False, default='objective')  # 'objective' or 'subjective'
     max_score = Column(Integer, nullable=False, default=5)

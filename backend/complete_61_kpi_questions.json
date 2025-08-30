@@ -1,0 +1,565 @@
+{
+  "template_info": {
+    "description": "Complete 61 KPI questions for Department Score Card",
+    "total_questions": 61,
+    "total_score": 1000,
+    "sections": {
+      "Department Information": "Questions 1-5 (30 points)",
+      "Research & Development": "Questions 6-31 (320 points)", 
+      "Faculty Contributions": "Questions 32-49 (280 points)",
+      "Student Support": "Questions 50-57 (270 points)",
+      "Continuous Improvement": "Questions 58-61 (100 points)"
+    }
+  },
+  "questions": [
+    {
+      "question_number": 1,
+      "question_text": "Student Sanction Intake vs Admitted",
+      "question_type": "objective",
+      "max_score": 0,
+      "requires_document": true,
+      "document_description": "Sanction letter, admission register, student intake data",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 2,
+      "question_text": "Demand Ratio and Quality of Student Admissions",
+      "question_type": "objective",
+      "max_score": 0,
+      "requires_document": true,
+      "document_description": "Admission statistics, cutoff marks, quality metrics",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 3,
+      "question_text": "Number of regular faculty available in the department (FSR)",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Faculty strength report, FSR calculation, appointment letters",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 4,
+      "question_text": "Number of regular faculty obtained PhD",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "PhD certificates, qualification documents",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 5,
+      "question_text": "Number of Technical & Non-Teaching Staff Available",
+      "question_type": "objective",
+      "max_score": 0,
+      "requires_document": true,
+      "document_description": "Staff list, appointment orders",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 6,
+      "question_text": "Average Number of Publications/faculty",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Publication list, faculty-wise publication count",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 7,
+      "question_text": "Number of publications in Scopus Indexed Conferences",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Conference papers, Scopus indexing proof",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 8,
+      "question_text": "Number of Publications in Scopus indexed / Web of Science indexed Journals",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Journal papers, indexing certificates",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 9,
+      "question_text": "Number of Publications in Science Citation Indexed (SCI/SCIE/SCIP) Journals",
+      "question_type": "objective",
+      "max_score": 40,
+      "requires_document": true,
+      "document_description": "SCI/SCIE journal papers, citation index proof",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 10,
+      "question_text": "Number of Scopus Indexed book chapters",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Book chapters, Scopus indexing proof",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 11,
+      "question_text": "Total Number of Funded Research Projects sanctioned during the AY",
+      "question_type": "objective",
+      "max_score": 60,
+      "requires_document": true,
+      "document_description": "Project sanction letters, funding agency approvals",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 12,
+      "question_text": "Total Number of Funded Research Projects ongoing (past two years) (more than 60 lakhs)",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Project progress reports, funding details",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 13,
+      "question_text": "Total Number of Funded Research Projects Applied",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Project applications, submission proofs",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 14,
+      "question_text": "Total Number of Patents Filed/Published",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Patent application documents, filing receipts",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 15,
+      "question_text": "Total Number of Patents Granted",
+      "question_type": "objective",
+      "max_score": 30,
+      "requires_document": true,
+      "document_description": "Patent grant certificates",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 16,
+      "question_text": "Total Number of Patents Commercialized",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Commercialization agreements, licensing documents",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 17,
+      "question_text": "Consultancy Areas Identified with infrastructure available (equipment worth)",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Equipment list, infrastructure details, valuation",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 18,
+      "question_text": "Total Number of Consultancy Works Ongoing / Consultancy amount raised in Rs. (lakhs)",
+      "question_type": "objective",
+      "max_score": 40,
+      "requires_document": true,
+      "document_description": "Consultancy agreements, payment receipts",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 19,
+      "question_text": "Number of faculty participated in FDPs / Training / STTPs / Workshop",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Training certificates, participation proofs",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 20,
+      "question_text": "Number of International Conferences Conducted",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Conference reports, participant lists, proceedings",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 21,
+      "question_text": "Value Added course for students (minimum 30 hours)",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Course curriculum, attendance sheets, certificates",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 22,
+      "question_text": "Skill Development courses conducted for students (minimum one week)",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Course details, schedule, certificates issued",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 23,
+      "question_text": "Number of faculty participated in International Conferences abroad",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Conference certificates, travel documents",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 24,
+      "question_text": "Number of Extension Lectures Organized",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Lecture schedules, speaker details, reports",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 25,
+      "question_text": "Number of FDPs Organized (minimum one week)",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "FDP reports, participant feedback, certificates",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 26,
+      "question_text": "Number of Industrial / Field Visits",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Visit reports, photographs, learning outcomes",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 27,
+      "question_text": "Total number of faculty certified in MOOCs",
+      "question_type": "objective",
+      "max_score": 50,
+      "requires_document": true,
+      "document_description": "MOOC certificates",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 28,
+      "question_text": "Number of faculty got 100% results in the courses taught (excluding practical courses)",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Result analysis, course-wise pass percentage",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 29,
+      "question_text": "Number of faculty having two active professional memberships",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Membership certificates, payment receipts",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 30,
+      "question_text": "Number of Faculty served as Session Chairs, Reviewed papers in SCI journals",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Certificates, acknowledgment letters",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 31,
+      "question_text": "Number of Faculty got awards from recognized agencies (NPTEL Gold medals, Domain certification, Mentor awards)",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Award certificates, recognition letters",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 32,
+      "question_text": "Number of Faculty guiding PhD Scholars",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "PhD registration documents, supervision letters",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 33,
+      "question_text": "Number of Video Lectures Recorded",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Video lecture links, recording details",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 34,
+      "question_text": "Number of faculty having website with course content",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Website URLs, content screenshots",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 35,
+      "question_text": "Course material developed as a book for local circulation (typed material)",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Book copies, publication proof",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 36,
+      "question_text": "Number of faculty authored text books with ISBN",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Published books, ISBN certificates",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 37,
+      "question_text": "Number of faculty attended internships",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Internship certificates, completion proofs",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 38,
+      "question_text": "Number of faculty delivered invited lectures/guest lectures/workshops at other institutions",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Invitation letters, certificates, feedback",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 39,
+      "question_text": "Number of students graduated without backlogs in stipulated period (outgoing batch)",
+      "question_type": "objective",
+      "max_score": 40,
+      "requires_document": true,
+      "document_description": "Result sheets, graduation lists",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 40,
+      "question_text": "Number of students graduated with backlogs in stipulated period (outgoing batch)",
+      "question_type": "objective",
+      "max_score": 0,
+      "requires_document": true,
+      "document_description": "Result sheets, backlog details",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 41,
+      "question_text": "First year (I-II) - % students passed without backlogs and average CGPA",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "First year results, CGPA analysis",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 42,
+      "question_text": "First year (I-II) - % students passed with backlogs and Average CGPA",
+      "question_type": "objective",
+      "max_score": 0,
+      "requires_document": true,
+      "document_description": "First year backlog analysis",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 43,
+      "question_text": "Second year (II-II) - % students passed without backlogs and average CGPA",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Second year results, CGPA analysis",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 44,
+      "question_text": "Second year (II-II) - % students passed with backlogs and average CGPA",
+      "question_type": "objective",
+      "max_score": 0,
+      "requires_document": true,
+      "document_description": "Second year backlog analysis",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 45,
+      "question_text": "Third year (III-II) - % students passed without backlogs and average CGPA",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Third year results, CGPA analysis",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 46,
+      "question_text": "Third year (III-II) - % students passed with backlogs and average CGPA",
+      "question_type": "objective",
+      "max_score": 0,
+      "requires_document": true,
+      "document_description": "Third year backlog analysis",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 47,
+      "question_text": "Fourth year (IV-II) - % students passed without backlogs and average CGPA",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Fourth year results, CGPA analysis",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 48,
+      "question_text": "Fourth year (IV-II) - % students passed with backlogs and average CGPA",
+      "question_type": "objective",
+      "max_score": 0,
+      "requires_document": true,
+      "document_description": "Fourth year backlog analysis",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 49,
+      "question_text": "Number of Students admitted to higher studies with valid qualifying scores (GATE/GRE/GMAT)",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Admission letters, GATE/GRE scores",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 50,
+      "question_text": "Number of Students turned Entrepreneurs in Engineering/Technology",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Business registration, startup certificates",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 51,
+      "question_text": "Number of Students placed in companies or government sector",
+      "question_type": "objective",
+      "max_score": 50,
+      "requires_document": true,
+      "document_description": "Offer letters, appointment orders",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 52,
+      "question_text": "Number of students certified in MOOC courses",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "MOOC certificates",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 53,
+      "question_text": "Number of students participated in competitions outside the College",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Competition certificates, participation proofs",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 54,
+      "question_text": "Number of students participated in professional body activities/competitions",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Activity certificates, competition results",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 55,
+      "question_text": "Number of students published papers in Conferences / Journals",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Published papers, conference proceedings",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 56,
+      "question_text": "Number of students received awards/certificates for curricular, co-curricular & extracurricular activities",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Awards, certificates, recognition letters",
+      "document_formats": "[\"pdf\", \"jpg\"]"
+    },
+    {
+      "question_number": 57,
+      "question_text": "Number of students participated in internships/special training",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Internship certificates, training completion proofs",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 58,
+      "question_text": "Number of Courses Meeting the Target Values for COs & POs",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Course outcome analysis, PO attainment reports",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 59,
+      "question_text": "Number of MOUs signed in the Academic Year",
+      "question_type": "objective",
+      "max_score": 20,
+      "requires_document": true,
+      "document_description": "Signed MOU documents",
+      "document_formats": "[\"pdf\"]"
+    },
+    {
+      "question_number": 60,
+      "question_text": "Average Score of Faculty Appraisal",
+      "question_type": "objective",
+      "max_score": 50,
+      "requires_document": true,
+      "document_description": "Faculty appraisal reports, scoring sheets",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    },
+    {
+      "question_number": 61,
+      "question_text": "Number of labs augmented/amount spent (from funding agency)",
+      "question_type": "objective",
+      "max_score": 10,
+      "requires_document": true,
+      "document_description": "Lab upgrade receipts, funding agency approvals",
+      "document_formats": "[\"pdf\", \"xlsx\"]"
+    }
+  ]
+}

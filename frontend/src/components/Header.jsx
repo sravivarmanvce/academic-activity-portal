@@ -132,6 +132,33 @@ function Header({ userRole, userName, onLogout }) {
               </li>
             </>
           )}
+
+          {/* ScoreCard Navigation - Different options for different roles */}
+          {(userRole === "admin" || userRole === "principal" || userRole === "dean_iqac" || userRole === "pa_principal" || userRole === "hod") && (
+            <li className="nav-item dropdown">
+              <a 
+                className={getDropdownToggleClass(["/scorecard-admin", "/scorecard-form", "/scorecard-review"])}
+                href="#"
+                id="scorecardDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                📊 Score Card
+              </a>
+              <ul className="dropdown-menu" aria-labelledby="scorecardDropdown">
+                {(userRole === "admin" || userRole === "principal" || userRole === "dean_iqac" || userRole === "pa_principal") && (
+                  <li><Link className={getDropdownItemClass("/scorecard-admin")} to="/scorecard-admin">🔧 Admin Panel</Link></li>
+                )}
+                {userRole === "hod" && (
+                  <li><Link className={getDropdownItemClass("/scorecard-form")} to="/scorecard-form">📝 Submit Score Card</Link></li>
+                )}
+                {(userRole === "principal" || userRole === "dean_iqac" || userRole === "admin") && (
+                  <li><Link className={getDropdownItemClass("/scorecard-review")} to="/scorecard-review">🔍 Review Submissions</Link></li>
+                )}
+              </ul>
+            </li>
+          )}
         </ul>
 
         <div className="d-flex align-items-center">
